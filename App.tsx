@@ -9,10 +9,12 @@ import {
   Easing,
   Image,
   Platform,
+  SafeAreaView,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
@@ -78,10 +80,11 @@ export default function App() {
   }, []);
 
   return (
-    <View style={[styles.container, Platform.OS === 'web' && styles.webContainer]}>
-      <StatusBar style={loading ? 'light' : 'dark'} />
+    <SafeAreaProvider>
+      <View style={[styles.container, Platform.OS === 'web' && styles.webContainer]}>
+        <StatusBar style={loading ? 'light' : 'dark'} />
 
-      <View style={[styles.appViewport, Platform.OS === 'web' && styles.webViewport]}>
+        <View style={[styles.appViewport, Platform.OS === 'web' && styles.webViewport]}>
         {loading ? (
           <Animated.View style={[styles.splash, { opacity: splashOpacity }]}>
             <Animated.View style={[styles.brandContainer, { opacity: textOpacity }]}>
@@ -116,8 +119,9 @@ export default function App() {
             <MainApp />
           </View>
         )}
+        </View>
       </View>
-    </View>
+    </SafeAreaProvider>
   );
 }
 

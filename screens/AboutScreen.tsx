@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import {
   Image,
   Linking,
@@ -8,7 +8,13 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import useResponsive from '../utils/responsive';
+
+type RootTabParamList = { Home: undefined; Events: undefined; EBoard: undefined; About: undefined };
+type AboutNavigationProp = BottomTabNavigationProp<RootTabParamList, 'About'>;
 
 const LINKS = {
   instagram: 'https://www.instagram.com/alpfa_njit/',
@@ -33,28 +39,53 @@ async function openLink(url: string) {
 }
 
 export default function AboutScreen() {
+  const navigation = useNavigation<AboutNavigationProp>();
+  const responsive = useResponsive();
+  const scrollOffsetY = useRef(0);
+  const [lastScrollDir, setLastScrollDir] = useState<'up' | 'down' | null>(null);
+
+  const handleScroll = (event: any) => {
+    const currentOffset = event.nativeEvent.contentOffset.y;
+    const scrollDiff = currentOffset - scrollOffsetY.current;
+    
+    if (scrollDiff > 8 && lastScrollDir !== 'down') {
+      setLastScrollDir('down');
+      navigation.setParams({ navScrollState: 'down' } as any);
+    } else if (scrollDiff < -8 && lastScrollDir !== 'up') {
+      setLastScrollDir('up');
+      navigation.setParams({ navScrollState: 'up' } as any);
+    }
+    
+    scrollOffsetY.current = currentOffset;
+  };
+
   return (
     <View style={styles.container}>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
-        <View style={styles.hero}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={[styles.content, { paddingHorizontal: responsive.horizontalPadding, paddingBottom: responsive.responsiveSpacing.xxl + 40, maxWidth: responsive.contentMaxWidth || undefined, alignSelf: 'center', width: '100%' }]}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
+      >
+        <View style={[styles.hero, { paddingTop: responsive.isSmallPhone ? 34 : 52, paddingBottom: responsive.isSmallPhone ? 22 : 28, marginHorizontal: -responsive.horizontalPadding, paddingHorizontal: responsive.horizontalPadding + 20 }]}>
           <Image
             source={require('../assets/images/ALPFANJITLOGO.png')}
-            style={styles.logo}
+            style={[styles.logo, { width: responsive.isSmallPhone ? 88 : 110, height: responsive.isSmallPhone ? 88 : 110, borderRadius: responsive.isSmallPhone ? 20 : 26 }]}
             resizeMode="contain"
           />
-          <Text style={styles.title}>ALPFA NJIT</Text>
-          <Text style={styles.subtitle}>Building Leaders. Creating Opportunities.</Text>
+          <Text style={[styles.title, { fontSize: responsive.isSmallPhone ? 24 : 28 }]}>ALPFA NJIT</Text>
+          <Text style={[styles.subtitle, { fontSize: responsive.isSmallPhone ? 10 : 11 }]}>Building Leaders. Creating Opportunities.</Text>
         </View>
 
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>About ALPFA NJIT</Text>
-          <Text style={styles.body}>
+        <View style={[styles.card, { marginHorizontal: responsive.horizontalPadding, padding: responsive.isSmallPhone ? 18 : 22, borderRadius: responsive.isSmallPhone ? 18 : 24 }]}>
+          <Text style={[styles.cardTitle, { fontSize: responsive.isSmallPhone ? 17 : 19 }]}>About ALPFA NJIT</Text>
+          <Text style={[styles.body, { fontSize: responsive.isSmallPhone ? 11 : 12 }]}> 
             ALPFA NJIT connects students with professional development, networking, leadership,
             and career opportunities that help them grow inside and outside the classroom.
           </Text>
         </View>
 
-        <View style={styles.infoGrid}>
+        <View style={[styles.infoGrid, { marginHorizontal: responsive.horizontalPadding }]}>
           <InfoCard
             title="Our Mission"
             text="Empower students with leadership, networking, and career development opportunities that shape their future."
@@ -72,7 +103,7 @@ export default function AboutScreen() {
           />
         </View>
 
-        <Text style={styles.sectionTitle}>Connect With Us</Text>
+        <Text style={[styles.sectionTitle, { marginHorizontal: responsive.horizontalPadding }]}>Connect With Us</Text>
 
         <LinkButton
           icon="logo-instagram"
@@ -152,7 +183,7 @@ function LinkButton({
   onPress: () => void;
 }) {
   return (
-    <TouchableOpacity activeOpacity={0.8} onPress={onPress} style={styles.linkButton}>
+    <TouchableOpacity activeOpacity={0.8} onPress={onPress} style={[styles.linkButton, { marginHorizontal: 18 }]}>
       <View style={styles.linkIcon}>
         <Ionicons name={icon} size={22} color="#6E1B2D" />
       </View>
@@ -176,15 +207,10 @@ const styles = StyleSheet.create({
   hero: {
     backgroundColor: '#0F102E',
     alignItems: 'center',
-    paddingTop: 65,
-    paddingBottom: 35,
     paddingHorizontal: 20,
   },
   logo: {
-    width: 130,
-    height: 130,
     backgroundColor: '#FFFFFF',
-    borderRadius: 30,
   },
   title: {
     color: '#FFFFFF',
@@ -200,13 +226,13 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: '#FFFFFF',
-    margin: 18,
-    padding: 20,
-    borderRadius: 20,
+    marginTop: 18,
+    borderWidth: 1,
+    borderColor: 'rgba(15, 16, 46, 0.05)',
     shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.03,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 3 },
   },
   cardTitle: {
     color: '#17182F',
@@ -220,18 +246,19 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   infoGrid: {
-    marginHorizontal: 18,
     marginTop: 10,
   },
   infoCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 18,
+    borderRadius: 22,
     padding: 16,
     marginBottom: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(15, 16, 46, 0.04)',
     shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.02,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
   },
   infoIcon: {
     width: 40,
@@ -258,21 +285,21 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '900',
     marginTop: 18,
-    marginHorizontal: 18,
   },
   linkButton: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    borderRadius: 18,
+    borderRadius: 20,
     paddingHorizontal: 14,
     paddingVertical: 14,
-    marginHorizontal: 18,
     marginTop: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(15, 16, 46, 0.04)',
     shadowColor: '#000',
-    shadowOpacity: 0.04,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.02,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
   },
   linkIcon: {
     width: 40,

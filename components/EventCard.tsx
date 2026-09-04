@@ -7,13 +7,10 @@ import {
   TouchableOpacity,
   View,
   Linking,
-  Dimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { CalendarEvent, formatEventTime } from '../utils/calendarUtils';
-
-const { width } = Dimensions.get('window');
-const CARD_WIDTH = width - 36;
+import useResponsive from '../utils/responsive';
 
 interface EventCardProps {
   event: CalendarEvent;
@@ -21,6 +18,7 @@ interface EventCardProps {
 }
 
 export default function EventCard({ event, animationDelay }: EventCardProps) {
+  const responsive = useResponsive();
   const [isFlipped, setIsFlipped] = useState(false);
   const flipAnimation = useRef(new Animated.Value(0)).current;
   const entranceScale = useRef(new Animated.Value(0.95)).current;
@@ -139,6 +137,9 @@ export default function EventCard({ event, animationDelay }: EventCardProps) {
       style={[
         styles.cardContainer,
         {
+          marginBottom: responsive.responsiveSpacing.lg,
+        },
+        {
           opacity: entranceOpacity,
           transform: [
             { scale: entranceScale },
@@ -148,12 +149,20 @@ export default function EventCard({ event, animationDelay }: EventCardProps) {
       ]}
     >
       <TouchableOpacity onPress={toggleFlip} activeOpacity={0.95}>
-        <View style={styles.card3D}>
+        <View style={[
+          styles.card3D,
+          {
+            width: responsive.cardWidth,
+          },
+        ]}>
           {/* FRONT CARD - WHITE */}
           <Animated.View
             style={[
               styles.cardFace,
               styles.cardFront,
+              {
+                width: responsive.cardWidth,
+              },
               {
                 opacity: frontOpacity,
                 transform: [
@@ -200,6 +209,9 @@ export default function EventCard({ event, animationDelay }: EventCardProps) {
             style={[
               styles.cardFace,
               styles.cardBack,
+              {
+                width: responsive.cardWidth,
+              },
               {
                 opacity: backOpacity,
                 transform: [
@@ -268,17 +280,14 @@ export default function EventCard({ event, animationDelay }: EventCardProps) {
 
 const styles = StyleSheet.create({
   cardContainer: {
-    marginHorizontal: 18,
     marginBottom: 20,
   },
   card3D: {
-    width: CARD_WIDTH,
     height: 260,
     backgroundColor: 'transparent',
   },
   cardFace: {
     position: 'absolute',
-    width: CARD_WIDTH,
     height: 260,
     borderRadius: 24,
     padding: 24,

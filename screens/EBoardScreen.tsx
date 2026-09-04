@@ -1,6 +1,12 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Animated, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import EBoardCard from '../components/EBoardCard';
+import useResponsive from '../utils/responsive';
+
+type RootTabParamList = { Home: undefined; Events: undefined; EBoard: undefined; About: undefined };
+type EBoardNavigationProp = BottomTabNavigationProp<RootTabParamList, 'EBoard'>;
 
 // E-Board member data structure
 const BOARD_MEMBERS = [
@@ -86,8 +92,12 @@ const BOARD_MEMBERS = [
 ];
 
 export default function EBoardScreen() {
+  const navigation = useNavigation<EBoardNavigationProp>();
+  const responsive = useResponsive();
   const fade = useRef(new Animated.Value(0)).current;
   const slide = useRef(new Animated.Value(24)).current;
+  const scrollOffsetY = useRef(0);
+  const [lastScrollDir, setLastScrollDir] = useState<'up' | 'down' | null>(null);
 
   useEffect(() => {
     Animated.parallel([
@@ -96,27 +106,56 @@ export default function EBoardScreen() {
     ]).start();
   }, []);
 
+  const handleScroll = (event: any) => {
+    const currentOffset = event.nativeEvent.contentOffset.y;
+    const scrollDiff = currentOffset - scrollOffsetY.current;
+    
+    if (scrollDiff > 8 && lastScrollDir !== 'down') {
+      setLastScrollDir('down');
+      navigation.setParams({ navScrollState: 'down' } as any);
+    } else if (scrollDiff < -8 && lastScrollDir !== 'up') {
+      setLastScrollDir('up');
+      navigation.setParams({ navScrollState: 'up' } as any);
+    }
+    
+    scrollOffsetY.current = currentOffset;
+  };
+
   return (
     <View style={styles.container}>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={[
+          styles.content,
+          {
+            paddingHorizontal: responsive.horizontalPadding,
+            paddingBottom: responsive.responsiveSpacing.xxl + 40,
+            maxWidth: responsive.contentMaxWidth || undefined,
+            alignSelf: 'center',
+            width: '100%',
+          },
+        ]}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
+      >
         <Animated.View style={{ opacity: fade, transform: [{ translateY: slide }] }}>
           {/* Header */}
-          <View style={styles.header}>
+          <View style={[styles.header, { marginBottom: responsive.isSmallPhone ? 18 : 24 }]}>
             <Text style={styles.eyebrow}>ALPFA NJIT</Text>
-            <Text style={styles.title}>E-BOARD</Text>
-            <Text style={styles.subtitle}>Meet the people behind the chapter.</Text>
-            <Text style={styles.subtitleSecondary}>Building leaders. Creating opportunities.</Text>
+            <Text style={[styles.title, { fontSize: responsive.isSmallPhone ? 28 : 35 }]}>E-BOARD</Text>
+            <Text style={[styles.subtitle, { fontSize: responsive.isSmallPhone ? 12 : 13 }]}>Meet the people behind the chapter.</Text>
+            <Text style={[styles.subtitleSecondary, { fontSize: responsive.isSmallPhone ? 11 : 12 }]}>Building leaders. Creating opportunities.</Text>
           </View>
 
           {/* Feature Card */}
-          <View style={styles.featureCard}>
+          <View style={[styles.featureCard, { padding: responsive.isSmallPhone ? 14 : 18, borderRadius: responsive.isSmallPhone ? 18 : 22 }]}>
             <View style={styles.featureCircle}>
               <Text style={styles.featureInitials}>AL</Text>
             </View>
             <View style={styles.featureContent}>
               <Text style={styles.featureLabel}>ALPFA NJIT</Text>
-              <Text style={styles.featureTitle}>Leadership in action.</Text>
-              <Text style={styles.featureText}>Each E-Board member brings unique skills and perspectives to our community.</Text>
+              <Text style={[styles.featureTitle, { fontSize: responsive.isSmallPhone ? 17 : 20 }]}>Leadership in action.</Text>
+              <Text style={[styles.featureText, { fontSize: responsive.isSmallPhone ? 10 : 11 }]}>Each E-Board member brings unique skills and perspectives to our community.</Text>
             </View>
           </View>
 
@@ -154,7 +193,6 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingTop: 64,
-    paddingHorizontal: 20,
     paddingBottom: 50,
   },
   eyebrow: {
@@ -183,13 +221,10 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
   },
   header: {
-    marginBottom: 24,
   },
   featureCard: {
     marginTop: 22,
     backgroundColor: '#FFFFFF',
-    borderRadius: 22,
-    padding: 18,
     flexDirection: 'row',
     alignItems: 'center',
     shadowColor: '#000',

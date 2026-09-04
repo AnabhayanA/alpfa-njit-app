@@ -1,0 +1,119 @@
+/**
+ * ALPFA NJIT Theme Constants
+ * Colors, spacing, and design system
+ */
+
+export const colors = {
+  // Brand colors
+  navy: '#0F102E',
+  burgundy: '#6E1B2D',
+  white: '#FFFFFF',
+  lightGray: '#F7F7F9',
+  mediumGray: '#E8E8EB',
+  darkGray: '#77778A',
+  textDark: '#1A1A2E',
+  textLight: '#77778A',
+
+  // Semantic colors
+  error: '#EF4444',
+  success: '#10B981',
+  warning: '#F59E0B',
+  info: '#3B82F6',
+
+  // Backgrounds
+  background: '#F7F7F9',
+  surface: '#FFFFFF',
+  surfaceAlt: '#F9F9FB',
+
+  // Borders
+  border: '#E8E8EB',
+  borderLight: '#F0F0F2',
+
+  // Transparency
+  transparent: 'transparent',
+  overlay: 'rgba(0, 0, 0, 0.4)',
+  overlayLight: 'rgba(0, 0, 0, 0.1)',
+};
+
+export const spacing = {
+  xs: 4,
+  sm: 8,
+  md: 12,
+  lg: 16,
+  xl: 20,
+  xxl: 24,
+  xxxl: 32,
+};
+
+export const borderRadius = {
+  sm: 8,
+  md: 12,
+  lg: 16,
+  xl: 20,
+  full: 9999,
+};
+
+export const typography = {
+  fontFamily: {
+    regular: 'System',
+    medium: 'System',
+    semibold: 'System',
+    bold: 'System',
+  },
+  fontSize: {
+    xs: 11,
+    sm: 13,
+    base: 16,
+    lg: 18,
+    xl: 20,
+    xxl: 24,
+    xxxl: 32,
+  },
+  fontWeight: {
+    light: '300' as const,
+    regular: '400' as const,
+    medium: '500' as const,
+    semibold: '600' as const,
+    bold: '700' as const,
+    extrabold: '800' as const,
+  },
+};
+
+export const shadows = {
+  sm: {
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
+  },
+  md: {
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 4,
+  },
+  lg: {
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 8,
+  },
+  xl: {
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowRadius: 24,
+    shadowOffset: { width: 0, height: 12 },
+    elevation: 12,
+  },
+};
+
+export default {
+  colors,
+  spacing,
+  borderRadius,
+  typography,
+  shadows,
+};

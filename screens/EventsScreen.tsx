@@ -12,8 +12,11 @@ import {
   RefreshControl,
   ActivityIndicator,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import EventCard from '../components/EventCard';
+import useResponsive from '../utils/responsive';
 import {
   fetchCalendarEvents,
   groupEventsByMonth,
@@ -21,6 +24,9 @@ import {
   CalendarEvent,
   GroupedEvents,
 } from '../utils/calendarUtils';
+
+type RootTabParamList = { Home: undefined; Events: undefined; EBoard: undefined; About: undefined };
+type EventsNavigationProp = BottomTabNavigationProp<RootTabParamList, 'Events'>;
 
 async function openLink(url: string) {
   try {
@@ -36,12 +42,16 @@ async function openLink(url: string) {
 }
 
 export default function EventsScreen() {
+  const navigation = useNavigation<EventsNavigationProp>();
+  const responsive = useResponsive();
   const [events, setEvents] = useState<GroupedEvents>({});
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const headerOpacity = useRef(new Animated.Value(0)).current;
   const headerSlideY = useRef(new Animated.Value(-20)).current;
+  const scrollOffsetY = useRef(0);
+  const [lastScrollDir, setLastScrollDir] = useState<'up' | 'down' | null>(null);
 
   // Load events on mount
   useEffect(() => {
@@ -101,14 +111,31 @@ export default function EventsScreen() {
   // Count total events
   const totalEvents = Object.values(events).flat().length;
 
+  const handleScroll = (event: any) => {
+    const currentOffset = event.nativeEvent.contentOffset.y;
+    const scrollDiff = currentOffset - scrollOffsetY.current;
+    
+    if (scrollDiff > 8 && lastScrollDir !== 'down') {
+      setLastScrollDir('down');
+      navigation.setParams({ navScrollState: 'down' } as any);
+    } else if (scrollDiff < -8 && lastScrollDir !== 'up') {
+      setLastScrollDir('up');
+      navigation.setParams({ navScrollState: 'up' } as any);
+    }
+    
+    scrollOffsetY.current = currentOffset;
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[styles.content, { paddingHorizontal: responsive.horizontalPadding }]}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#6E1B2D" />
         }
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
       >
         {/* Header */}
         <Animated.View

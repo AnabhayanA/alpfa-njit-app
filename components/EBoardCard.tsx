@@ -1,7 +1,6 @@
 import React, { useRef, useState } from 'react';
 import {
   Animated,
-  Dimensions,
   Easing,
   Image,
   Linking,
@@ -11,9 +10,7 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-
-const { width } = Dimensions.get('window');
-const CARD_WIDTH = width - 40;
+import useResponsive from '../utils/responsive';
 
 interface EBoardMember {
   id: string;
@@ -37,6 +34,7 @@ interface EBoardCardProps {
 }
 
 export default function EBoardCard({ member, animationDelay }: EBoardCardProps) {
+  const responsive = useResponsive();
   const [isFlipped, setIsFlipped] = useState(false);
   const flipAnimation = useRef(new Animated.Value(0)).current;
   const entranceOpacity = useRef(new Animated.Value(0)).current;
@@ -163,6 +161,10 @@ export default function EBoardCard({ member, animationDelay }: EBoardCardProps) 
       style={[
         styles.cardWrapper,
         {
+          marginHorizontal: responsive.horizontalPadding,
+          marginBottom: responsive.responsiveSpacing.md,
+        },
+        {
           opacity: entranceOpacity,
           transform: [{ translateY: entranceTranslateY }],
         },
@@ -178,6 +180,7 @@ export default function EBoardCard({ member, animationDelay }: EBoardCardProps) 
           style={[
             styles.cardContainer,
             {
+              width: responsive.cardWidth,
               transform: [{ scale: pressScale }],
             },
           ]}
@@ -187,6 +190,9 @@ export default function EBoardCard({ member, animationDelay }: EBoardCardProps) 
             style={[
               styles.cardFace,
               styles.cardFront,
+              {
+                width: responsive.cardWidth,
+              },
               {
                 opacity: frontOpacity,
                 transform: [
@@ -251,6 +257,9 @@ export default function EBoardCard({ member, animationDelay }: EBoardCardProps) 
             style={[
               styles.cardFace,
               styles.cardBack,
+              {
+                width: responsive.cardWidth,
+              },
               {
                 opacity: backOpacity,
                 transform: [
@@ -361,13 +370,11 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   cardContainer: {
-    width: CARD_WIDTH,
     height: 600,
     backgroundColor: 'transparent',
   },
   cardFace: {
     position: 'absolute',
-    width: CARD_WIDTH,
     height: 600,
     borderRadius: 24,
     overflow: 'hidden',
