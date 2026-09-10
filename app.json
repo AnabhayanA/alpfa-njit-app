@@ -25,6 +25,14 @@
     },
     "web": {
       "favicon": "./assets/images/ALPFANJITLOGO.png"
-    }
+    },
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "color": "#6E1B2D"
+        }
+      ]
+    ]
   }
 }

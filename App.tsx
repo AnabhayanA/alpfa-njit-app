@@ -25,6 +25,7 @@ import HomeScreen from './screens/HomeScreen';
 import EventsScreen from './screens/EventsScreen';
 import EBoardScreen from './screens/EBoardScreen';
 import AboutScreen from './screens/AboutScreen';
+import useTheme from './utils/useTheme';
 
 const Tab = createBottomTabNavigator();
 
@@ -45,6 +46,7 @@ function MainApp() {
 }
 
 export default function App() {
+  const { colors } = useTheme();
   const [loading, setLoading] = useState(true);
   const textOpacity = useRef(new Animated.Value(0)).current;
   const loadingWidth = useRef(new Animated.Value(0)).current;
@@ -82,7 +84,7 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <View style={[styles.container, Platform.OS === 'web' && styles.webContainer]}>
-        <StatusBar style={loading ? 'light' : 'dark'} />
+        <StatusBar style={loading ? 'light' : colors.statusBarStyle} />
 
         <View style={[styles.appViewport, Platform.OS === 'web' && styles.webViewport]}>
         {loading ? (
@@ -115,7 +117,7 @@ export default function App() {
             </View>
           </Animated.View>
         ) : (
-          <View style={styles.mainApp}>
+          <View style={[styles.mainApp, { backgroundColor: colors.background }]}>
             <MainApp />
           </View>
         )}
@@ -130,9 +132,11 @@ const styles = StyleSheet.create({
   webContainer: { backgroundColor: '#E7E1E2', paddingVertical: 24 },
   appViewport: { flex: 1, width: '100%' },
   webViewport: {
-    maxWidth: 520,
+    width: '100%',
+    maxWidth: 1200,
+    minHeight: '100%',
     alignSelf: 'center',
-    borderRadius: 18,
+    borderRadius: 16,
     overflow: 'hidden',
     shadowColor: '#17182F',
     shadowOpacity: 0.18,

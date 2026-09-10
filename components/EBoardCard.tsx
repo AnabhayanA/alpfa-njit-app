@@ -4,6 +4,7 @@ import {
   Easing,
   Image,
   Linking,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -11,6 +12,8 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import useResponsive from '../utils/responsive';
+import useTheme from '../utils/useTheme';
+import { ThemePalette } from '../constants/theme';
 
 interface EBoardMember {
   id: string;
@@ -19,6 +22,7 @@ interface EBoardMember {
   major: string;
   classYear: string;
   image?: any;
+  bio?: string;
   goal: string;
   whyAlpfa: string;
   role: string;
@@ -35,12 +39,17 @@ interface EBoardCardProps {
 
 export default function EBoardCard({ member, animationDelay }: EBoardCardProps) {
   const responsive = useResponsive();
+  const { colors } = useTheme();
+  const styles = React.useMemo(() => createStyles(colors), [colors]);
   const [isFlipped, setIsFlipped] = useState(false);
   const flipAnimation = useRef(new Animated.Value(0)).current;
   const entranceOpacity = useRef(new Animated.Value(0)).current;
   const entranceTranslateY = useRef(new Animated.Value(30)).current;
   const pressScale = useRef(new Animated.Value(1)).current;
   const shineOpacity = useRef(new Animated.Value(0)).current;
+  const backScrollRef = useRef<ScrollView>(null);
+  const backScrollOffset = useRef(0);
+  const linkPressed = useRef(false);
 
   // Entrance animation
   React.useEffect(() => {
@@ -144,16 +153,25 @@ export default function EBoardCard({ member, animationDelay }: EBoardCardProps) 
   });
 
   const handleLinkPress = async (url: string | undefined, platform: string) => {
-    if (url) {
-      try {
-        const canOpen = await Linking.canOpenURL(url);
-        if (canOpen) {
-          await Linking.openURL(url);
-        }
-      } catch (error) {
-        console.warn(`Unable to open ${platform} link:`, error);
-      }
+    linkPressed.current = true;
+
+    if (!url) {
+      return;
     }
+
+    try {
+      await Linking.openURL(url);
+    } catch (error) {
+      console.warn(`Unable to open ${platform} link:`, error);
+    }
+  };
+
+  const handleCardPress = () => {
+    if (linkPressed.current) {
+      linkPressed.current = false;
+      return;
+    }
+    toggleFlip();
   };
 
   return (
@@ -161,7 +179,6 @@ export default function EBoardCard({ member, animationDelay }: EBoardCardProps) 
       style={[
         styles.cardWrapper,
         {
-          marginHorizontal: responsive.horizontalPadding,
           marginBottom: responsive.responsiveSpacing.md,
         },
         {
@@ -171,7 +188,7 @@ export default function EBoardCard({ member, animationDelay }: EBoardCardProps) 
       ]}
     >
       <TouchableOpacity
-        onPress={toggleFlip}
+        onPress={handleCardPress}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
         activeOpacity={0.95}
@@ -280,7 +297,25 @@ export default function EBoardCard({ member, animationDelay }: EBoardCardProps) 
             </View>
 
             {/* Content sections */}
-            <View style={styles.backContent}>
+            <ScrollView
+              ref={backScrollRef}
+              style={styles.backContentScroll}
+              contentContainerStyle={styles.backContent}
+              showsVerticalScrollIndicator={false}
+              nestedScrollEnabled
+              onScroll={(event) => {
+                backScrollOffset.current = event.nativeEvent.contentOffset.y;
+              }}
+              scrollEventThrottle={16}
+            >
+              {/* Bio */}
+              {member.bio && (
+                <View style={styles.section}>
+                  <Text style={styles.sectionLabel}>ABOUT ME</Text>
+                  <Text style={styles.sectionText}>{member.bio}</Text>
+                </View>
+              )}
+
               {/* Mission */}
               <View style={styles.section}>
                 <Text style={styles.sectionLabel}>🎯 MY ALPFA GOAL</Text>
@@ -306,7 +341,22 @@ export default function EBoardCard({ member, animationDelay }: EBoardCardProps) 
                   <Text style={styles.sectionText}>{member.funFact}</Text>
                 </View>
               )}
-            </View>
+            </ScrollView>
+
+            <TouchableOpacity
+              style={styles.scrollHint}
+              onPress={(event) => {
+                event.stopPropagation();
+                backScrollRef.current?.scrollTo({
+                  y: backScrollOffset.current + 150,
+                  animated: true,
+                });
+              }}
+              accessibilityRole="button"
+              accessibilityLabel="Show more profile details"
+            >
+              <Ionicons name="chevron-down" size={16} color="#F2D7DF" />
+            </TouchableOpacity>
 
             {/* Social links */}
             <View style={styles.socialSection}>
@@ -315,7 +365,10 @@ export default function EBoardCard({ member, animationDelay }: EBoardCardProps) 
                 {member.linkedin && (
                   <TouchableOpacity
                     style={styles.socialButton}
+                    onPressIn={(event) => event.stopPropagation()}
                     onPress={() => handleLinkPress(member.linkedin, 'LinkedIn')}
+                    accessibilityRole="link"
+                    accessibilityLabel={`Open ${member.name}'s LinkedIn profile`}
                   >
                     <Ionicons name="logo-linkedin" size={16} color="#FFFFFF" />
                     <Text style={styles.socialButtonText}>LinkedIn</Text>
@@ -360,14 +413,30 @@ export default function EBoardCard({ member, animationDelay }: EBoardCardProps) 
           </Animated.View>
         </Animated.View>
       </TouchableOpacity>
+      {member.linkedin && (
+        <Animated.View
+          pointerEvents={isFlipped ? 'none' : 'auto'}
+          style={[styles.linkedinOverlay, { opacity: frontOpacity }]}
+        >
+          <TouchableOpacity
+            style={styles.linkedinIconButton}
+            hitSlop={12}
+            onPress={() => handleLinkPress(member.linkedin, 'LinkedIn')}
+            accessibilityRole="link"
+            accessibilityLabel={`Open ${member.name}'s LinkedIn profile`}
+          >
+            <Ionicons name="logo-linkedin" size={17} color="#FFFFFF" />
+          </TouchableOpacity>
+        </Animated.View>
+      )}
     </Animated.View>
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemePalette) => StyleSheet.create({
   cardWrapper: {
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: 28,
   },
   cardContainer: {
     height: 600,
@@ -376,27 +445,27 @@ const styles = StyleSheet.create({
   cardFace: {
     position: 'absolute',
     height: 600,
-    borderRadius: 24,
+    borderRadius: 22,
     overflow: 'hidden',
     shadowColor: '#000',
-    shadowOpacity: 0.15,
-    shadowRadius: 20,
-    shadowOffset: { width: 0, height: 10 },
-    elevation: 10,
+    shadowOpacity: 0.12,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 8,
   },
 
   // FRONT CARD
   cardFront: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.surface,
     borderWidth: 1.5,
     borderColor: 'rgba(110, 27, 45, 0.1)',
-    padding: 24,
+    padding: 22,
   },
   frontHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 18,
+    marginBottom: 16,
   },
   branding: {
     fontSize: 11,
@@ -407,17 +476,17 @@ const styles = StyleSheet.create({
   year: {
     fontSize: 11,
     fontWeight: '900',
-    color: '#0F102E',
+    color: colors.textPrimary,
     letterSpacing: 0.5,
   },
   photoContainer: {
     position: 'relative',
     width: '100%',
-    height: 280,
+    height: 270,
     borderRadius: 18,
     overflow: 'hidden',
     marginBottom: 18,
-    backgroundColor: '#F6F6F8',
+    backgroundColor: colors.backgroundAlt,
   },
   photo: {
     width: '100%',
@@ -429,7 +498,7 @@ const styles = StyleSheet.create({
     height: '100%',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#F6F6F8',
+    backgroundColor: colors.backgroundAlt,
   },
   photoGradient: {
     position: 'absolute',
@@ -445,8 +514,9 @@ const styles = StyleSheet.create({
   memberName: {
     fontSize: 24,
     fontWeight: '900',
-    color: '#0F102E',
+    color: colors.textPrimary,
     marginBottom: 4,
+    flexShrink: 1,
   },
   position: {
     fontSize: 13,
@@ -455,6 +525,7 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 1,
     marginBottom: 12,
+    flexShrink: 1,
   },
   infoRow: {
     flexDirection: 'row',
@@ -473,10 +544,23 @@ const styles = StyleSheet.create({
   infoValue: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#0F102E',
+    color: colors.textPrimary,
   },
   frontBottom: {
     gap: 10,
+  },
+  linkedinOverlay: {
+    position: 'absolute',
+    right: 24,
+    bottom: 24,
+  },
+  linkedinIconButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#0A66C2',
   },
   accentLine: {
     height: 2,
@@ -494,7 +578,7 @@ const styles = StyleSheet.create({
   // BACK CARD
   cardBack: {
     backgroundColor: '#0F102E',
-    padding: 24,
+    padding: 22,
   },
   backHeader: {
     flexDirection: 'row',
@@ -525,9 +609,21 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   backContent: {
+    gap: 14,
+    paddingRight: 8,
+    paddingBottom: 2,
+  },
+  backContentScroll: {
     flex: 1,
-    gap: 12,
     marginBottom: 14,
+  },
+  scrollHint: {
+    alignSelf: 'center',
+    width: 28,
+    height: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+    opacity: 0.72,
   },
   section: {
     gap: 4,

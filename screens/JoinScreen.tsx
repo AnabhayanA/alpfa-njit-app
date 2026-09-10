@@ -10,6 +10,8 @@ import {
 } from 'react-native';
 
 import Ionicons from '@expo/vector-icons/Ionicons';
+import useTheme from '../utils/useTheme';
+import { ThemePalette } from '../constants/theme';
 
 const LINKS = {
   website:
@@ -28,6 +30,8 @@ const LINKS = {
 export default function JoinScreen({
   navigation,
 }: any) {
+  const { colors } = useTheme();
+  const styles = React.useMemo(() => createStyles(colors), [colors]);
   const openLink = async (
     url: string
   ) => {
@@ -127,6 +131,7 @@ export default function JoinScreen({
         </Text>
 
         <LinkButton
+          styles={styles}
           icon="globe-outline"
           label="ALPFA NJIT Website"
           onPress={() =>
@@ -135,6 +140,7 @@ export default function JoinScreen({
         />
 
         <LinkButton
+          styles={styles}
           icon="logo-instagram"
           label="Instagram"
           onPress={() =>
@@ -143,6 +149,7 @@ export default function JoinScreen({
         />
 
         <LinkButton
+          styles={styles}
           icon="logo-linkedin"
           label="LinkedIn"
           onPress={() =>
@@ -158,10 +165,12 @@ function LinkButton({
   icon,
   label,
   onPress,
+  styles,
 }: {
   icon: keyof typeof Ionicons.glyphMap;
   label: string;
   onPress: () => void;
+  styles: ReturnType<typeof createStyles>;
 }) {
   return (
     <TouchableOpacity
@@ -190,10 +199,10 @@ function LinkButton({
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemePalette) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F6F6F8',
+    backgroundColor: colors.background,
   },
 
   content: {
@@ -248,20 +257,20 @@ const styles = StyleSheet.create({
   },
 
   card: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.surface,
     margin: 18,
     padding: 21,
     borderRadius: 20,
   },
 
   cardTitle: {
-    color: '#17182F',
+    color: colors.textPrimary,
     fontSize: 19,
     fontWeight: '900',
   },
 
   cardText: {
-    color: '#777777',
+    color: colors.textSecondary,
     fontSize: 12,
     lineHeight: 19,
     marginTop: 9,
@@ -294,7 +303,7 @@ const styles = StyleSheet.create({
   },
 
   sectionTitle: {
-    color: '#17182F',
+    color: colors.textPrimary,
     fontSize: 19,
     fontWeight: '900',
     marginHorizontal: 18,
@@ -304,7 +313,7 @@ const styles = StyleSheet.create({
 
   linkButton: {
     marginHorizontal: 18,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.surface,
     borderRadius: 15,
     padding: 13,
     marginBottom: 9,
@@ -316,14 +325,14 @@ const styles = StyleSheet.create({
     width: 43,
     height: 43,
     borderRadius: 12,
-    backgroundColor: '#F5F1F2',
+    backgroundColor: colors.iconBgLight,
     alignItems: 'center',
     justifyContent: 'center',
   },
 
   linkLabel: {
     flex: 1,
-    color: '#17182F',
+    color: colors.textPrimary,
     fontSize: 13,
     fontWeight: '800',
     marginLeft: 13,

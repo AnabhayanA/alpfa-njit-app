@@ -1,5 +1,7 @@
 // Calendar utility functions for parsing Google Calendar events
 
+import { Platform } from 'react-native';
+
 export interface CalendarEvent {
   id: string;
   title: string;
@@ -17,6 +19,7 @@ export interface GroupedEvents {
 
 const CALENDAR_ID = 'alpfanjit%40gmail.com';
 const ICAL_URL = `https://calendar.google.com/calendar/ical/${CALENDAR_ID}/public/basic.ics`;
+const CALENDAR_REQUEST_URL = Platform.OS === 'web' ? 'http://localhost:3000/api/calendar' : ICAL_URL;
 
 // Parse iCal format events
 function parseICalData(data: string): CalendarEvent[] {
@@ -193,18 +196,54 @@ export function groupEventsByMonth(events: CalendarEvent[]): GroupedEvents {
 
 // Fetch calendar events
 export async function fetchCalendarEvents(): Promise<CalendarEvent[]> {
-  try {
-    const response = await fetch(ICAL_URL);
-    if (!response.ok) {
-      throw new Error(`Failed to fetch calendar: ${response.status}`);
+  const MAX_RETRIES = 3;
+  const TIMEOUT_MS = 10000;
+
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      console.log(`Fetching Google Calendar (attempt ${attempt}/${MAX_RETRIES})...`);
+
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
+
+      const response = await fetch(CALENDAR_REQUEST_URL, {
+        method: 'GET',
+        headers: {
+          Accept: 'text/calendar,text/plain,*/*',
+        },
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeout);
+
+      if (!response.ok) {
+        throw new Error(`Calendar request failed: ${response.status}`);
+      }
+
+      const text = await response.text();
+
+      if (!text.includes('BEGIN:VCALENDAR')) {
+        throw new Error('Invalid calendar response');
+      }
+
+      const events = parseICalData(text);
+
+      console.log(`Successfully loaded ${events.length} calendar events.`);
+
+      return events;
+    } catch (error) {
+      console.warn(`Calendar fetch attempt ${attempt} failed:`, error);
+
+      if (attempt === MAX_RETRIES) {
+        console.error('All calendar fetch attempts failed.');
+        throw error;
+      }
+
+      // Wait before retrying
+      await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
     }
-
-    const text = await response.text();
-    const events = parseICalData(text);
-
-    return events;
-  } catch (error) {
-    console.error('Error fetching calendar events:', error);
-    throw error;
   }
+
+  throw new Error('Unable to fetch calendar events.');
 }
+

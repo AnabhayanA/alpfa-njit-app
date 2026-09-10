@@ -17,6 +17,8 @@ import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import EventCard from '../components/EventCard';
 import useResponsive from '../utils/responsive';
+import useTheme from '../utils/useTheme';
+import { ThemePalette } from '../constants/theme';
 import {
   fetchCalendarEvents,
   groupEventsByMonth,
@@ -44,6 +46,8 @@ async function openLink(url: string) {
 export default function EventsScreen() {
   const navigation = useNavigation<EventsNavigationProp>();
   const responsive = useResponsive();
+  const { colors } = useTheme();
+  const styles = React.useMemo(() => createStyles(colors), [colors]);
   const [events, setEvents] = useState<GroupedEvents>({});
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -232,8 +236,8 @@ export default function EventsScreen() {
 }
 
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F6F6F8' },
+const createStyles = (colors: ThemePalette) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.background },
   content: { paddingBottom: 35 },
   
   // Header
@@ -282,7 +286,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   sectionTitle: {
-    color: '#17182F',
+    color: colors.textPrimary,
     fontSize: 20,
     fontWeight: '900',
   },
@@ -315,7 +319,7 @@ const styles = StyleSheet.create({
     marginBottom: 14,
     fontSize: 18,
     fontWeight: '900',
-    color: '#0F102E',
+    color: colors.textPrimary,
   },
 
   // Loading/Error/Empty States
@@ -331,19 +335,19 @@ const styles = StyleSheet.create({
     marginTop: 16,
     fontSize: 14,
     fontWeight: '600',
-    color: '#586078',
+    color: colors.textSecondary,
   },
   errorTitle: {
     marginTop: 16,
     fontSize: 18,
     fontWeight: '900',
-    color: '#0F102E',
+    color: colors.textPrimary,
   },
   errorText: {
     marginTop: 8,
     fontSize: 13,
     fontWeight: '500',
-    color: '#586078',
+    color: colors.textSecondary,
     textAlign: 'center',
     lineHeight: 20,
   },
@@ -363,13 +367,13 @@ const styles = StyleSheet.create({
     marginTop: 16,
     fontSize: 18,
     fontWeight: '900',
-    color: '#0F102E',
+    color: colors.textPrimary,
   },
   emptyText: {
     marginTop: 8,
     fontSize: 13,
     fontWeight: '500',
-    color: '#586078',
+    color: colors.textSecondary,
     textAlign: 'center',
   },
 

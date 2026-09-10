@@ -9,11 +9,15 @@ import {
 } from 'react-native';
 
 import Ionicons from '@expo/vector-icons/Ionicons';
+import useTheme from '../utils/useTheme';
+import { ThemePalette } from '../constants/theme';
 
 export default function EventDetailsScreen({
   navigation,
   route,
 }: any) {
+  const { colors } = useTheme();
+  const styles = React.useMemo(() => createStyles(colors), [colors]);
   const event =
     route?.params?.event || {
       title:
@@ -65,18 +69,21 @@ export default function EventDetailsScreen({
 
         <View style={styles.content}>
           <InfoRow
+            styles={styles}
             icon="calendar-outline"
             title="Date"
             value={event.date}
           />
 
           <InfoRow
+            styles={styles}
             icon="time-outline"
             title="Time"
             value={event.time}
           />
 
           <InfoRow
+            styles={styles}
             icon="location-outline"
             title="Location"
             value={event.location}
@@ -101,10 +108,12 @@ function InfoRow({
   icon,
   title,
   value,
+  styles,
 }: {
   icon: keyof typeof Ionicons.glyphMap;
   title: string;
   value: string;
+  styles: ReturnType<typeof createStyles>;
 }) {
   return (
     <View style={styles.infoRow}>
@@ -129,10 +138,10 @@ function InfoRow({
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemePalette) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F6F6F8',
+    backgroundColor: colors.background,
   },
 
   hero: {
@@ -188,7 +197,7 @@ const styles = StyleSheet.create({
   },
 
   infoRow: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.surface,
     borderRadius: 16,
     padding: 14,
     flexDirection: 'row',
@@ -200,41 +209,41 @@ const styles = StyleSheet.create({
     width: 45,
     height: 45,
     borderRadius: 13,
-    backgroundColor: '#F5F1F2',
+    backgroundColor: colors.iconBgLight,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 13,
   },
 
   infoTitle: {
-    color: '#999999',
+    color: colors.textMuted,
     fontSize: 9,
     fontWeight: '800',
     textTransform: 'uppercase',
   },
 
   infoValue: {
-    color: '#17182F',
+    color: colors.textPrimary,
     fontSize: 13,
     fontWeight: '800',
     marginTop: 3,
   },
 
   section: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.surface,
     borderRadius: 18,
     padding: 19,
     marginTop: 12,
   },
 
   sectionTitle: {
-    color: '#17182F',
+    color: colors.textPrimary,
     fontSize: 19,
     fontWeight: '900',
   },
 
   description: {
-    color: '#777777',
+    color: colors.textSecondary,
     fontSize: 12,
     lineHeight: 20,
     marginTop: 9,

@@ -3,6 +3,38 @@
  * Colors, spacing, and design system
  */
 
+// Brand colors stay constant across light/dark mode (navy headers, burgundy accents).
+// These "surface" palettes cover the neutral backgrounds, cards, and text that flip per mode.
+export const lightPalette = {
+  background: '#F6F6F8',
+  backgroundAlt: '#F6F7FB',
+  surface: '#FFFFFF',
+  surfaceAlt: '#F9F9FB',
+  surfaceBorder: 'rgba(15, 16, 46, 0.05)',
+  iconBgLight: '#F5F1F2',
+  textPrimary: '#17182F',
+  textSecondary: '#586178',
+  textMuted: '#697389',
+  divider: 'rgba(15, 16, 46, 0.08)',
+  statusBarStyle: 'dark' as const,
+};
+
+export const darkPalette = {
+  background: '#0B0B16',
+  backgroundAlt: '#0F1022',
+  surface: '#1A1B30',
+  surfaceAlt: '#20213A',
+  surfaceBorder: 'rgba(255, 255, 255, 0.08)',
+  iconBgLight: '#2A2B44',
+  textPrimary: '#F2F2F7',
+  textSecondary: '#ADB1C7',
+  textMuted: '#9498B2',
+  divider: 'rgba(255, 255, 255, 0.08)',
+  statusBarStyle: 'light' as const,
+};
+
+export type ThemePalette = typeof lightPalette;
+
 export const colors = {
   // Brand colors
   navy: '#0F102E',

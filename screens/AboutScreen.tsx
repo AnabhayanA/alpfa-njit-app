@@ -12,6 +12,8 @@ import { useNavigation } from '@react-navigation/native';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import useResponsive from '../utils/responsive';
+import useTheme from '../utils/useTheme';
+import { ThemePalette } from '../constants/theme';
 
 type RootTabParamList = { Home: undefined; Events: undefined; EBoard: undefined; About: undefined };
 type AboutNavigationProp = BottomTabNavigationProp<RootTabParamList, 'About'>;
@@ -41,6 +43,8 @@ async function openLink(url: string) {
 export default function AboutScreen() {
   const navigation = useNavigation<AboutNavigationProp>();
   const responsive = useResponsive();
+  const { colors } = useTheme();
+  const styles = React.useMemo(() => createStyles(colors), [colors]);
   const scrollOffsetY = useRef(0);
   const [lastScrollDir, setLastScrollDir] = useState<'up' | 'down' | null>(null);
 
@@ -87,16 +91,19 @@ export default function AboutScreen() {
 
         <View style={[styles.infoGrid, { marginHorizontal: responsive.horizontalPadding }]}>
           <InfoCard
+            styles={styles}
             title="Our Mission"
             text="Empower students with leadership, networking, and career development opportunities that shape their future."
             icon="flag"
           />
           <InfoCard
+            styles={styles}
             title="Get Involved"
             text="Attend meetings, connect with peers, and discover ways to participate in chapter events and leadership."
             icon="sparkles"
           />
           <InfoCard
+            styles={styles}
             title="Connect With Us"
             text="Follow our social channels and stay in touch through the official website, LinkedIn, and Highlander Hub."
             icon="people"
@@ -106,36 +113,42 @@ export default function AboutScreen() {
         <Text style={[styles.sectionTitle, { marginHorizontal: responsive.horizontalPadding }]}>Connect With Us</Text>
 
         <LinkButton
+          styles={styles}
           icon="logo-instagram"
           title="Instagram"
           subtitle="@alpfa_njit"
           onPress={() => openLink(LINKS.instagram)}
         />
         <LinkButton
+          styles={styles}
           icon="logo-linkedin"
           title="LinkedIn"
           subtitle="ALPFA NJIT"
           onPress={() => openLink(LINKS.linkedin)}
         />
         <LinkButton
+          styles={styles}
           icon="globe-outline"
           title="ALPFA NJIT Website"
           subtitle="nonnair.github.io/alpfa-njit"
           onPress={() => openLink(LINKS.website)}
         />
         <LinkButton
+          styles={styles}
           icon="business-outline"
           title="ALPFA National"
           subtitle="alpfa.org"
           onPress={() => openLink(LINKS.alpfa)}
         />
         <LinkButton
+          styles={styles}
           icon="school-outline"
           title="Highlander Hub"
           subtitle="NJIT ALPFA organization"
           onPress={() => openLink(LINKS.highlander)}
         />
         <LinkButton
+          styles={styles}
           icon="mail-outline"
           title="Email"
           subtitle="alpfanjit@gmail.com"
@@ -155,10 +168,12 @@ function InfoCard({
   title,
   text,
   icon,
+  styles,
 }: {
   title: string;
   text: string;
   icon: keyof typeof Ionicons.glyphMap;
+  styles: ReturnType<typeof createStyles>;
 }) {
   return (
     <View style={styles.infoCard}>
@@ -176,14 +191,16 @@ function LinkButton({
   title,
   subtitle,
   onPress,
+  styles,
 }: {
   icon: keyof typeof Ionicons.glyphMap;
   title: string;
   subtitle: string;
   onPress: () => void;
+  styles: ReturnType<typeof createStyles>;
 }) {
   return (
-    <TouchableOpacity activeOpacity={0.8} onPress={onPress} style={[styles.linkButton, { marginHorizontal: 18 }]}>
+    <TouchableOpacity activeOpacity={0.8} onPress={onPress} style={styles.linkButton}>
       <View style={styles.linkIcon}>
         <Ionicons name={icon} size={22} color="#6E1B2D" />
       </View>
@@ -196,10 +213,10 @@ function LinkButton({
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemePalette) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F6F6F8',
+    backgroundColor: colors.background,
   },
   content: {
     paddingBottom: 40,
@@ -225,22 +242,22 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   card: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.surface,
     marginTop: 18,
     borderWidth: 1,
-    borderColor: 'rgba(15, 16, 46, 0.05)',
+    borderColor: colors.surfaceBorder,
     shadowColor: '#000',
     shadowOpacity: 0.03,
     shadowRadius: 10,
     shadowOffset: { width: 0, height: 3 },
   },
   cardTitle: {
-    color: '#17182F',
+    color: colors.textPrimary,
     fontSize: 19,
     fontWeight: '900',
   },
   body: {
-    color: '#4B5365',
+    color: colors.textSecondary,
     fontSize: 12,
     lineHeight: 19,
     marginTop: 10,
@@ -249,12 +266,12 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   infoCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.surface,
     borderRadius: 22,
     padding: 16,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: 'rgba(15, 16, 46, 0.04)',
+    borderColor: colors.surfaceBorder,
     shadowColor: '#000',
     shadowOpacity: 0.02,
     shadowRadius: 8,
@@ -264,24 +281,24 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 12,
-    backgroundColor: '#F8EAF0',
+    backgroundColor: colors.iconBgLight,
     alignItems: 'center',
     justifyContent: 'center',
   },
   infoTitle: {
-    color: '#17182F',
+    color: colors.textPrimary,
     fontSize: 17,
     fontWeight: '900',
     marginTop: 12,
   },
   infoText: {
-    color: '#53607B',
+    color: colors.textSecondary,
     fontSize: 11,
     lineHeight: 18,
     marginTop: 6,
   },
   sectionTitle: {
-    color: '#17182F',
+    color: colors.textPrimary,
     fontSize: 20,
     fontWeight: '900',
     marginTop: 18,
@@ -289,13 +306,13 @@ const styles = StyleSheet.create({
   linkButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.surface,
     borderRadius: 20,
     paddingHorizontal: 14,
     paddingVertical: 14,
     marginTop: 12,
     borderWidth: 1,
-    borderColor: 'rgba(15, 16, 46, 0.04)',
+    borderColor: colors.surfaceBorder,
     shadowColor: '#000',
     shadowOpacity: 0.02,
     shadowRadius: 8,
@@ -305,7 +322,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 12,
-    backgroundColor: '#F7EBF0',
+    backgroundColor: colors.iconBgLight,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -314,12 +331,12 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
   linkTitle: {
-    color: '#17182F',
+    color: colors.textPrimary,
     fontSize: 15,
     fontWeight: '800',
   },
   linkSubtitle: {
-    color: '#697389',
+    color: colors.textMuted,
     fontSize: 11,
     marginTop: 3,
   },
@@ -328,7 +345,7 @@ const styles = StyleSheet.create({
     marginTop: 22,
   },
   footerText: {
-    color: '#17182F',
+    color: colors.textPrimary,
     fontWeight: '900',
     fontSize: 16,
   },

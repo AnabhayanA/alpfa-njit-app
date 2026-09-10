@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react';
 import {
+  Alert,
   Animated,
   Easing,
   StyleSheet,
@@ -11,6 +12,14 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { CalendarEvent, formatEventTime } from '../utils/calendarUtils';
 import useResponsive from '../utils/responsive';
+import useTheme from '../utils/useTheme';
+import { ThemePalette } from '../constants/theme';
+import {
+  cancelEventReminder,
+  isReminderSet,
+  REMINDER_MINUTES_BEFORE,
+  scheduleEventReminder,
+} from '../utils/eventNotifications';
 
 interface EventCardProps {
   event: CalendarEvent;
@@ -19,11 +28,45 @@ interface EventCardProps {
 
 export default function EventCard({ event, animationDelay }: EventCardProps) {
   const responsive = useResponsive();
+  const { colors } = useTheme();
+  const styles = React.useMemo(() => createStyles(colors), [colors]);
   const [isFlipped, setIsFlipped] = useState(false);
+  const [reminderSet, setReminderSet] = useState(false);
+  const [reminderBusy, setReminderBusy] = useState(false);
   const flipAnimation = useRef(new Animated.Value(0)).current;
   const entranceScale = useRef(new Animated.Value(0.95)).current;
   const entranceOpacity = useRef(new Animated.Value(0)).current;
   const entranceTranslateY = useRef(new Animated.Value(20)).current;
+
+  // Check whether a reminder is already scheduled for this event
+  React.useEffect(() => {
+    isReminderSet(event.id).then(setReminderSet);
+  }, [event.id]);
+
+  const handleToggleReminder = async () => {
+    if (reminderBusy) return;
+    setReminderBusy(true);
+    try {
+      if (reminderSet) {
+        await cancelEventReminder(event.id);
+        setReminderSet(false);
+      } else {
+        const scheduled = await scheduleEventReminder(event);
+        if (scheduled) {
+          setReminderSet(true);
+        } else {
+          Alert.alert(
+            'Unable to Set Reminder',
+            'Enable notifications for this app, or check that the event has not already started.'
+          );
+        }
+      }
+    } catch (error) {
+      console.warn('Unable to toggle event reminder:', error);
+    } finally {
+      setReminderBusy(false);
+    }
+  };
 
   // Entrance animation on mount
   React.useEffect(() => {
@@ -261,6 +304,25 @@ export default function EventCard({ event, animationDelay }: EventCardProps) {
 
             {/* Bottom section */}
             <View style={styles.backBottom}>
+              <TouchableOpacity
+                style={[styles.reminderButton, reminderSet && styles.reminderButtonActive]}
+                onPress={handleToggleReminder}
+                disabled={reminderBusy}
+              >
+                <Ionicons
+                  name={reminderSet ? 'notifications' : 'notifications-outline'}
+                  size={14}
+                  color={reminderSet ? '#0F102E' : '#F2D7DF'}
+                />
+                <Text
+                  style={[
+                    styles.reminderButtonText,
+                    reminderSet && styles.reminderButtonTextActive,
+                  ]}
+                >
+                  {reminderSet ? 'Reminder Set' : `Notify Me`}
+                </Text>
+              </TouchableOpacity>
               {event.url && (
                 <TouchableOpacity
                   style={styles.linkButton}
@@ -278,7 +340,7 @@ export default function EventCard({ event, animationDelay }: EventCardProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemePalette) => StyleSheet.create({
   cardContainer: {
     marginBottom: 20,
   },
@@ -300,7 +362,7 @@ const styles = StyleSheet.create({
 
   // FRONT CARD STYLES
   cardFront: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: 'rgba(110, 27, 45, 0.08)',
   },
@@ -320,13 +382,13 @@ const styles = StyleSheet.create({
   dayOfWeek: {
     fontSize: 12,
     fontWeight: '900',
-    color: '#0F102E',
+    color: colors.textPrimary,
     letterSpacing: 1,
   },
   dateNum: {
     fontSize: 32,
     fontWeight: '900',
-    color: '#0F102E',
+    color: colors.textPrimary,
     marginTop: 2,
   },
   month: {
@@ -338,7 +400,7 @@ const styles = StyleSheet.create({
   eventTitle: {
     fontSize: 18,
     fontWeight: '900',
-    color: '#0F102E',
+    color: colors.textPrimary,
     lineHeight: 24,
     marginBottom: 8,
   },
@@ -411,6 +473,29 @@ const styles = StyleSheet.create({
   },
   backBottom: {
     gap: 8,
+  },
+  reminderButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(242,215,223,0.4)',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 12,
+  },
+  reminderButtonActive: {
+    backgroundColor: '#F2D7DF',
+    borderColor: '#F2D7DF',
+  },
+  reminderButtonText: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#F2D7DF',
+  },
+  reminderButtonTextActive: {
+    color: '#0F102E',
   },
   linkButton: {
     backgroundColor: '#6E1B2D',
