@@ -7,7 +7,7 @@ import useResponsive from '../utils/responsive';
 import useTheme from '../utils/useTheme';
 import { ThemePalette } from '../constants/theme';
 
-type RootTabParamList = { Home: undefined; Events: undefined; EBoard: undefined; About: undefined };
+type RootTabParamList = { Home: undefined; Events: undefined; Capture: undefined; EBoard: undefined; About: undefined };
 type HomeNavigationProp = BottomTabNavigationProp<RootTabParamList, 'Home'>;
 
 const LINKS = {
@@ -67,6 +67,7 @@ export default function HomeScreen() {
 
   const goToEvents = () => navigation.navigate('Events');
   const goToEBoard = () => navigation.navigate('EBoard');
+  const goToCapture = () => navigation.navigate('Capture');
 
   return (
     <View style={styles.container}>
@@ -105,6 +106,7 @@ export default function HomeScreen() {
             <ActionCard styles={styles} icon="briefcase" title="Opportunities" subtitle="Grow your career" type="navy" onPress={() => openLink(LINKS.website)} />
             <ActionCard styles={styles} icon="people" title="E-Board" subtitle="Meet our leaders" type="light" onPress={goToEBoard} />
             <ActionCard styles={styles} icon="person-add" title="Join ALPFA" subtitle="Become a member" type="light" onPress={() => openLink(LINKS.highlander)} />
+            <ActionCard styles={styles} icon="camera" title="Share a Photo" subtitle="Add to our Drive" type="light" onPress={goToCapture} />
           </View>
         </View>
 

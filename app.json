@@ -32,6 +32,12 @@
         {
           "color": "#6E1B2D"
         }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow ALPFA NJIT to access your camera to share photos to the chapter's Google Drive."
+        }
       ]
     ]
   }

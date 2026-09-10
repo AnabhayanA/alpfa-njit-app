@@ -8,6 +8,7 @@ import useResponsive from '../utils/responsive';
 const TAB_ICONS: Record<string, keyof typeof Ionicons.glyphMap> = {
   Home: 'home',
   Events: 'calendar',
+  Capture: 'camera',
   EBoard: 'people',
   About: 'information-circle',
 };
@@ -15,6 +16,7 @@ const TAB_ICONS: Record<string, keyof typeof Ionicons.glyphMap> = {
 const TAB_LABELS: Record<string, string> = {
   Home: 'Home',
   Events: 'Events',
+  Capture: 'Capture',
   EBoard: 'E-Board',
   About: 'About',
 };

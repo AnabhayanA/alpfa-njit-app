@@ -25,22 +25,30 @@ import HomeScreen from './screens/HomeScreen';
 import EventsScreen from './screens/EventsScreen';
 import EBoardScreen from './screens/EBoardScreen';
 import AboutScreen from './screens/AboutScreen';
+import CaptureScreen from './screens/CaptureScreen';
 import useTheme from './utils/useTheme';
 
 const Tab = createBottomTabNavigator();
 
+function Tabs() {
+  return (
+    <Tab.Navigator
+      screenOptions={{ headerShown: false }}
+      tabBar={(props) => <BottomNav {...props} />}
+    >
+      <Tab.Screen name="Home" component={HomeScreen} />
+      <Tab.Screen name="Events" component={EventsScreen} />
+      <Tab.Screen name="Capture" component={CaptureScreen} />
+      <Tab.Screen name="EBoard" component={EBoardScreen} />
+      <Tab.Screen name="About" component={AboutScreen} />
+    </Tab.Navigator>
+  );
+}
+
 function MainApp() {
   return (
     <NavigationContainer>
-      <Tab.Navigator
-        screenOptions={{ headerShown: false }}
-        tabBar={(props) => <BottomNav {...props} />}
-      >
-        <Tab.Screen name="Home" component={HomeScreen} />
-        <Tab.Screen name="Events" component={EventsScreen} />
-        <Tab.Screen name="EBoard" component={EBoardScreen} />
-        <Tab.Screen name="About" component={AboutScreen} />
-      </Tab.Navigator>
+      <Tabs />
     </NavigationContainer>
   );
 }
