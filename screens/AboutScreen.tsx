@@ -155,6 +155,16 @@ export default function AboutScreen() {
           onPress={() => openLink(LINKS.email)}
         />
 
+        <View style={[styles.card, { marginHorizontal: responsive.horizontalPadding, padding: responsive.isSmallPhone ? 18 : 22, borderRadius: responsive.isSmallPhone ? 18 : 24, marginTop: responsive.responsiveSpacing.xl }]}>
+          <Text style={[styles.cardTitle, { fontSize: responsive.isSmallPhone ? 17 : 19 }]}>Privacy</Text>
+          <Text style={[styles.body, { fontSize: responsive.isSmallPhone ? 11 : 12 }]}>
+            This app doesn't require an account or collect personal information. Event reminders and a
+            cached copy of the events list are stored only on your device. Photos you choose to share
+            through the Capture tab are sent directly to ALPFA NJIT's Google Drive and aren't used for
+            anything else. Notification permission is only used for the reminders you turn on.
+          </Text>
+        </View>
+
         <View style={styles.footer}>
           <Text style={styles.footerText}>ALPFA NJIT</Text>
           <Text style={styles.footerSubtext}>© 2026 ALPFA NJIT</Text>

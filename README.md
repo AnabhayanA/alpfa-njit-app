@@ -97,7 +97,11 @@ Colors live in `constants/theme.ts` as `lightPalette` and `darkPalette`. Brand c
 
 ## Photo Capture → Google Drive
 
-Members can capture a photo in-app (Home → "Share a Photo") and send it to a Google Drive folder connected to the ALPFA email. The app never holds Google credentials directly — it POSTs the photo to a small backend in `server/`, which uploads it to Drive using a service account. See `server/README.md` for full setup and deployment steps, then update `constants/config.ts` with your deployed backend URL.
+Members can capture a photo in-app (Home → "Share a Photo") and send it to a Google Drive folder connected to the ALPFA email. The app never holds Google credentials directly — it POSTs the photo to a small backend in `server/`, which uploads it to Drive using a service account. See `server/README.md` for full setup, deployment, and security hardening details (rate limiting, content-type verification, API key), then update `constants/config.ts` with your deployed backend URL.
+
+## Privacy
+
+The app is intentionally low-data: there's no account/login, no analytics or trackers, and no personal information is collected. `@react-native-async-storage/async-storage` is used only to store, on-device, which events a user has set reminders for and a cached copy of the last successful calendar fetch (so the Events screen isn't blank offline) — both stay on the device and are never sent anywhere. Notification permission is only used to deliver the reminders a user explicitly opts into. Photos sent from the Capture tab go straight to ALPFA NJIT's Drive and aren't used for anything else. The upload backend's request logs may include the client's IP address (standard for any web server/host), but the app itself doesn't collect or transmit device/analytics data.
 
 ## Content Source
 

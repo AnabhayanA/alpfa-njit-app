@@ -21,6 +21,7 @@ import useTheme from '../utils/useTheme';
 import { ThemePalette } from '../constants/theme';
 import {
   fetchCalendarEvents,
+  getCachedEvents,
   groupEventsByMonth,
   getMonthDisplayName,
   CalendarEvent,
@@ -43,6 +44,14 @@ async function openLink(url: string) {
   }
 }
 
+function formatLastUpdated(date: Date): string {
+  const isToday = date.toDateString() === new Date().toDateString();
+  const time = date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: 'America/New_York' });
+  if (isToday) return `Today at ${time}`;
+  const day = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'America/New_York' });
+  return `${day} at ${time}`;
+}
+
 export default function EventsScreen() {
   const navigation = useNavigation<EventsNavigationProp>();
   const responsive = useResponsive();
@@ -52,6 +61,8 @@ export default function EventsScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [isStale, setIsStale] = useState(false);
   const headerOpacity = useRef(new Animated.Value(0)).current;
   const headerSlideY = useRef(new Animated.Value(-20)).current;
   const scrollOffsetY = useRef(0);
@@ -79,15 +90,29 @@ export default function EventsScreen() {
   }, []);
 
   const loadEvents = async () => {
+    setLoading(true);
+    setError(null);
+
+    // Show cached events immediately so the screen is never blank while we fetch.
+    const cached = await getCachedEvents().catch(() => null);
+    if (cached && cached.events.length > 0) {
+      setEvents(groupEventsByMonth(cached.events));
+      setLastUpdated(cached.savedAt);
+      setIsStale(true);
+    }
+
     try {
-      setLoading(true);
-      setError(null);
       const calendarEvents = await fetchCalendarEvents();
       const grouped = groupEventsByMonth(calendarEvents);
       setEvents(grouped);
+      setLastUpdated(new Date());
+      setIsStale(false);
     } catch (err) {
       console.error('Error loading events:', err);
-      setError('Unable to load events. Please check your connection.');
+      // Only surface a hard error if we have nothing at all to show.
+      if (!cached || cached.events.length === 0) {
+        setError('Unable to load events. Please check your connection.');
+      }
     } finally {
       setLoading(false);
     }
@@ -99,10 +124,17 @@ export default function EventsScreen() {
       const calendarEvents = await fetchCalendarEvents();
       const grouped = groupEventsByMonth(calendarEvents);
       setEvents(grouped);
+      setLastUpdated(new Date());
+      setIsStale(false);
       setError(null);
     } catch (err) {
       console.error('Error refreshing events:', err);
-      setError('Unable to refresh events. Please try again.');
+      // Keep whatever is already on screen; only show a hard error if there's nothing to show.
+      if (Object.keys(events).length === 0) {
+        setError('Unable to load events. Please check your connection.');
+      } else {
+        setIsStale(true);
+      }
     } finally {
       setRefreshing(false);
     }
@@ -189,6 +221,20 @@ export default function EventsScreen() {
                 <Text style={styles.liveText}>LIVE</Text>
               </View>
             </View>
+
+            {isStale && (
+              <View style={styles.staleBanner}>
+                <Ionicons name="cloud-offline-outline" size={16} color="#6E1B2D" />
+                <Text style={styles.staleText}>
+                  Showing your last updated events.{'\n'}
+                  {lastUpdated ? `Last updated: ${formatLastUpdated(lastUpdated)}` : ''}
+                </Text>
+                <TouchableOpacity onPress={loadEvents} style={styles.staleRefreshButton}>
+                  <Ionicons name="refresh" size={14} color="#6E1B2D" />
+                  <Text style={styles.staleRefreshText}>Refresh</Text>
+                </TouchableOpacity>
+              </View>
+            )}
 
             {monthKeys.map((monthKey, monthIndex) => (
               <View key={monthKey}>
@@ -290,6 +336,21 @@ const createStyles = (colors: ThemePalette) => StyleSheet.create({
     fontSize: 20,
     fontWeight: '900',
   },
+  staleBanner: {
+    marginHorizontal: 18,
+    marginBottom: 16,
+    backgroundColor: colors.surfaceAlt,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: colors.surfaceBorder,
+    padding: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  staleText: { flex: 1, color: colors.textSecondary, fontSize: 11, lineHeight: 16 },
+  staleRefreshButton: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 4 },
+  staleRefreshText: { color: '#6E1B2D', fontSize: 11, fontWeight: '800' },
   liveBadge: {
     flexDirection: 'row',
     alignItems: 'center',

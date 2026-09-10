@@ -33,7 +33,7 @@ export const darkPalette = {
   statusBarStyle: 'light' as const,
 };
 
-export type ThemePalette = typeof lightPalette;
+export type ThemePalette = Omit<typeof lightPalette, 'statusBarStyle'> & { statusBarStyle: 'light' | 'dark' };
 
 export const colors = {
   // Brand colors

@@ -47,9 +47,12 @@ Edit `.env`:
   `base64 -i key.json | tr -d '\n'` if your host's env var UI doesn't like
   raw JSON/newlines).
 - `UPLOAD_API_KEY` — make up a random string (e.g. from
-  `openssl rand -hex 24`). This is a simple shared secret so random people
-  who find your backend URL can't spam your Drive; it's not meant to be
-  bulletproof since it does ship inside the app.
+  `openssl rand -hex 24`). **Required before any public/production
+  deployment** — without it, the /upload endpoint is open to anyone who
+  finds the URL. It's not bulletproof since it ships inside the app bundle,
+  but combined with rate limiting it stops casual abuse.
+- `ALLOWED_ORIGINS` — leave blank unless you ship a web build; see the
+  Security section below.
 
 Run it locally to test:
 
@@ -93,3 +96,35 @@ export const PHOTO_UPLOAD_ENDPOINT = 'https://alpfa-photo-upload.onrender.com/up
 If you set `UPLOAD_API_KEY`, also add it to `utils/driveUpload.ts`'s fetch
 headers (`'x-api-key': '<the same value>'`) — ask if you'd like this wired up
 via an Expo public env variable instead of hardcoding it.
+
+## Security
+
+This endpoint is publicly reachable, so it's built with a few layers of
+defense instead of relying on any single one:
+
+- **`UPLOAD_API_KEY`** — a shared secret required in the `x-api-key` header.
+  Set this before shipping publicly (see step 3).
+- **Rate limiting** — each IP is capped at 20 upload attempts per 15 minutes
+  (`express-rate-limit`), regardless of whether the API key is valid, so a
+  leaked key or brute-force attempt can't spam the Drive folder or run up
+  Google API usage.
+- **Real content-type checking** — the client-supplied MIME type is checked
+  first, then the actual file bytes are sniffed with `file-type` after
+  upload and rejected if they don't match an allowed image format. This
+  stops someone from renaming an arbitrary file to `photo.jpg` and uploading
+  it as if it were an image.
+- **Size/count limits** — 15 MB max, one file per request (`multer`).
+- **`helmet`** — sets standard security response headers.
+- **CORS allowlist** — only relevant if/when this app ships a web build;
+  set `ALLOWED_ORIGINS` to that origin. Native apps aren't affected by CORS.
+- **No secrets in the client** — Google credentials only ever live in this
+  server's environment variables, never in the Expo app bundle.
+- **No stack traces returned** — errors are logged server-side and only a
+  generic message is sent to the client.
+
+Things intentionally left out for now (revisit before a wider public launch):
+- No per-user accounts/authentication — anyone with the app + API key can
+  upload. Fine for a chapter-only tool; would need real auth for anything
+  more sensitive.
+- No virus/malware scanning of uploaded images.
+- No admin/audit log of who uploaded what.
