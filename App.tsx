@@ -105,24 +105,23 @@ export default function App() {
               />
               <Text style={styles.chapter}>ALPFA NJIT</Text>
               <Text style={styles.tagline}>Building Leaders. Creating Opportunities.</Text>
-            </Animated.View>
-
-            <View style={styles.bottom}>
-              <View style={styles.loadingBar}>
-                <Animated.View
-                  style={[
-                    styles.loadingProgress,
-                    {
-                      width: loadingWidth.interpolate({
-                        inputRange: [0, 1],
-                        outputRange: ['0%', '100%'],
-                      }),
-                    },
-                  ]}
-                />
+              <View style={styles.loadingGroup}>
+                <View style={styles.loadingBar}>
+                  <Animated.View
+                    style={[
+                      styles.loadingProgress,
+                      {
+                        width: loadingWidth.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: ['0%', '100%'],
+                        }),
+                      },
+                    ]}
+                  />
+                </View>
+                <Text style={styles.loadingText}>Loading...</Text>
               </View>
-              <Text style={styles.loadingText}>Loading...</Text>
-            </View>
+            </Animated.View>
           </Animated.View>
         ) : (
           <View style={[styles.mainApp, { backgroundColor: colors.background }]}>
@@ -158,7 +157,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  brandContainer: { alignItems: 'center' },
+  brandContainer: { alignItems: 'center', justifyContent: 'center', paddingHorizontal: 28 },
   splashLogo: {
     width: 132,
     height: 132,
@@ -174,7 +173,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
     textAlign: 'center',
   },
-  bottom: { position: 'absolute', bottom: 55, width: '100%', alignItems: 'center' },
+  loadingGroup: { alignItems: 'center', marginTop: 34 },
   loadingBar: {
     width: 130,
     height: 4,
