@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { ActivityIndicator, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { CameraView, useCameraPermissions } from 'expo-camera';
+import { CameraType, CameraView, useCameraPermissions } from 'expo-camera';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -16,6 +16,7 @@ export default function CaptureScreen() {
   const cameraRef = useRef<CameraView>(null);
   const [permission, requestPermission] = useCameraPermissions();
   const [cameraReady, setCameraReady] = useState(false);
+  const [facing, setFacing] = useState<CameraType>('back');
   const [photoUri, setPhotoUri] = useState<string | null>(null);
   const [status, setStatus] = useState<'idle' | 'uploading' | 'done' | 'error'>('idle');
   const [statusMessage, setStatusMessage] = useState('');
@@ -36,6 +37,11 @@ export default function CaptureScreen() {
     if (!cameraRef.current || !cameraReady) return;
     const photo = await cameraRef.current.takePictureAsync({ quality: 0.85 });
     if (photo?.uri) setPhotoUri(photo.uri);
+  };
+
+  const toggleFacing = () => {
+    setCameraReady(false);
+    setFacing((current) => current === 'back' ? 'front' : 'back');
   };
 
   const retake = () => {
@@ -131,11 +137,20 @@ export default function CaptureScreen() {
       <CameraView
         ref={cameraRef}
         style={StyleSheet.absoluteFill}
-        facing="back"
+        facing={facing}
+        mirror={facing === 'front'}
         onCameraReady={() => setCameraReady(true)}
       />
       <TouchableOpacity style={[styles.closeButton, { top: insets.top + 12 }]} onPress={close}>
         <Ionicons name="close" size={22} color="#FFFFFF" />
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={[styles.flipCameraButton, { top: insets.top + 12 }]}
+        onPress={toggleFacing}
+        accessibilityRole="button"
+        accessibilityLabel={`Switch to ${facing === 'back' ? 'front' : 'back'} camera`}
+      >
+        <Ionicons name="camera-reverse-outline" size={23} color="#FFFFFF" />
       </TouchableOpacity>
 
       <View style={[styles.captureBar, { paddingBottom: insets.bottom + 24 }]}>
@@ -160,6 +175,17 @@ const createStyles = (colors: ReturnType<typeof useTheme>['colors']) =>
       width: 38,
       height: 38,
       borderRadius: 19,
+      backgroundColor: 'rgba(0,0,0,0.45)',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 10,
+    },
+    flipCameraButton: {
+      position: 'absolute',
+      left: 16,
+      width: 42,
+      height: 42,
+      borderRadius: 21,
       backgroundColor: 'rgba(0,0,0,0.45)',
       alignItems: 'center',
       justifyContent: 'center',
