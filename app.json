@@ -6,12 +6,6 @@
     "orientation": "portrait",
     "icon": "./assets/images/ALPFANJITLOGO.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
-    "splash": {
-      "image": "./assets/images/ALPFANJITLOGO.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
     "ios": {
       "supportsTablet": true
     },
@@ -20,7 +14,6 @@
         "foregroundImage": "./assets/images/ALPFANJITLOGO.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false
     },
     "web": {
@@ -38,7 +31,8 @@
         {
           "cameraPermission": "Allow ALPFA NJIT to access your camera to share photos to the chapter's Google Drive."
         }
-      ]
+      ],
+      "expo-font"
     ]
   }
 }
