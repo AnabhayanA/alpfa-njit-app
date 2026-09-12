@@ -6,14 +6,14 @@
 // Brand colors stay constant across light/dark mode (navy headers, burgundy accents).
 // These "surface" palettes cover the neutral backgrounds, cards, and text that flip per mode.
 export const lightPalette = {
-  background: '#F6F6F8',
-  backgroundAlt: '#F6F7FB',
-  surface: '#FFFFFF',
-  surfaceAlt: '#F9F9FB',
+  background: '#F7F3EA',
+  backgroundAlt: '#FBF8F1',
+  surface: '#FFFEFC',
+  surfaceAlt: '#FBF8F1',
   surfaceBorder: 'rgba(15, 16, 46, 0.05)',
   iconBgLight: '#F5F1F2',
-  textPrimary: '#17182F',
-  textSecondary: '#586178',
+  textPrimary: '#09234E',
+  textSecondary: '#5F625F',
   textMuted: '#697389',
   divider: 'rgba(15, 16, 46, 0.08)',
   statusBarStyle: 'dark' as const,
