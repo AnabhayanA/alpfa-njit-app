@@ -1,11 +1,16 @@
-import React, { useRef, useState } from 'react';
-import { ActivityIndicator, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, Image, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { CameraType, CameraView, useCameraPermissions } from 'expo-camera';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import useTheme from '../utils/useTheme';
 import { uploadPhotoToDrive } from '../utils/driveUpload';
+import {
+  AlpfaDualCameraModule,
+  AlpfaDualCameraView,
+  type AlpfaDualCameraViewRef,
+} from '../modules/alpfa-dual-camera';
 
 export default function CaptureScreen() {
   const navigation = useNavigation();
@@ -14,12 +19,22 @@ export default function CaptureScreen() {
   const styles = React.useMemo(() => createStyles(colors), [colors]);
 
   const cameraRef = useRef<CameraView>(null);
+  const dualCameraRef = useRef<AlpfaDualCameraViewRef>(null);
   const [permission, requestPermission] = useCameraPermissions();
   const [cameraReady, setCameraReady] = useState(false);
   const [facing, setFacing] = useState<CameraType>('back');
+  const [dualSupported, setDualSupported] = useState(false);
+  const [dualMode, setDualMode] = useState(false);
+  const [cameraMessage, setCameraMessage] = useState('');
   const [photoUri, setPhotoUri] = useState<string | null>(null);
   const [status, setStatus] = useState<'idle' | 'uploading' | 'done' | 'error'>('idle');
   const [statusMessage, setStatusMessage] = useState('');
+
+  useEffect(() => {
+    const supported = Platform.OS === 'ios' && Boolean(AlpfaDualCameraModule?.isSupported());
+    setDualSupported(supported);
+    setDualMode(supported);
+  }, []);
 
   const close = () => navigation.navigate('Home' as never);
 
@@ -34,14 +49,26 @@ export default function CaptureScreen() {
   );
 
   const takePhoto = async () => {
-    if (!cameraRef.current || !cameraReady) return;
-    const photo = await cameraRef.current.takePictureAsync({ quality: 0.85 });
-    if (photo?.uri) setPhotoUri(photo.uri);
+    if (!cameraReady) return;
+    try {
+      const photo = dualMode
+        ? await dualCameraRef.current?.capture()
+        : await cameraRef.current?.takePictureAsync({ quality: 0.85 });
+      if (photo?.uri) setPhotoUri(photo.uri);
+    } catch {
+      setCameraMessage('The photo could not be captured. Please try again.');
+    }
   };
 
   const toggleFacing = () => {
     setCameraReady(false);
     setFacing((current) => current === 'back' ? 'front' : 'back');
+  };
+
+  const toggleCameraMode = () => {
+    setCameraReady(false);
+    setCameraMessage('');
+    setDualMode((current) => !current);
   };
 
   const retake = () => {
@@ -134,27 +161,56 @@ export default function CaptureScreen() {
 
   return (
     <View style={styles.container}>
-      <CameraView
-        ref={cameraRef}
-        style={StyleSheet.absoluteFill}
-        facing={facing}
-        mirror={facing === 'front'}
-        onCameraReady={() => setCameraReady(true)}
-      />
+      {dualMode ? (
+        <AlpfaDualCameraView
+          ref={dualCameraRef}
+          style={StyleSheet.absoluteFill}
+          onReady={() => setCameraReady(true)}
+          onError={(event) => {
+            setCameraMessage(event.nativeEvent.message);
+            setDualMode(false);
+            setCameraReady(false);
+          }}
+        />
+      ) : (
+        <CameraView
+          ref={cameraRef}
+          style={StyleSheet.absoluteFill}
+          facing={facing}
+          mirror={facing === 'front'}
+          onCameraReady={() => setCameraReady(true)}
+        />
+      )}
       <TouchableOpacity style={[styles.closeButton, { top: insets.top + 12 }]} onPress={close}>
         <Ionicons name="close" size={22} color="#FFFFFF" />
       </TouchableOpacity>
-      <TouchableOpacity
-        style={[styles.flipCameraButton, { top: insets.top + 12 }]}
-        onPress={toggleFacing}
-        accessibilityRole="button"
-        accessibilityLabel={`Switch to ${facing === 'back' ? 'front' : 'back'} camera`}
-      >
-        <Ionicons name="camera-reverse-outline" size={23} color="#FFFFFF" />
-      </TouchableOpacity>
+      {!dualMode && (
+        <TouchableOpacity
+          style={[styles.flipCameraButton, { top: insets.top + 12 }]}
+          onPress={toggleFacing}
+          accessibilityRole="button"
+          accessibilityLabel={`Switch to ${facing === 'back' ? 'front' : 'back'} camera`}
+        >
+          <Ionicons name="camera-reverse-outline" size={23} color="#FFFFFF" />
+        </TouchableOpacity>
+      )}
+
+      {dualSupported && (
+        <TouchableOpacity
+          style={[styles.modeButton, { top: insets.top + 64 }]}
+          onPress={toggleCameraMode}
+          accessibilityRole="button"
+          accessibilityLabel={dualMode ? 'Use one camera' : 'Use front and rear cameras'}
+        >
+          <Ionicons name={dualMode ? 'copy' : 'copy-outline'} size={16} color="#FFFFFF" />
+          <Text style={styles.modeButtonText}>{dualMode ? 'DUAL' : 'SINGLE'}</Text>
+        </TouchableOpacity>
+      )}
 
       <View style={[styles.captureBar, { paddingBottom: insets.bottom + 24 }]}>
-        <Text style={styles.hintText}>Photos are shared to the ALPFA NJIT Google Drive</Text>
+        <Text style={styles.hintText}>
+          {cameraMessage || (dualMode ? 'Front + rear photo · shared to the ALPFA NJIT Drive' : 'Photos are shared to the ALPFA NJIT Google Drive')}
+        </Text>
         <TouchableOpacity style={styles.shutter} onPress={takePhoto} disabled={!cameraReady}>
           <View style={styles.shutterInner} />
         </TouchableOpacity>
@@ -191,6 +247,19 @@ const createStyles = (colors: ReturnType<typeof useTheme>['colors']) =>
       justifyContent: 'center',
       zIndex: 10,
     },
+    modeButton: {
+      position: 'absolute',
+      left: 16,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      paddingHorizontal: 12,
+      height: 34,
+      borderRadius: 17,
+      backgroundColor: 'rgba(110,27,45,0.88)',
+      zIndex: 10,
+    },
+    modeButtonText: { color: '#FFFFFF', fontSize: 10, fontWeight: '900', letterSpacing: 0.8 },
     captureBar: {
       position: 'absolute',
       bottom: 0,
