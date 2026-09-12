@@ -288,7 +288,7 @@ const createStyles = (colors: ThemePalette) => StyleSheet.create({
   
   // Header
   header: {
-    backgroundColor: '#0F102E',
+    backgroundColor: colors.background,
     paddingHorizontal: 21,
     paddingTop: 28,
     paddingBottom: 27,
@@ -297,19 +297,19 @@ const createStyles = (colors: ThemePalette) => StyleSheet.create({
     justifyContent: 'space-between',
   },
   eyebrow: {
-    color: 'rgba(255,255,255,0.5)',
+    color: '#8D102B',
     fontSize: 10,
     fontWeight: '900',
     letterSpacing: 2,
   },
   title: {
-    color: '#FFFFFF',
-    fontSize: 34,
+    color: colors.textPrimary,
+    fontSize: 28,
     fontWeight: '900',
     marginTop: 3,
   },
   subtitle: {
-    color: 'rgba(255,255,255,0.62)',
+    color: colors.textSecondary,
     fontSize: 11,
     marginTop: 5,
   },
@@ -317,7 +317,7 @@ const createStyles = (colors: ThemePalette) => StyleSheet.create({
     width: 55,
     height: 55,
     borderRadius: 18,
-    backgroundColor: '#6E1B2D',
+    backgroundColor: '#8D102B',
     alignItems: 'center',
     justifyContent: 'center',
   },
