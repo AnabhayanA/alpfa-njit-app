@@ -11,6 +11,8 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { StatusBar } from 'expo-status-bar';
 import useResponsive from '../utils/responsive';
 import useTheme from '../utils/useTheme';
 import { ThemePalette } from '../constants/theme';
@@ -42,6 +44,7 @@ async function openLink(url: string) {
 
 export default function AboutScreen() {
   const navigation = useNavigation<AboutNavigationProp>();
+  const insets = useSafeAreaInsets();
   const responsive = useResponsive();
   const { colors } = useTheme();
   const styles = React.useMemo(() => createStyles(colors), [colors]);
@@ -65,18 +68,21 @@ export default function AboutScreen() {
 
   return (
     <View style={styles.container}>
+      <StatusBar style="light" />
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={[styles.content, { paddingHorizontal: responsive.horizontalPadding, paddingBottom: responsive.responsiveSpacing.xxl + 40, maxWidth: responsive.contentMaxWidth || undefined, alignSelf: 'center', width: '100%' }]}
         onScroll={handleScroll}
         scrollEventThrottle={16}
       >
-        <View style={[styles.hero, { paddingTop: responsive.isSmallPhone ? 34 : 52, paddingBottom: responsive.isSmallPhone ? 22 : 28, marginHorizontal: -responsive.horizontalPadding, paddingHorizontal: responsive.horizontalPadding + 20 }]}>
-          <Image
-            source={require('../assets/images/ALPFANJITLOGO.png')}
-            style={[styles.logo, { width: responsive.isSmallPhone ? 88 : 110, height: responsive.isSmallPhone ? 88 : 110, borderRadius: responsive.isSmallPhone ? 20 : 26 }]}
-            resizeMode="contain"
-          />
+        <View style={[styles.hero, { paddingTop: insets.top + (responsive.isSmallPhone ? 20 : 24), paddingBottom: responsive.isSmallPhone ? 22 : 28, marginHorizontal: -responsive.horizontalPadding, paddingHorizontal: responsive.horizontalPadding + 20 }]}>
+          <View style={[styles.logoFrame, { width: responsive.isSmallPhone ? 96 : 116, height: responsive.isSmallPhone ? 96 : 116, borderRadius: responsive.isSmallPhone ? 22 : 28 }]}>
+            <Image
+              source={require('../assets/images/ALPFANJITLOGO.png')}
+              style={styles.logo}
+              resizeMode="contain"
+            />
+          </View>
           <Text style={[styles.title, { fontSize: responsive.isSmallPhone ? 24 : 28 }]}>ALPFA NJIT</Text>
           <Text style={[styles.subtitle, { fontSize: responsive.isSmallPhone ? 10 : 11 }]}>Building Leaders. Creating Opportunities.</Text>
         </View>
@@ -237,8 +243,10 @@ const createStyles = (colors: ThemePalette) => StyleSheet.create({
     paddingHorizontal: 20,
   },
   logo: {
-    backgroundColor: '#FFFFFF',
+    width: '100%',
+    height: '100%',
   },
+  logoFrame: { backgroundColor: '#FFFFFF', padding: 7, alignItems: 'center', justifyContent: 'center' },
   title: {
     color: '#FFFFFF',
     fontSize: 28,
