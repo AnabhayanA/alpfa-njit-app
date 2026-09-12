@@ -98,30 +98,32 @@ export default function App() {
         {loading ? (
           <Animated.View style={[styles.splash, { opacity: splashOpacity }]}>
             <Animated.View style={[styles.brandContainer, { opacity: textOpacity }]}>
-              <Image
-                source={require('./assets/images/ALPFANJITLOGO.png')}
-                style={styles.splashLogo}
-                resizeMode="contain"
-              />
+              <View style={styles.splashLogoFrame}>
+                <Image
+                  source={require('./assets/images/ALPFANJITLOGO.png')}
+                  style={styles.splashLogo}
+                  resizeMode="contain"
+                />
+              </View>
               <Text style={styles.chapter}>ALPFA NJIT</Text>
               <Text style={styles.tagline}>Building Leaders. Creating Opportunities.</Text>
-              <View style={styles.loadingGroup}>
-                <View style={styles.loadingBar}>
-                  <Animated.View
-                    style={[
-                      styles.loadingProgress,
-                      {
-                        width: loadingWidth.interpolate({
-                          inputRange: [0, 1],
-                          outputRange: ['0%', '100%'],
-                        }),
-                      },
-                    ]}
-                  />
-                </View>
-                <Text style={styles.loadingText}>Loading...</Text>
-              </View>
             </Animated.View>
+            <View style={styles.loadingGroup}>
+              <View style={styles.loadingBar}>
+                <Animated.View
+                  style={[
+                    styles.loadingProgress,
+                    {
+                      width: loadingWidth.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: ['0%', '100%'],
+                      }),
+                    },
+                  ]}
+                />
+              </View>
+              <Text style={styles.loadingText}>Loading...</Text>
+            </View>
           </Animated.View>
         ) : (
           <View style={[styles.mainApp, { backgroundColor: colors.background }]}>
@@ -152,18 +154,39 @@ const styles = StyleSheet.create({
   },
   mainApp: { flex: 1, backgroundColor: '#F7F7F9' },
   splash: {
-    ...StyleSheet.absoluteFillObject,
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
     backgroundColor: '#0F102E',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  brandContainer: { alignItems: 'center', justifyContent: 'center', paddingHorizontal: 28 },
-  splashLogo: {
+  brandContainer: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 28,
+  },
+  splashLogoFrame: {
     width: 132,
     height: 132,
     borderRadius: 30,
     backgroundColor: '#FFFFFF',
+    padding: 8,
     marginBottom: 22,
+    overflow: 'hidden',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  splashLogo: {
+    width: '100%',
+    height: '100%',
   },
   chapter: { color: '#FFFFFF', fontSize: 24, fontWeight: '900', letterSpacing: 2 },
   tagline: {
@@ -173,7 +196,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
     textAlign: 'center',
   },
-  loadingGroup: { alignItems: 'center', marginTop: 34 },
+  loadingGroup: { position: 'absolute', bottom: 55, left: 0, right: 0, alignItems: 'center' },
   loadingBar: {
     width: 130,
     height: 4,
