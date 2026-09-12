@@ -246,7 +246,7 @@ const createStyles = (colors: ThemePalette) => StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  logoFrame: { backgroundColor: '#FFFFFF', padding: 7, alignItems: 'center', justifyContent: 'center' },
+  logoFrame: { backgroundColor: '#FFFFFF', padding: 9, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
   title: {
     color: '#FFFFFF',
     fontSize: 28,
