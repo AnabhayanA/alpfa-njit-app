@@ -158,22 +158,8 @@ export default function EBoardScreen() {
         <Animated.View style={{ opacity: fade, transform: [{ translateY: slide }] }}>
           {/* Header */}
             <View style={[styles.header, { marginBottom: responsive.isSmallPhone ? 18 : 24, paddingTop: responsive.isSmallPhone ? 44 : 64 }]}>
-            <Text style={styles.eyebrow}>ALPFA NJIT</Text>
-            <Text style={[styles.title, { fontSize: responsive.isSmallPhone ? 28 : 35 }]}>E-BOARD</Text>
-            <Text style={[styles.subtitle, { fontSize: responsive.isSmallPhone ? 12 : 13 }]}>Meet the people behind the chapter.</Text>
-            <Text style={[styles.subtitleSecondary, { fontSize: responsive.isSmallPhone ? 11 : 12 }]}>Building leaders. Creating opportunities.</Text>
-          </View>
-
-          {/* Feature Card */}
-          <View style={[styles.featureCard, { padding: responsive.isSmallPhone ? 14 : 20, borderRadius: responsive.isSmallPhone ? 18 : 22 }]}>
-            <View style={styles.featureCircle}>
-              <Text style={styles.featureInitials}>AL</Text>
-            </View>
-            <View style={styles.featureContent}>
-              <Text style={styles.featureLabel}>ALPFA NJIT</Text>
-              <Text style={[styles.featureTitle, { fontSize: responsive.isSmallPhone ? 17 : 20 }]}>Leadership in action.</Text>
-              <Text style={[styles.featureText, { fontSize: responsive.isSmallPhone ? 10 : 11 }]}>Each E-Board member brings unique skills and perspectives to our community.</Text>
-            </View>
+            <Text style={[styles.title, { fontSize: responsive.isSmallPhone ? 25 : 28 }]}>Meet the E-Board</Text>
+            <Text style={[styles.subtitle, { fontSize: responsive.isSmallPhone ? 11 : 12 }]}>The student leaders building community at NJIT.</Text>
           </View>
 
           {/* Section Header */}
@@ -191,12 +177,7 @@ export default function EBoardScreen() {
             />
           ))}
 
-          {/* Bottom Card */}
-          <View style={styles.bottomCard}>
-            <Text style={styles.bottomEmoji}>🤝</Text>
-            <Text style={styles.bottomTitle}>Building the next generation.</Text>
-            <Text style={styles.bottomText}>ALPFA NJIT continues to grow through leadership, service, and opportunity for every member.</Text>
-          </View>
+          <Text style={styles.follow}>Follow @alpfanjit</Text>
         </Animated.View>
       </ScrollView>
     </View>
@@ -330,4 +311,5 @@ const createStyles = (colors: ThemePalette) => StyleSheet.create({
     textAlign: 'center',
     marginTop: 6,
   },
+  follow: { color: '#8D102B', fontSize: 11, fontWeight: '800', textAlign: 'center', marginTop: 22, paddingVertical: 16, borderTopWidth: 1, borderTopColor: '#E7CFA5' },
 });
