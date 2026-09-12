@@ -137,14 +137,14 @@ export default function App() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0F102E' },
-  webContainer: { backgroundColor: '#E7E1E2', paddingVertical: 24 },
+  webContainer: { backgroundColor: '#201F1D', paddingVertical: 24 },
   appViewport: { flex: 1, width: '100%' },
   webViewport: {
     width: '100%',
-    maxWidth: 1200,
+    maxWidth: 430,
     minHeight: '100%',
     alignSelf: 'center',
-    borderRadius: 16,
+    borderRadius: 34,
     overflow: 'hidden',
     shadowColor: '#17182F',
     shadowOpacity: 0.18,

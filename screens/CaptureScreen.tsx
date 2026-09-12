@@ -156,7 +156,7 @@ const createStyles = (colors: ReturnType<typeof useTheme>['colors']) =>
     permissionText: { color: 'rgba(255,255,255,0.75)', fontSize: 13, textAlign: 'center', marginTop: 8, lineHeight: 19 },
     closeButton: {
       position: 'absolute',
-      left: 16,
+      right: 16,
       width: 38,
       height: 38,
       borderRadius: 19,
@@ -172,7 +172,7 @@ const createStyles = (colors: ReturnType<typeof useTheme>['colors']) =>
       right: 0,
       alignItems: 'center',
       paddingTop: 18,
-      backgroundColor: 'rgba(0,0,0,0.35)',
+      backgroundColor: 'rgba(10,10,10,0.72)',
     },
     hintText: { color: 'rgba(255,255,255,0.85)', fontSize: 11, marginBottom: 16, textAlign: 'center', paddingHorizontal: 24 },
     shutter: {
@@ -180,11 +180,11 @@ const createStyles = (colors: ReturnType<typeof useTheme>['colors']) =>
       height: 74,
       borderRadius: 37,
       borderWidth: 4,
-      borderColor: '#FFFFFF',
+      borderColor: '#8D102B',
       alignItems: 'center',
       justifyContent: 'center',
     },
-    shutterInner: { width: 58, height: 58, borderRadius: 29, backgroundColor: '#FFFFFF' },
+    shutterInner: { width: 58, height: 58, borderRadius: 29, backgroundColor: '#FFFFFF', borderWidth: 2, borderColor: '#FFFFFF' },
     previewFooter: {
       position: 'absolute',
       bottom: 0,

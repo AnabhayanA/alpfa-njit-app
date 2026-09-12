@@ -8,7 +8,7 @@ import useResponsive from '../utils/responsive';
 const TAB_ICONS: Record<string, keyof typeof Ionicons.glyphMap> = {
   Home: 'home',
   Events: 'calendar',
-  Capture: 'camera',
+  Capture: 'camera-outline',
   EBoard: 'people',
   About: 'information-circle',
 };
@@ -16,7 +16,7 @@ const TAB_ICONS: Record<string, keyof typeof Ionicons.glyphMap> = {
 const TAB_LABELS: Record<string, string> = {
   Home: 'Home',
   Events: 'Events',
-  Capture: 'Capture',
+  Capture: 'Share',
   EBoard: 'E-Board',
   About: 'About',
 };
@@ -128,7 +128,7 @@ export default function BottomNav({ state, descriptors, navigation }: BottomTabB
           return (
             <TouchableOpacity key={route.key} activeOpacity={0.8} onPress={onPress} style={styles.tab}>
               <View style={[styles.iconContainer, isFocused && styles.activeIconContainer]}>
-                <Ionicons name={icon} size={responsive.iconSizes.md} color={isFocused ? '#FFFFFF' : '#A7A9BA'} />
+                <Ionicons name={icon} size={21} color={isFocused ? '#8D102B' : '#8C8E8D'} />
               </View>
               <Text style={[styles.label, isFocused && styles.activeLabel, { fontSize: Math.min(9, responsive.fontSizes.xs) }]}>{labelText}</Text>
             </TouchableOpacity>
@@ -144,15 +144,15 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   navbar: {
-    backgroundColor: '#0F102E',
+    backgroundColor: 'rgba(255,254,252,0.97)',
     borderRadius: 999,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-around',
     paddingHorizontal: 5,
-    shadowColor: '#0F102E',
-    shadowOpacity: 0.2,
-    shadowRadius: 12,
+    shadowColor: '#4A3727',
+    shadowOpacity: 0.14,
+    shadowRadius: 18,
     shadowOffset: { width: 0, height: 5 },
     elevation: 8,
   },
@@ -169,9 +169,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   activeIconContainer: {
-    backgroundColor: '#6E1B2D',
+    backgroundColor: '#F4E9E8',
     borderRadius: 10,
   },
-  label: { fontSize: 9, fontWeight: '700', color: '#A7A9BA', marginTop: 1 },
-  activeLabel: { color: '#FFFFFF', fontWeight: '900' },
+  label: { fontSize: 9, fontWeight: '700', color: '#8C8E8D', marginTop: 1 },
+  activeLabel: { color: '#8D102B', fontWeight: '900' },
 });
