@@ -1,198 +1,189 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Image, Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useNavigation } from '@react-navigation/native';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
-import useResponsive from '../utils/responsive';
-import useTheme from '../utils/useTheme';
-import { ThemePalette } from '../constants/theme';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CalendarEvent, fetchCalendarEvents, getCachedEvents } from '../utils/calendarUtils';
 
-type RootTabParamList = { Home: undefined; Events: undefined; Capture: undefined; EBoard: undefined; About: undefined };
-type HomeNavigationProp = BottomTabNavigationProp<RootTabParamList, 'Home'>;
+type RootTabParamList = {
+  Home: undefined;
+  Events: undefined;
+  Capture: undefined;
+  EBoard: undefined;
+  About: undefined;
+};
+
+type HomeNavigation = BottomTabNavigationProp<RootTabParamList, 'Home'>;
 
 const LINKS = {
   website: 'https://nonnair.github.io/alpfa-njit/',
-  linkedin: 'https://www.linkedin.com/in/alpfanjit/',
-  instagram: 'https://www.instagram.com/alpfa_njit/',
-  alpfa: 'https://alpfa.org/',
   highlander: 'https://njit.campuslabs.com/engage/organization/alpfa',
-  email: 'mailto:alpfanjit@gmail.com',
 };
 
-async function openLink(url: string) {
-  try {
-    const canOpen = await Linking.canOpenURL(url).catch(() => false);
-    if (canOpen || url.startsWith('http')) {
-      await Linking.openURL(url);
-      return;
-    }
-    await Linking.openURL(url);
-  } catch (error) {
-    console.warn('Unable to open link:', url, error);
-  }
-}
-
 export default function HomeScreen() {
-  const navigation = useNavigation<HomeNavigationProp>();
+  const navigation = useNavigation<HomeNavigation>();
   const insets = useSafeAreaInsets();
-  const responsive = useResponsive();
-  const { colors } = useTheme();
-  const styles = React.useMemo(() => createStyles(colors), [colors]);
-  const fade = useRef(new Animated.Value(0)).current;
-  const slide = useRef(new Animated.Value(24)).current;
-  const scrollOffsetY = useRef(0);
-  const [lastScrollDir, setLastScrollDir] = useState<'up' | 'down' | null>(null);
   const [nextEvent, setNextEvent] = useState<CalendarEvent | null>(null);
+  const fade = useRef(new Animated.Value(0)).current;
+  const rise = useRef(new Animated.Value(16)).current;
 
   useEffect(() => {
     Animated.parallel([
-      Animated.timing(fade, { toValue: 1, duration: 650, useNativeDriver: true }),
-      Animated.spring(slide, { toValue: 0, speed: 12, bounciness: 5, useNativeDriver: true }),
+      Animated.timing(fade, { toValue: 1, duration: 520, useNativeDriver: true }),
+      Animated.spring(rise, { toValue: 0, speed: 12, bounciness: 4, useNativeDriver: true }),
     ]).start();
 
-    const chooseNext = (events: CalendarEvent[]) => {
+    const selectNext = (events: CalendarEvent[]) => {
       const now = Date.now();
-      setNextEvent(events.filter((event) => event.endDate.getTime() >= now).sort((a, b) => a.startDate.getTime() - b.startDate.getTime())[0] || null);
+      const upcoming = events
+        .filter((event) => event.endDate.getTime() >= now)
+        .sort((a, b) => a.startDate.getTime() - b.startDate.getTime());
+      setNextEvent(upcoming[0] || null);
     };
-    getCachedEvents().then((cached) => cached && chooseNext(cached.events)).catch(() => undefined);
-    fetchCalendarEvents().then(chooseNext).catch(() => undefined);
-  }, [fade, slide]);
 
-  const handleScroll = (event: any) => {
-    const currentOffset = event.nativeEvent.contentOffset.y;
-    const scrollDiff = currentOffset - scrollOffsetY.current;
-    
-    // Determine scroll direction with a threshold
-    if (scrollDiff > 8 && lastScrollDir !== 'down') {
-      setLastScrollDir('down');
-      navigation.setParams({ navScrollState: 'down' } as any);
-    } else if (scrollDiff < -8 && lastScrollDir !== 'up') {
-      setLastScrollDir('up');
-      navigation.setParams({ navScrollState: 'up' } as any);
-    }
-    
-    scrollOffsetY.current = currentOffset;
-  };
+    getCachedEvents().then((cache) => cache && selectNext(cache.events)).catch(() => undefined);
+    fetchCalendarEvents().then(selectNext).catch(() => undefined);
+  }, [fade, rise]);
 
-  const goToEvents = () => navigation.navigate('Events');
-  const goToEBoard = () => navigation.navigate('EBoard');
-  const goToCapture = () => navigation.navigate('Capture');
+  const open = (url: string) => Linking.openURL(url).catch(() => undefined);
 
   return (
-    <View style={styles.container}>
-      <StatusBar style="light" />
+    <View style={styles.screen}>
+      <StatusBar style="dark" />
+      <View style={styles.topRedSlash} />
+      <View style={styles.topNavySlash} />
+
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={[styles.scrollContent, { paddingBottom: responsive.responsiveSpacing.xxl + 40, maxWidth: responsive.contentMaxWidth || undefined, alignSelf: 'center', width: '100%' }]}
-        onScroll={handleScroll}
-        scrollEventThrottle={16}
+        contentContainerStyle={[styles.content, { paddingTop: insets.top + 8, paddingBottom: insets.bottom + 118 }]}
       >
-        <Animated.View style={[styles.header, { opacity: fade, transform: [{ translateY: slide }], paddingHorizontal: responsive.horizontalPadding, paddingTop: insets.top + (responsive.isSmallPhone ? 18 : 22), paddingBottom: responsive.isSmallPhone ? 22 : 28 }]}>
-          <View style={styles.headerTop}>
-            <View style={styles.headerText}>
-              <Text style={[styles.eyebrow, { fontSize: responsive.isSmallPhone ? 9 : 10 }]}>WELCOME TO</Text>
-              <Text style={[styles.headerTitle, { fontSize: responsive.isSmallPhone ? 26 : responsive.isTablet ? 34 : 30 }]}>ALPFA NJIT</Text>
-              <Text style={[styles.headerSubtitle, { fontSize: responsive.isSmallPhone ? 11 : 12 }]}>Building Leaders. Creating Opportunities.</Text>
+        <Animated.View style={{ opacity: fade, transform: [{ translateY: rise }] }}>
+          <View style={styles.brandRow}>
+            <Image source={require('../assets/images/ALPFANJITLOGO.png')} style={styles.logo} resizeMode="cover" />
+            <View style={styles.brandCopy}>
+              <Text style={styles.brandName}>ALPFA NJIT</Text>
+              <Text style={styles.brandTag}>Latinos{`\n`}Leaders{`\n`}Stronger Together</Text>
             </View>
-            <View style={styles.headerLogoFrame}>
-              <Image source={require('../assets/images/ALPFANJITLOGO.png')} style={styles.headerLogo} resizeMode="contain" />
+            <TouchableOpacity style={styles.profileButton} onPress={() => navigation.navigate('About')} accessibilityLabel="Open About">
+              <Ionicons name="person-circle-outline" size={23} color="#081C37" />
+            </TouchableOpacity>
+          </View>
+
+          <Text style={styles.welcome}>Welcome back,</Text>
+          <Text style={styles.familia}>Familia</Text>
+          <Text style={styles.motto}>BUILD  •  CONNECT  •  BELONG</Text>
+
+          <TouchableOpacity style={styles.eventCard} activeOpacity={0.9} onPress={() => navigation.navigate('Events')}>
+            <View style={styles.eventRedSlash} />
+            <View style={styles.eventBurgundySlash} />
+            <View style={styles.eventTop}>
+              <View style={styles.dateTile}>
+                <Text style={styles.month}>{nextEvent ? nextEvent.startDate.toLocaleDateString('en-US', { month: 'short' }).toUpperCase() : 'NEXT'}</Text>
+                <Text style={styles.day}>{nextEvent ? nextEvent.startDate.getDate() : '—'}</Text>
+                <Text style={styles.hour}>{nextEvent ? nextEvent.startDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : 'EVENT'}</Text>
+              </View>
+              <View style={styles.nextCopy}>
+                <Text style={styles.nextLabel}>NEXT EVENT</Text>
+                <View style={styles.goldLine} />
+              </View>
+              <Text style={styles.cardWords}>PEOPLE{`\n`}PURPOSE{`\n`}PROGRESS</Text>
             </View>
+
+            <Text style={styles.eventTitle} numberOfLines={2}>{nextEvent?.title || 'More ALPFA NJIT events coming soon'}</Text>
+            <View style={styles.metaRow}>
+              <Ionicons name="calendar-outline" size={14} color="#FFFFFF" />
+              <Text style={styles.metaText}>{nextEvent ? nextEvent.startDate.toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : 'Check the Events page for updates'}</Text>
+            </View>
+            {!!nextEvent?.location && (
+              <View style={styles.metaRow}>
+                <Ionicons name="location-outline" size={14} color="#FFFFFF" />
+                <Text style={styles.metaText} numberOfLines={1}>{nextEvent.location}</Text>
+              </View>
+            )}
+            <View style={styles.eventArrow}><Ionicons name="chevron-forward" size={17} color="#FFFFFF" /></View>
+          </TouchableOpacity>
+
+          <Text style={styles.quickHeading}>QUICK LINKS</Text>
+          <View style={styles.quickGrid}>
+            <QuickLink label="Events" icon="calendar" color="#C01C3B" background="#FCE5E9" onPress={() => navigation.navigate('Events')} />
+            <QuickLink label="E-Board" icon="people" color="#0794C8" background="#DFF5FC" onPress={() => navigation.navigate('EBoard')} />
+            <QuickLink label="About" icon="document-text" color="#C48518" background="#FFF0CB" onPress={() => navigation.navigate('About')} />
+            <QuickLink label="Join" icon="person-add" color="#16845B" background="#DCF7EA" onPress={() => open(LINKS.highlander)} />
+            <QuickLink label="Share a Photo" icon="camera" color="#7650B5" background="#ECE4FB" onPress={() => navigation.navigate('Capture')} />
+            <QuickLink label="Website" icon="open-outline" color="#F06C43" background="#FFE8DF" onPress={() => open(LINKS.website)} />
+          </View>
+
+          <View style={styles.bottomMessage}>
+            <Text style={styles.bottomHeadline}>MORE LATINOS.{`\n`}BRIGHTER TOMORROWS.</Text>
+            <Text style={styles.bottomSub}>ALPFA NJIT</Text>
           </View>
         </Animated.View>
-
-        <TouchableOpacity activeOpacity={0.92} style={[styles.featuredCard, { marginHorizontal: responsive.horizontalPadding, marginTop: responsive.responsiveSpacing.lg, padding: responsive.isSmallPhone ? 16 : 19 }]} onPress={goToEvents}>
-          <View style={styles.bannerShardOne} />
-          <View style={styles.bannerShardTwo} />
-          <View style={styles.featuredTopRow}>
-            <View style={styles.dateTile}>
-              <Text style={styles.dateMonth}>{nextEvent ? nextEvent.startDate.toLocaleDateString('en-US', { month: 'short' }).toUpperCase() : 'NEXT'}</Text>
-              <Text style={styles.dateDay}>{nextEvent ? nextEvent.startDate.getDate() : '—'}</Text>
-            </View>
-            <View style={styles.eventHeading}>
-              <Text style={styles.nextLabel}>NEXT EVENT</Text>
-              <Text style={[styles.eventTitle, { fontSize: responsive.isSmallPhone ? 17 : 20 }]} numberOfLines={2}>{nextEvent?.title || 'More events coming soon'}</Text>
-            </View>
-          </View>
-          <View style={styles.eventMeta}>
-            <Ionicons name="time-outline" size={14} color="rgba(255,255,255,0.8)" />
-            <Text style={styles.eventMetaText}>{nextEvent ? nextEvent.startDate.toLocaleString('en-US', { weekday: 'short', hour: 'numeric', minute: '2-digit' }) : 'Check the Events tab for updates'}</Text>
-          </View>
-          {nextEvent?.location ? <View style={styles.eventMeta}><Ionicons name="location-outline" size={14} color="rgba(255,255,255,0.8)" /><Text style={styles.eventMetaText} numberOfLines={1}>{nextEvent.location}</Text></View> : null}
-          <View style={styles.featuredBottom}><Text style={styles.featuredAction}>View event details</Text><View style={styles.featuredArrow}><Ionicons name="arrow-forward" size={15} color="#6E1B2D" /></View></View>
-        </TouchableOpacity>
-
-        <View style={[styles.section, { marginHorizontal: responsive.horizontalPadding, marginTop: responsive.responsiveSpacing.xl }]}>
-          <Text style={styles.sectionTitle}>Explore</Text>
-          <Text style={styles.sectionCaption}>Everything ALPFA</Text>
-          <View style={styles.actionsGrid}>
-            <ActionCard styles={styles} icon="calendar" title="Events" subtitle="What's happening" type="burgundy" onPress={goToEvents} />
-            <ActionCard styles={styles} icon="briefcase" title="Opportunities" subtitle="Grow your career" type="navy" onPress={() => openLink(LINKS.website)} />
-            <ActionCard styles={styles} icon="people" title="E-Board" subtitle="Meet our leaders" type="light" onPress={goToEBoard} />
-            <ActionCard styles={styles} icon="person-add" title="Join ALPFA" subtitle="Become a member" type="light" onPress={() => openLink(LINKS.highlander)} />
-            <ActionCard styles={styles} icon="camera" title="Share a Photo" subtitle="Add to our Drive" type="light" onPress={goToCapture} />
-          </View>
-        </View>
-
-        <View style={[styles.section, { marginHorizontal: responsive.horizontalPadding, marginTop: responsive.responsiveSpacing.xxxl }]}>
-          <View style={styles.rowBetween}><View><Text style={styles.sectionTitle}>Events</Text><Text style={styles.sectionCaption}>Stay involved</Text></View><TouchableOpacity onPress={goToEvents}><Text style={styles.seeAll}>View calendar</Text></TouchableOpacity></View>
-          <TouchableOpacity activeOpacity={0.88} style={styles.preview} onPress={goToEvents}>
-            <View style={styles.calendarIcon}><Ionicons name="calendar" size={25} color="#FFFFFF" /></View>
-            <View style={styles.previewContent}><Text style={styles.previewTitle}>See What's Happening</Text><Text style={styles.previewText}>View upcoming ALPFA NJIT meetings, workshops, networking events, and more.</Text></View>
-            <Ionicons name="chevron-forward" size={21} color="#6E1B2D" />
-          </TouchableOpacity>
-        </View>
-
-        <View style={[styles.section, { marginHorizontal: responsive.horizontalPadding, marginTop: responsive.responsiveSpacing.xxxl }]}>
-          <Text style={styles.sectionTitle}>Level Up</Text><Text style={styles.sectionCaption}>Career and opportunities</Text>
-          <TouchableOpacity activeOpacity={0.9} style={styles.careerCard} onPress={() => openLink(LINKS.website)}>
-            <View style={styles.careerIcon}><Ionicons name="rocket" size={26} color="#FFFFFF" /></View>
-            <View style={styles.careerContent}><Text style={styles.careerTitle}>Your next opportunity is out there.</Text><Text style={styles.careerText}>Discover internships, fellowships, scholarships, and career programs.</Text><Text style={styles.careerLink}>Explore opportunities</Text></View>
-          </TouchableOpacity>
-        </View>
-
-        <View style={[styles.section, { marginHorizontal: responsive.horizontalPadding, marginTop: responsive.responsiveSpacing.xxxl }]}><Text style={styles.connectTitle}>Stay Connected</Text><Text style={styles.connectText}>Follow ALPFA NJIT and stay connected with everything happening in our community.</Text><View style={styles.socialRow}>
-          <SocialButton styles={styles} label="Instagram" icon="logo-instagram" onPress={() => openLink(LINKS.instagram)} /><SocialButton styles={styles} label="LinkedIn" icon="logo-linkedin" onPress={() => openLink(LINKS.linkedin)} /><SocialButton styles={styles} label="Website" icon="globe-outline" onPress={() => openLink(LINKS.website)} />
-        </View><View style={styles.socialRow}><SocialButton styles={styles} label="ALPFA.org" icon="business-outline" onPress={() => openLink(LINKS.alpfa)} /><SocialButton styles={styles} label="Highlander Hub" icon="school-outline" onPress={() => openLink(LINKS.highlander)} /><SocialButton styles={styles} label="Email" icon="mail-outline" onPress={() => openLink(LINKS.email)} /></View></View>
-
-        <View style={styles.footer}><Image source={require('../assets/images/ALPFANJITLOGO.png')} style={styles.footerLogo} resizeMode="contain" /><Text style={styles.footerTitle}>ALPFA NJIT</Text><Text style={styles.footerText}>Building Leaders. Creating Opportunities.</Text><Text style={styles.footerCopyright}>2026 ALPFA NJIT</Text></View>
       </ScrollView>
+
+      <View pointerEvents="none" style={styles.bottomNavySlash} />
+      <View pointerEvents="none" style={styles.bottomRedSlash} />
     </View>
   );
 }
 
-function ActionCard({ icon, title, subtitle, type, onPress, styles }: { icon: keyof typeof Ionicons.glyphMap; title: string; subtitle: string; type: 'burgundy' | 'navy' | 'light'; onPress: () => void; styles: ReturnType<typeof createStyles> }) {
-  const isLight = type === 'light';
-  const pressScale = useRef(new Animated.Value(1)).current;
-  return <Animated.View style={styles.actionTile}><TouchableOpacity activeOpacity={0.88} onPress={onPress} onPressIn={() => Animated.spring(pressScale, { toValue: 0.97, useNativeDriver: true }).start()} onPressOut={() => Animated.spring(pressScale, { toValue: 1, useNativeDriver: true }).start()} style={[styles.actionCard, type === 'burgundy' && styles.burgundy, type === 'navy' && styles.navy, isLight && styles.light]}><View style={[styles.actionIcon, isLight && styles.actionIconLight]}><Ionicons name={icon} size={22} color={isLight ? '#6E1B2D' : '#FFFFFF'} /></View><Text style={[styles.actionTitle, isLight && styles.darkText]}>{title}</Text><Text style={[styles.actionSubtitle, isLight && styles.darkSubtext]}>{subtitle}</Text><Ionicons name="arrow-forward" size={16} color={isLight ? '#6E1B2D' : '#FFFFFF'} style={styles.actionArrow} /></TouchableOpacity></Animated.View>;
+function QuickLink({ label, icon, color, background, onPress }: {
+  label: string;
+  icon: keyof typeof Ionicons.glyphMap;
+  color: string;
+  background: string;
+  onPress: () => void;
+}) {
+  return (
+    <TouchableOpacity style={styles.quickCard} activeOpacity={0.76} onPress={onPress}>
+      <View style={[styles.quickIcon, { backgroundColor: background }]}>
+        <Ionicons name={icon} size={17} color={color} />
+      </View>
+      <Text style={styles.quickLabel}>{label}</Text>
+      <Ionicons name="chevron-forward" size={13} color="#89909A" />
+    </TouchableOpacity>
+  );
 }
 
-function SocialButton({ label, icon, onPress, styles }: { label: string; icon: keyof typeof Ionicons.glyphMap; onPress: () => void; styles: ReturnType<typeof createStyles> }) {
-  return <TouchableOpacity activeOpacity={0.8} style={styles.socialButton} onPress={onPress}><View style={styles.socialIcon}><Ionicons name={icon} size={20} color="#6E1B2D" /></View><Text style={styles.socialLabel}>{label}</Text></TouchableOpacity>;
-}
-
-const createStyles = (colors: ThemePalette) => StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
-  scrollContent: { paddingBottom: 58 },
-  header: { backgroundColor: '#0F102E', paddingTop: 62, paddingBottom: 29 },
-  headerTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 16 },
-  headerText: { flex: 1, minWidth: 0 }, eyebrow: { color: 'rgba(255,255,255,0.62)', fontSize: 10, fontWeight: '900', letterSpacing: 2 }, headerTitle: { color: '#FFFFFF', fontSize: 30, fontWeight: '900', marginTop: 6 }, headerSubtitle: { color: 'rgba(255,255,255,0.67)', fontSize: 12, marginTop: 8, lineHeight: 18 },
-  headerLogoFrame: { width: 66, height: 66, borderRadius: 18, backgroundColor: '#FFFFFF', padding: 7, alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' },
-  headerLogo: { width: '100%', height: '100%' },
-  featuredCard: { backgroundColor: '#081C37', borderRadius: 22, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(255,255,255,0.16)', shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 18, shadowOffset: { width: 0, height: 10 } },
-  bannerShardOne: { position: 'absolute', width: 190, height: 70, backgroundColor: '#6E1B2D', right: -55, top: -20, transform: [{ rotate: '-32deg' }] },
-  bannerShardTwo: { position: 'absolute', width: 160, height: 44, backgroundColor: '#C71F30', right: -78, bottom: 4, transform: [{ rotate: '-32deg' }], opacity: 0.7 },
-  featuredTopRow: { flexDirection: 'row', alignItems: 'center', gap: 13 },
-  dateTile: { width: 62, minHeight: 72, borderRadius: 14, backgroundColor: '#6E1B2D', alignItems: 'center', justifyContent: 'center', paddingVertical: 8 },
-  dateMonth: { color: '#FFFFFF', fontSize: 10, fontWeight: '900', letterSpacing: 0.8 }, dateDay: { color: '#FFFFFF', fontSize: 27, fontWeight: '900', marginTop: 1 },
-  eventHeading: { flex: 1, minWidth: 0 }, nextLabel: { color: 'rgba(255,255,255,0.62)', fontSize: 9, fontWeight: '900', letterSpacing: 1.5 }, eventTitle: { color: '#FFFFFF', fontSize: 20, fontWeight: '900', marginTop: 5, lineHeight: 23 },
-  eventMeta: { flexDirection: 'row', alignItems: 'center', gap: 7, marginTop: 10, paddingRight: 35 }, eventMetaText: { color: 'rgba(255,255,255,0.82)', fontSize: 11, flexShrink: 1 },
-  featuredBottom: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 15 }, featuredAction: { color: '#FFFFFF', fontSize: 12, fontWeight: '800' }, featuredArrow: { width: 32, height: 32, borderRadius: 16, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center' },
-  section: { marginTop: 26 }, rowBetween: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', gap: 12 }, sectionTitle: { color: colors.textPrimary, fontSize: 22, fontWeight: '900' }, sectionCaption: { color: colors.textSecondary, fontSize: 11, marginTop: 4 }, seeAll: { color: '#6E1B2D', fontSize: 12, fontWeight: '800', flexShrink: 1, textAlign: 'right' }, actionsGrid: { width: '100%', alignSelf: 'stretch', flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', marginTop: 14 },
-  actionTile: { width: '48.5%', marginBottom: 10 }, actionCard: { width: '100%', minHeight: 124, padding: 14, borderRadius: 18, justifyContent: 'space-between', shadowColor: '#000', shadowOpacity: 0.07, shadowRadius: 10, shadowOffset: { width: 0, height: 5 } }, burgundy: { backgroundColor: '#6E1B2D' }, navy: { backgroundColor: '#0F102E' }, light: { backgroundColor: colors.surface }, actionIcon: { width: 38, height: 38, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.12)', alignItems: 'center', justifyContent: 'center' }, actionIconLight: { backgroundColor: colors.iconBgLight }, actionTitle: { color: '#FFFFFF', fontSize: 16, fontWeight: '800', marginTop: 10, flexShrink: 1 }, darkText: { color: colors.textPrimary }, actionSubtitle: { color: 'rgba(255,255,255,0.75)', fontSize: 10, marginTop: 3, flexShrink: 1 }, darkSubtext: { color: colors.textSecondary }, actionArrow: { alignSelf: 'flex-end', marginTop: 8 },
-  preview: { marginTop: 14, backgroundColor: colors.surface, borderRadius: 20, padding: 16, flexDirection: 'row', alignItems: 'center', gap: 14, shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 12, shadowOffset: { width: 0, height: 6 } }, calendarIcon: { width: 48, height: 48, borderRadius: 16, backgroundColor: '#6E1B2D', alignItems: 'center', justifyContent: 'center' }, previewContent: { flex: 1, minWidth: 0 }, previewTitle: { color: colors.textPrimary, fontSize: 18, fontWeight: '900' }, previewText: { color: colors.textSecondary, fontSize: 11, lineHeight: 17, marginTop: 5 },
-  careerCard: { backgroundColor: colors.surface, borderRadius: 20, padding: 18, marginTop: 14, flexDirection: 'row', alignItems: 'center', gap: 14, borderWidth: 1, borderColor: colors.surfaceBorder, shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 12, shadowOffset: { width: 0, height: 6 } }, careerIcon: { width: 52, height: 52, borderRadius: 16, backgroundColor: '#0F102E', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }, careerContent: { flex: 1, minWidth: 0 }, careerTitle: { color: colors.textPrimary, fontSize: 18, fontWeight: '900', flexShrink: 1 }, careerText: { color: colors.textSecondary, fontSize: 11, lineHeight: 17, marginTop: 6, flexShrink: 1 }, careerLink: { color: '#6E1B2D', fontSize: 12, fontWeight: '800', marginTop: 10 },
-  connectTitle: { color: colors.textPrimary, fontSize: 22, fontWeight: '900' }, connectText: { color: colors.textSecondary, fontSize: 12, lineHeight: 18, marginTop: 6, maxWidth: 520 }, socialRow: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', marginTop: 12, gap: 8 }, socialButton: { flexGrow: 1, flexBasis: '30%', minWidth: 90, backgroundColor: colors.surface, borderRadius: 14, paddingVertical: 12, paddingHorizontal: 8, alignItems: 'center', marginBottom: 2, borderWidth: 1, borderColor: colors.surfaceBorder }, socialIcon: { width: 34, height: 34, borderRadius: 10, backgroundColor: colors.iconBgLight, alignItems: 'center', justifyContent: 'center' }, socialLabel: { color: colors.textPrimary, fontSize: 10, fontWeight: '800', marginTop: 8, textAlign: 'center', flexShrink: 1 }, footer: { alignItems: 'center', paddingTop: 28, paddingBottom: 40 }, footerLogo: { width: 80, height: 80 }, footerTitle: { color: colors.textPrimary, fontSize: 18, fontWeight: '900', marginTop: 10 }, footerText: { color: colors.textSecondary, fontSize: 12, marginTop: 6, textAlign: 'center' }, footerCopyright: { color: '#6E1B2D', fontSize: 10, marginTop: 8, fontWeight: '700' },
+const styles = StyleSheet.create({
+  screen: { flex: 1, backgroundColor: '#FAF8F4', overflow: 'hidden' },
+  content: { paddingHorizontal: 14 },
+  brandRow: { flexDirection: 'row', alignItems: 'center', minHeight: 52 },
+  logo: { width: 54, height: 54, borderRadius: 10, backgroundColor: '#0F102E' },
+  brandCopy: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10, marginLeft: 9 },
+  brandName: { color: '#081C37', fontSize: 15, fontWeight: '900', letterSpacing: 0.4 },
+  brandTag: { color: '#081C37', fontSize: 6, lineHeight: 8, letterSpacing: 0.3 },
+  profileButton: { width: 34, height: 34, borderRadius: 17, backgroundColor: 'rgba(255,255,255,0.75)', alignItems: 'center', justifyContent: 'center' },
+  welcome: { color: '#081C37', fontSize: 29, lineHeight: 31, fontWeight: '900', marginTop: 9 },
+  familia: { color: '#9D1734', fontSize: 29, lineHeight: 30, fontWeight: '900' },
+  motto: { color: '#081C37', fontSize: 7, fontWeight: '800', letterSpacing: 1.6, marginTop: 5 },
+  eventCard: { minHeight: 151, marginTop: 10, padding: 12, borderRadius: 16, backgroundColor: '#081C37', overflow: 'hidden', shadowColor: '#081C37', shadowOpacity: 0.24, shadowRadius: 10, shadowOffset: { width: 0, height: 6 } },
+  eventRedSlash: { position: 'absolute', width: 150, height: 52, right: -47, top: -10, backgroundColor: '#B51C35', transform: [{ rotate: '-42deg' }] },
+  eventBurgundySlash: { position: 'absolute', width: 150, height: 48, right: -58, bottom: -4, backgroundColor: '#6E1B2D', transform: [{ rotate: '-42deg' }] },
+  eventTop: { flexDirection: 'row', alignItems: 'center' },
+  dateTile: { width: 57, height: 61, borderRadius: 12, backgroundColor: '#9D1734', alignItems: 'center', justifyContent: 'center' },
+  month: { color: '#FFFFFF', fontSize: 9, fontWeight: '900' },
+  day: { color: '#FFFFFF', fontSize: 22, lineHeight: 23, fontWeight: '900' },
+  hour: { color: 'rgba(255,255,255,0.8)', fontSize: 7, fontWeight: '700' },
+  nextCopy: { flex: 1, paddingLeft: 11, flexDirection: 'row', alignItems: 'center', gap: 8 },
+  nextLabel: { color: 'rgba(255,255,255,0.67)', fontSize: 7, fontWeight: '800', letterSpacing: 1.3 },
+  goldLine: { height: 1, width: 37, backgroundColor: '#C99731' },
+  cardWords: { color: 'rgba(255,255,255,0.55)', fontSize: 6, lineHeight: 9, letterSpacing: 1.2, textAlign: 'right' },
+  eventTitle: { color: '#FFFFFF', fontSize: 16, lineHeight: 19, fontWeight: '900', maxWidth: '78%', marginTop: 8 },
+  metaRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 5, maxWidth: '82%' },
+  metaText: { color: 'rgba(255,255,255,0.86)', fontSize: 9, flexShrink: 1 },
+  eventArrow: { position: 'absolute', right: 11, bottom: 11, width: 31, height: 31, borderRadius: 16, backgroundColor: '#B51C35', alignItems: 'center', justifyContent: 'center' },
+  quickHeading: { color: '#081C37', fontSize: 8, fontWeight: '900', letterSpacing: 1.8, marginTop: 14, marginBottom: 6 },
+  quickGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: 7 },
+  quickCard: { width: '48.8%', minHeight: 42, borderRadius: 13, paddingHorizontal: 9, backgroundColor: '#FFFFFF', flexDirection: 'row', alignItems: 'center', gap: 7, shadowColor: '#081C37', shadowOpacity: 0.06, shadowRadius: 5, shadowOffset: { width: 0, height: 2 } },
+  quickIcon: { width: 28, height: 28, borderRadius: 9, alignItems: 'center', justifyContent: 'center' },
+  quickLabel: { color: '#081C37', fontSize: 10, fontWeight: '700', flex: 1 },
+  bottomMessage: { marginTop: 22, paddingBottom: 30 },
+  bottomHeadline: { color: '#081C37', fontSize: 7, fontWeight: '900', lineHeight: 10, letterSpacing: 1.6 },
+  bottomSub: { color: '#9D1734', fontSize: 7, fontWeight: '800', marginTop: 5, letterSpacing: 1.2 },
+  topRedSlash: { position: 'absolute', width: 220, height: 40, right: -80, top: 54, backgroundColor: '#B51C35', transform: [{ rotate: '-39deg' }], opacity: 0.96 },
+  topNavySlash: { position: 'absolute', width: 190, height: 25, right: -90, top: 85, backgroundColor: '#081C37', transform: [{ rotate: '-39deg' }] },
+  bottomNavySlash: { position: 'absolute', width: 240, height: 62, right: -89, bottom: 20, backgroundColor: '#081C37', transform: [{ rotate: '-27deg' }] },
+  bottomRedSlash: { position: 'absolute', width: 260, height: 34, left: -130, bottom: 30, backgroundColor: '#9D1734', transform: [{ rotate: '-27deg' }], opacity: 0.95 },
 });
