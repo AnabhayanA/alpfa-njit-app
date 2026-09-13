@@ -25,10 +25,11 @@ const LINKS = {
 export default function HomeScreen() {
   const navigation = useNavigation<HomeNavigation>();
   const insets = useSafeAreaInsets();
-  const { width, height } = useWindowDimensions();
-  const contentWidth = Math.min(width, 520);
-  const scale = Math.max(0.86, Math.min(contentWidth / 390, 1.16));
-  const compactHeight = height < 700;
+  const { width } = useWindowDimensions();
+  const contentWidth = Math.min(width, 560);
+  // Use a comfortable reading scale and let the page scroll. The previous
+  // version compressed short phones too aggressively to fit one viewport.
+  const scale = Math.max(1.06, Math.min(contentWidth / 350, 1.3));
   const [nextEvent, setNextEvent] = useState<CalendarEvent | null>(null);
   const fade = useRef(new Animated.Value(0)).current;
   const rise = useRef(new Animated.Value(16)).current;
@@ -61,6 +62,8 @@ export default function HomeScreen() {
 
       <ScrollView
         showsVerticalScrollIndicator={false}
+        alwaysBounceVertical
+        bounces
         contentContainerStyle={[
           styles.content,
           {
@@ -68,7 +71,7 @@ export default function HomeScreen() {
             alignSelf: 'center',
             paddingHorizontal: Math.max(12, 14 * scale),
             paddingTop: insets.top + Math.max(5, 8 * scale),
-            paddingBottom: insets.bottom + (compactHeight ? 96 : 118),
+            paddingBottom: insets.bottom + 132,
           },
         ]}
       >
@@ -84,11 +87,11 @@ export default function HomeScreen() {
             </TouchableOpacity>
           </View>
 
-          <Text style={[styles.welcome, { fontSize: 29 * scale, lineHeight: 31 * scale, marginTop: (compactHeight ? 5 : 9) * scale }]}>Welcome back,</Text>
+          <Text style={[styles.welcome, { fontSize: 29 * scale, lineHeight: 31 * scale, marginTop: 12 * scale }]}>Welcome back,</Text>
           <Text style={[styles.familia, { fontSize: 29 * scale, lineHeight: 30 * scale }]}>Familia</Text>
           <Text style={styles.motto}>BUILD  •  CONNECT  •  BELONG</Text>
 
-          <TouchableOpacity style={[styles.eventCard, { minHeight: (compactHeight ? 142 : 151) * scale, marginTop: (compactHeight ? 7 : 10) * scale, padding: 12 * scale, borderRadius: 16 * scale }]} activeOpacity={0.9} onPress={() => navigation.navigate('Events')}>
+          <TouchableOpacity style={[styles.eventCard, { minHeight: 164 * scale, marginTop: 12 * scale, padding: 14 * scale, borderRadius: 18 * scale }]} activeOpacity={0.9} onPress={() => navigation.navigate('Events')}>
             <View style={styles.eventRedSlash} />
             <View style={styles.eventBurgundySlash} />
             <View style={styles.eventTop}>
@@ -118,7 +121,7 @@ export default function HomeScreen() {
             <View style={styles.eventArrow}><Ionicons name="chevron-forward" size={17} color="#FFFFFF" /></View>
           </TouchableOpacity>
 
-          <Text style={[styles.quickHeading, { marginTop: (compactHeight ? 10 : 14) * scale }]}>QUICK LINKS</Text>
+          <Text style={[styles.quickHeading, { marginTop: 18 * scale, marginBottom: 9 * scale }]}>QUICK LINKS</Text>
           <View style={[styles.quickGrid, { gap: Math.max(5, 7 * scale) }]}>
             <QuickLink scale={scale} label="Events" icon="calendar" color="#C01C3B" background="#FCE5E9" onPress={() => navigation.navigate('Events')} />
             <QuickLink scale={scale} label="E-Board" icon="people" color="#0794C8" background="#DFF5FC" onPress={() => navigation.navigate('EBoard')} />
@@ -166,36 +169,36 @@ const styles = StyleSheet.create({
   brandRow: { flexDirection: 'row', alignItems: 'center', minHeight: 52 },
   logo: { width: 54, height: 54, borderRadius: 10, backgroundColor: '#0F102E' },
   brandCopy: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10, marginLeft: 9 },
-  brandName: { color: '#081C37', fontSize: 15, fontWeight: '900', letterSpacing: 0.4 },
-  brandTag: { color: '#081C37', fontSize: 6, lineHeight: 8, letterSpacing: 0.3 },
+  brandName: { color: '#081C37', fontSize: 18, fontWeight: '900', letterSpacing: 0.4 },
+  brandTag: { color: '#081C37', fontSize: 8, lineHeight: 10, letterSpacing: 0.3 },
   profileButton: { width: 34, height: 34, borderRadius: 17, backgroundColor: 'rgba(255,255,255,0.75)', alignItems: 'center', justifyContent: 'center' },
   welcome: { color: '#081C37', fontSize: 29, lineHeight: 31, fontWeight: '900', marginTop: 9 },
   familia: { color: '#9D1734', fontSize: 29, lineHeight: 30, fontWeight: '900' },
-  motto: { color: '#081C37', fontSize: 7, fontWeight: '800', letterSpacing: 1.6, marginTop: 5 },
+  motto: { color: '#081C37', fontSize: 9, fontWeight: '800', letterSpacing: 1.5, marginTop: 7 },
   eventCard: { minHeight: 151, marginTop: 10, padding: 12, borderRadius: 16, backgroundColor: '#081C37', overflow: 'hidden', shadowColor: '#081C37', shadowOpacity: 0.24, shadowRadius: 10, shadowOffset: { width: 0, height: 6 } },
   eventRedSlash: { position: 'absolute', width: 150, height: 52, right: -47, top: -10, backgroundColor: '#B51C35', transform: [{ rotate: '-42deg' }] },
   eventBurgundySlash: { position: 'absolute', width: 150, height: 48, right: -58, bottom: -4, backgroundColor: '#6E1B2D', transform: [{ rotate: '-42deg' }] },
   eventTop: { flexDirection: 'row', alignItems: 'center' },
-  dateTile: { width: 57, height: 61, borderRadius: 12, backgroundColor: '#9D1734', alignItems: 'center', justifyContent: 'center' },
-  month: { color: '#FFFFFF', fontSize: 9, fontWeight: '900' },
-  day: { color: '#FFFFFF', fontSize: 22, lineHeight: 23, fontWeight: '900' },
-  hour: { color: 'rgba(255,255,255,0.8)', fontSize: 7, fontWeight: '700' },
+  dateTile: { width: 65, height: 72, borderRadius: 14, backgroundColor: '#9D1734', alignItems: 'center', justifyContent: 'center' },
+  month: { color: '#FFFFFF', fontSize: 10, fontWeight: '900' },
+  day: { color: '#FFFFFF', fontSize: 27, lineHeight: 28, fontWeight: '900' },
+  hour: { color: 'rgba(255,255,255,0.8)', fontSize: 8, fontWeight: '700' },
   nextCopy: { flex: 1, paddingLeft: 11, flexDirection: 'row', alignItems: 'center', gap: 8 },
-  nextLabel: { color: 'rgba(255,255,255,0.67)', fontSize: 7, fontWeight: '800', letterSpacing: 1.3 },
+  nextLabel: { color: 'rgba(255,255,255,0.67)', fontSize: 9, fontWeight: '800', letterSpacing: 1.3 },
   goldLine: { height: 1, width: 37, backgroundColor: '#C99731' },
-  cardWords: { color: 'rgba(255,255,255,0.55)', fontSize: 6, lineHeight: 9, letterSpacing: 1.2, textAlign: 'right' },
+  cardWords: { color: 'rgba(255,255,255,0.55)', fontSize: 7, lineHeight: 10, letterSpacing: 1.1, textAlign: 'right' },
   eventTitle: { color: '#FFFFFF', fontSize: 16, lineHeight: 19, fontWeight: '900', maxWidth: '78%', marginTop: 8 },
   metaRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 5, maxWidth: '82%' },
-  metaText: { color: 'rgba(255,255,255,0.86)', fontSize: 9, flexShrink: 1 },
+  metaText: { color: 'rgba(255,255,255,0.86)', fontSize: 11, flexShrink: 1 },
   eventArrow: { position: 'absolute', right: 11, bottom: 11, width: 31, height: 31, borderRadius: 16, backgroundColor: '#B51C35', alignItems: 'center', justifyContent: 'center' },
-  quickHeading: { color: '#081C37', fontSize: 8, fontWeight: '900', letterSpacing: 1.8, marginTop: 14, marginBottom: 6 },
+  quickHeading: { color: '#081C37', fontSize: 10, fontWeight: '900', letterSpacing: 1.8, marginTop: 14, marginBottom: 6 },
   quickGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: 7 },
   quickCard: { width: '48.8%', minHeight: 42, borderRadius: 13, paddingHorizontal: 9, backgroundColor: '#FFFFFF', flexDirection: 'row', alignItems: 'center', gap: 7, shadowColor: '#081C37', shadowOpacity: 0.06, shadowRadius: 5, shadowOffset: { width: 0, height: 2 } },
   quickIcon: { width: 28, height: 28, borderRadius: 9, alignItems: 'center', justifyContent: 'center' },
   quickLabel: { color: '#081C37', fontSize: 10, fontWeight: '700', flex: 1 },
-  bottomMessage: { marginTop: 22, paddingBottom: 30 },
-  bottomHeadline: { color: '#081C37', fontSize: 7, fontWeight: '900', lineHeight: 10, letterSpacing: 1.6 },
-  bottomSub: { color: '#9D1734', fontSize: 7, fontWeight: '800', marginTop: 5, letterSpacing: 1.2 },
+  bottomMessage: { marginTop: 30, paddingBottom: 42 },
+  bottomHeadline: { color: '#081C37', fontSize: 10, fontWeight: '900', lineHeight: 14, letterSpacing: 1.6 },
+  bottomSub: { color: '#9D1734', fontSize: 9, fontWeight: '800', marginTop: 7, letterSpacing: 1.2 },
   topRedSlash: { position: 'absolute', width: 220, height: 40, right: -80, top: 54, backgroundColor: '#B51C35', transform: [{ rotate: '-39deg' }], opacity: 0.96 },
   topNavySlash: { position: 'absolute', width: 190, height: 25, right: -90, top: 85, backgroundColor: '#081C37', transform: [{ rotate: '-39deg' }] },
   bottomNavySlash: { position: 'absolute', width: 240, height: 62, right: -89, bottom: 20, backgroundColor: '#081C37', transform: [{ rotate: '-27deg' }] },
