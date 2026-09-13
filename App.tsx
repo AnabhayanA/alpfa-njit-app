@@ -9,7 +9,6 @@ import {
   Easing,
   Image,
   Platform,
-  SafeAreaView,
   StyleSheet,
   Text,
   View,
@@ -56,18 +55,20 @@ function MainApp() {
 export default function App() {
   const { colors } = useTheme();
   const [loading, setLoading] = useState(true);
-  const textOpacity = useRef(new Animated.Value(0)).current;
+  const logoOpacity = useRef(new Animated.Value(0)).current;
+  const logoScale = useRef(new Animated.Value(0.72)).current;
+  const leftShard = useRef(new Animated.Value(-420)).current;
+  const rightShard = useRef(new Animated.Value(420)).current;
   const loadingWidth = useRef(new Animated.Value(0)).current;
   const splashOpacity = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    Animated.timing(textOpacity, {
-      toValue: 1,
-      duration: 700,
-      delay: 450,
-      easing: Easing.out(Easing.ease),
-      useNativeDriver: true,
-    }).start();
+    Animated.parallel([
+      Animated.spring(leftShard, { toValue: -72, speed: 9, bounciness: 3, useNativeDriver: true }),
+      Animated.spring(rightShard, { toValue: 72, speed: 9, bounciness: 3, useNativeDriver: true }),
+      Animated.timing(logoOpacity, { toValue: 1, duration: 650, delay: 180, easing: Easing.out(Easing.ease), useNativeDriver: true }),
+      Animated.spring(logoScale, { toValue: 1, delay: 180, speed: 10, bounciness: 5, useNativeDriver: true }),
+    ]).start();
 
     Animated.timing(loadingWidth, {
       toValue: 1,
@@ -92,12 +93,14 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <View style={[styles.container, Platform.OS === 'web' && styles.webContainer]}>
-        <StatusBar style={loading ? 'light' : colors.statusBarStyle} />
+          <StatusBar style={loading ? 'dark' : colors.statusBarStyle} />
 
         <View style={[styles.appViewport, Platform.OS === 'web' && styles.webViewport]}>
         {loading ? (
           <Animated.View style={[styles.splash, { opacity: splashOpacity }]}>
-            <Animated.View style={[styles.brandContainer, { opacity: textOpacity }]}>
+            <Animated.View style={[styles.shard, styles.leftShard, { transform: [{ translateX: leftShard }, { rotate: '-12deg' }] }]} />
+            <Animated.View style={[styles.shard, styles.rightShard, { transform: [{ translateX: rightShard }, { rotate: '-12deg' }] }]} />
+            <Animated.View style={[styles.brandContainer, { opacity: logoOpacity, transform: [{ scale: logoScale }] }]}>
               <View style={styles.splashLogoFrame}>
                 <Image
                   source={require('./assets/images/ALPFANJITLOGO.png')}
@@ -105,8 +108,6 @@ export default function App() {
                   resizeMode="contain"
                 />
               </View>
-              <Text style={styles.chapter}>ALPFA NJIT</Text>
-              <Text style={styles.tagline}>Building Leaders. Creating Opportunities.</Text>
             </Animated.View>
             <View style={styles.loadingGroup}>
               <View style={styles.loadingBar}>
@@ -122,7 +123,7 @@ export default function App() {
                   ]}
                 />
               </View>
-              <Text style={styles.loadingText}>Loading...</Text>
+              <Text style={styles.loadingText}>LEAD  •  CONNECT  •  BELONG  •  GROW</Text>
             </View>
           </Animated.View>
         ) : (
@@ -137,7 +138,7 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0F102E' },
+  container: { flex: 1, backgroundColor: '#F8F6F2' },
   webContainer: { backgroundColor: '#201F1D', paddingVertical: 24 },
   appViewport: { flex: 1, width: '100%' },
   webViewport: {
@@ -159,9 +160,10 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     left: 0,
-    backgroundColor: '#0F102E',
+    backgroundColor: '#F8F6F2',
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
   },
   brandContainer: {
     position: 'absolute',
@@ -174,12 +176,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 28,
   },
   splashLogoFrame: {
-    width: 132,
-    height: 132,
-    borderRadius: 30,
-    backgroundColor: '#FFFFFF',
-    padding: 8,
-    marginBottom: 22,
+    width: 238,
+    height: 238,
+    borderRadius: 42,
+    backgroundColor: '#0F102E',
     overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
@@ -188,22 +188,17 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  chapter: { color: '#FFFFFF', fontSize: 24, fontWeight: '900', letterSpacing: 2 },
-  tagline: {
-    color: 'rgba(255,255,255,0.68)',
-    fontSize: 13,
-    fontWeight: '500',
-    marginTop: 8,
-    textAlign: 'center',
-  },
-  loadingGroup: { position: 'absolute', bottom: 55, left: 0, right: 0, alignItems: 'center' },
+  shard: { position: 'absolute', width: '120%', height: 155 },
+  leftShard: { top: '14%', left: '-55%', backgroundColor: '#0F102E' },
+  rightShard: { bottom: '15%', right: '-55%', backgroundColor: '#6E1B2D' },
+  loadingGroup: { position: 'absolute', bottom: 16, left: 0, right: 0, alignItems: 'center' },
   loadingBar: {
-    width: 130,
-    height: 4,
-    backgroundColor: 'rgba(255,255,255,0.18)',
+    width: '86%',
+    height: 3,
+    backgroundColor: 'rgba(15,16,46,0.14)',
     borderRadius: 10,
     overflow: 'hidden',
   },
-  loadingProgress: { height: '100%', backgroundColor: '#FFFFFF', borderRadius: 10 },
-  loadingText: { color: 'rgba(255,255,255,0.45)', fontSize: 11, marginTop: 10, letterSpacing: 1 },
+  loadingProgress: { height: '100%', backgroundColor: '#6E1B2D', borderRadius: 10 },
+  loadingText: { color: 'rgba(8,28,55,0.62)', fontSize: 8, marginTop: 9, letterSpacing: 1.1 },
 });
