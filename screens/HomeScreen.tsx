@@ -8,6 +8,7 @@ import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import useResponsive from '../utils/responsive';
 import useTheme from '../utils/useTheme';
 import { ThemePalette } from '../constants/theme';
+import { CalendarEvent, fetchCalendarEvents, getCachedEvents } from '../utils/calendarUtils';
 
 type RootTabParamList = { Home: undefined; Events: undefined; Capture: undefined; EBoard: undefined; About: undefined };
 type HomeNavigationProp = BottomTabNavigationProp<RootTabParamList, 'Home'>;
@@ -44,12 +45,20 @@ export default function HomeScreen() {
   const slide = useRef(new Animated.Value(24)).current;
   const scrollOffsetY = useRef(0);
   const [lastScrollDir, setLastScrollDir] = useState<'up' | 'down' | null>(null);
+  const [nextEvent, setNextEvent] = useState<CalendarEvent | null>(null);
 
   useEffect(() => {
     Animated.parallel([
       Animated.timing(fade, { toValue: 1, duration: 650, useNativeDriver: true }),
       Animated.spring(slide, { toValue: 0, speed: 12, bounciness: 5, useNativeDriver: true }),
     ]).start();
+
+    const chooseNext = (events: CalendarEvent[]) => {
+      const now = Date.now();
+      setNextEvent(events.filter((event) => event.endDate.getTime() >= now).sort((a, b) => a.startDate.getTime() - b.startDate.getTime())[0] || null);
+    };
+    getCachedEvents().then((cached) => cached && chooseNext(cached.events)).catch(() => undefined);
+    fetchCalendarEvents().then(chooseNext).catch(() => undefined);
   }, [fade, slide]);
 
   const handleScroll = (event: any) => {
@@ -94,15 +103,25 @@ export default function HomeScreen() {
           </View>
         </Animated.View>
 
-        <TouchableOpacity activeOpacity={0.92} style={[styles.featuredCard, { marginHorizontal: responsive.horizontalPadding, marginTop: responsive.responsiveSpacing.lg, padding: responsive.isSmallPhone ? 18 : 22 }]} onPress={goToEvents}>
+        <TouchableOpacity activeOpacity={0.92} style={[styles.featuredCard, { marginHorizontal: responsive.horizontalPadding, marginTop: responsive.responsiveSpacing.lg, padding: responsive.isSmallPhone ? 16 : 19 }]} onPress={goToEvents}>
+          <View style={styles.bannerShardOne} />
+          <View style={styles.bannerShardTwo} />
           <View style={styles.featuredTopRow}>
-            <View style={styles.badge}><View style={styles.badgeDot} /><Text style={styles.badgeText}>ALPFA NJIT</Text></View>
-            <Ionicons name="arrow-forward" size={19} color="rgba(255,255,255,0.75)" />
+            <View style={styles.dateTile}>
+              <Text style={styles.dateMonth}>{nextEvent ? nextEvent.startDate.toLocaleDateString('en-US', { month: 'short' }).toUpperCase() : 'NEXT'}</Text>
+              <Text style={styles.dateDay}>{nextEvent ? nextEvent.startDate.getDate() : '—'}</Text>
+            </View>
+            <View style={styles.eventHeading}>
+              <Text style={styles.nextLabel}>NEXT EVENT</Text>
+              <Text style={[styles.eventTitle, { fontSize: responsive.isSmallPhone ? 17 : 20 }]} numberOfLines={2}>{nextEvent?.title || 'More events coming soon'}</Text>
+            </View>
           </View>
-          <Text style={[styles.featuredTitle, { fontSize: responsive.isSmallPhone ? 20 : 24 }]}>Your community.</Text>
-          <Text style={[styles.featuredTitleAccent, { fontSize: responsive.isSmallPhone ? 20 : 24 }]}>Your opportunity.</Text>
-          <Text style={[styles.featuredText, { fontSize: responsive.isSmallPhone ? 11 : 12 }]}>Connect with students, professionals, events, and opportunities through ALPFA NJIT.</Text>
-          <View style={styles.featuredBottom}><Text style={styles.featuredAction}>Explore ALPFA</Text><View style={styles.featuredArrow}><Ionicons name="arrow-forward" size={15} color="#6E1B2D" /></View></View>
+          <View style={styles.eventMeta}>
+            <Ionicons name="time-outline" size={14} color="rgba(255,255,255,0.8)" />
+            <Text style={styles.eventMetaText}>{nextEvent ? nextEvent.startDate.toLocaleString('en-US', { weekday: 'short', hour: 'numeric', minute: '2-digit' }) : 'Check the Events tab for updates'}</Text>
+          </View>
+          {nextEvent?.location ? <View style={styles.eventMeta}><Ionicons name="location-outline" size={14} color="rgba(255,255,255,0.8)" /><Text style={styles.eventMetaText} numberOfLines={1}>{nextEvent.location}</Text></View> : null}
+          <View style={styles.featuredBottom}><Text style={styles.featuredAction}>View event details</Text><View style={styles.featuredArrow}><Ionicons name="arrow-forward" size={15} color="#6E1B2D" /></View></View>
         </TouchableOpacity>
 
         <View style={[styles.section, { marginHorizontal: responsive.horizontalPadding, marginTop: responsive.responsiveSpacing.xl }]}>
@@ -162,7 +181,15 @@ const createStyles = (colors: ThemePalette) => StyleSheet.create({
   headerText: { flex: 1, minWidth: 0 }, eyebrow: { color: 'rgba(255,255,255,0.62)', fontSize: 10, fontWeight: '900', letterSpacing: 2 }, headerTitle: { color: '#FFFFFF', fontSize: 30, fontWeight: '900', marginTop: 6 }, headerSubtitle: { color: 'rgba(255,255,255,0.67)', fontSize: 12, marginTop: 8, lineHeight: 18 },
   headerLogoFrame: { width: 66, height: 66, borderRadius: 18, backgroundColor: '#FFFFFF', padding: 7, alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' },
   headerLogo: { width: '100%', height: '100%' },
-  featuredCard: { backgroundColor: '#6E1B2D', borderRadius: 22, borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)', shadowColor: '#000', shadowOpacity: 0.16, shadowRadius: 18, shadowOffset: { width: 0, height: 10 } }, featuredTopRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }, badge: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.12)', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 999 }, badgeDot: { width: 8, height: 8, borderRadius: 99, backgroundColor: '#FFFFFF', marginRight: 8 }, badgeText: { color: '#FFFFFF', fontSize: 10, fontWeight: '800' }, featuredTitle: { color: '#FFFFFF', fontSize: 24, fontWeight: '900', marginTop: 18 }, featuredTitleAccent: { color: '#FFE9EE', fontSize: 24, fontWeight: '900', marginTop: 2 }, featuredText: { color: 'rgba(255,255,255,0.82)', fontSize: 12, lineHeight: 19, marginTop: 12, maxWidth: 520 }, featuredBottom: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 18 }, featuredAction: { color: '#FFFFFF', fontSize: 14, fontWeight: '800' }, featuredArrow: { width: 34, height: 34, borderRadius: 12, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center' },
+  featuredCard: { backgroundColor: '#081C37', borderRadius: 22, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(255,255,255,0.16)', shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 18, shadowOffset: { width: 0, height: 10 } },
+  bannerShardOne: { position: 'absolute', width: 190, height: 70, backgroundColor: '#6E1B2D', right: -55, top: -20, transform: [{ rotate: '-32deg' }] },
+  bannerShardTwo: { position: 'absolute', width: 160, height: 44, backgroundColor: '#C71F30', right: -78, bottom: 4, transform: [{ rotate: '-32deg' }], opacity: 0.7 },
+  featuredTopRow: { flexDirection: 'row', alignItems: 'center', gap: 13 },
+  dateTile: { width: 62, minHeight: 72, borderRadius: 14, backgroundColor: '#6E1B2D', alignItems: 'center', justifyContent: 'center', paddingVertical: 8 },
+  dateMonth: { color: '#FFFFFF', fontSize: 10, fontWeight: '900', letterSpacing: 0.8 }, dateDay: { color: '#FFFFFF', fontSize: 27, fontWeight: '900', marginTop: 1 },
+  eventHeading: { flex: 1, minWidth: 0 }, nextLabel: { color: 'rgba(255,255,255,0.62)', fontSize: 9, fontWeight: '900', letterSpacing: 1.5 }, eventTitle: { color: '#FFFFFF', fontSize: 20, fontWeight: '900', marginTop: 5, lineHeight: 23 },
+  eventMeta: { flexDirection: 'row', alignItems: 'center', gap: 7, marginTop: 10, paddingRight: 35 }, eventMetaText: { color: 'rgba(255,255,255,0.82)', fontSize: 11, flexShrink: 1 },
+  featuredBottom: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 15 }, featuredAction: { color: '#FFFFFF', fontSize: 12, fontWeight: '800' }, featuredArrow: { width: 32, height: 32, borderRadius: 16, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center' },
   section: { marginTop: 26 }, rowBetween: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', gap: 12 }, sectionTitle: { color: colors.textPrimary, fontSize: 22, fontWeight: '900' }, sectionCaption: { color: colors.textSecondary, fontSize: 11, marginTop: 4 }, seeAll: { color: '#6E1B2D', fontSize: 12, fontWeight: '800', flexShrink: 1, textAlign: 'right' }, actionsGrid: { width: '100%', alignSelf: 'stretch', flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', marginTop: 14 },
   actionTile: { width: '48.5%', marginBottom: 10 }, actionCard: { width: '100%', minHeight: 124, padding: 14, borderRadius: 18, justifyContent: 'space-between', shadowColor: '#000', shadowOpacity: 0.07, shadowRadius: 10, shadowOffset: { width: 0, height: 5 } }, burgundy: { backgroundColor: '#6E1B2D' }, navy: { backgroundColor: '#0F102E' }, light: { backgroundColor: colors.surface }, actionIcon: { width: 38, height: 38, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.12)', alignItems: 'center', justifyContent: 'center' }, actionIconLight: { backgroundColor: colors.iconBgLight }, actionTitle: { color: '#FFFFFF', fontSize: 16, fontWeight: '800', marginTop: 10, flexShrink: 1 }, darkText: { color: colors.textPrimary }, actionSubtitle: { color: 'rgba(255,255,255,0.75)', fontSize: 10, marginTop: 3, flexShrink: 1 }, darkSubtext: { color: colors.textSecondary }, actionArrow: { alignSelf: 'flex-end', marginTop: 8 },
   preview: { marginTop: 14, backgroundColor: colors.surface, borderRadius: 20, padding: 16, flexDirection: 'row', alignItems: 'center', gap: 14, shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 12, shadowOffset: { width: 0, height: 6 } }, calendarIcon: { width: 48, height: 48, borderRadius: 16, backgroundColor: '#6E1B2D', alignItems: 'center', justifyContent: 'center' }, previewContent: { flex: 1, minWidth: 0 }, previewTitle: { color: colors.textPrimary, fontSize: 18, fontWeight: '900' }, previewText: { color: colors.textSecondary, fontSize: 11, lineHeight: 17, marginTop: 5 },
