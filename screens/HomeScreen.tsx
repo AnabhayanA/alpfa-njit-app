@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Animated, Image, Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Animated, Image, Linking, ScrollView, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { useNavigation } from '@react-navigation/native';
@@ -25,6 +25,10 @@ const LINKS = {
 export default function HomeScreen() {
   const navigation = useNavigation<HomeNavigation>();
   const insets = useSafeAreaInsets();
+  const { width, height } = useWindowDimensions();
+  const contentWidth = Math.min(width, 520);
+  const scale = Math.max(0.86, Math.min(contentWidth / 390, 1.16));
+  const compactHeight = height < 700;
   const [nextEvent, setNextEvent] = useState<CalendarEvent | null>(null);
   const fade = useRef(new Animated.Value(0)).current;
   const rise = useRef(new Animated.Value(16)).current;
@@ -57,11 +61,20 @@ export default function HomeScreen() {
 
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={[styles.content, { paddingTop: insets.top + 8, paddingBottom: insets.bottom + 118 }]}
+        contentContainerStyle={[
+          styles.content,
+          {
+            width: contentWidth,
+            alignSelf: 'center',
+            paddingHorizontal: Math.max(12, 14 * scale),
+            paddingTop: insets.top + Math.max(5, 8 * scale),
+            paddingBottom: insets.bottom + (compactHeight ? 96 : 118),
+          },
+        ]}
       >
         <Animated.View style={{ opacity: fade, transform: [{ translateY: rise }] }}>
-          <View style={styles.brandRow}>
-            <Image source={require('../assets/images/ALPFANJITLOGO.png')} style={styles.logo} resizeMode="cover" />
+          <View style={[styles.brandRow, { minHeight: 52 * scale }]}>
+            <Image source={require('../assets/images/ALPFANJITLOGO.png')} style={[styles.logo, { width: 54 * scale, height: 54 * scale, borderRadius: 10 * scale }]} resizeMode="cover" />
             <View style={styles.brandCopy}>
               <Text style={styles.brandName}>ALPFA NJIT</Text>
               <Text style={styles.brandTag}>Latinos{`\n`}Leaders{`\n`}Stronger Together</Text>
@@ -71,11 +84,11 @@ export default function HomeScreen() {
             </TouchableOpacity>
           </View>
 
-          <Text style={styles.welcome}>Welcome back,</Text>
-          <Text style={styles.familia}>Familia</Text>
+          <Text style={[styles.welcome, { fontSize: 29 * scale, lineHeight: 31 * scale, marginTop: (compactHeight ? 5 : 9) * scale }]}>Welcome back,</Text>
+          <Text style={[styles.familia, { fontSize: 29 * scale, lineHeight: 30 * scale }]}>Familia</Text>
           <Text style={styles.motto}>BUILD  •  CONNECT  •  BELONG</Text>
 
-          <TouchableOpacity style={styles.eventCard} activeOpacity={0.9} onPress={() => navigation.navigate('Events')}>
+          <TouchableOpacity style={[styles.eventCard, { minHeight: (compactHeight ? 142 : 151) * scale, marginTop: (compactHeight ? 7 : 10) * scale, padding: 12 * scale, borderRadius: 16 * scale }]} activeOpacity={0.9} onPress={() => navigation.navigate('Events')}>
             <View style={styles.eventRedSlash} />
             <View style={styles.eventBurgundySlash} />
             <View style={styles.eventTop}>
@@ -91,7 +104,7 @@ export default function HomeScreen() {
               <Text style={styles.cardWords}>PEOPLE{`\n`}PURPOSE{`\n`}PROGRESS</Text>
             </View>
 
-            <Text style={styles.eventTitle} numberOfLines={2}>{nextEvent?.title || 'More ALPFA NJIT events coming soon'}</Text>
+            <Text style={[styles.eventTitle, { fontSize: 16 * scale, lineHeight: 19 * scale }]} numberOfLines={2}>{nextEvent?.title || 'More ALPFA NJIT events coming soon'}</Text>
             <View style={styles.metaRow}>
               <Ionicons name="calendar-outline" size={14} color="#FFFFFF" />
               <Text style={styles.metaText}>{nextEvent ? nextEvent.startDate.toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : 'Check the Events page for updates'}</Text>
@@ -105,14 +118,14 @@ export default function HomeScreen() {
             <View style={styles.eventArrow}><Ionicons name="chevron-forward" size={17} color="#FFFFFF" /></View>
           </TouchableOpacity>
 
-          <Text style={styles.quickHeading}>QUICK LINKS</Text>
-          <View style={styles.quickGrid}>
-            <QuickLink label="Events" icon="calendar" color="#C01C3B" background="#FCE5E9" onPress={() => navigation.navigate('Events')} />
-            <QuickLink label="E-Board" icon="people" color="#0794C8" background="#DFF5FC" onPress={() => navigation.navigate('EBoard')} />
-            <QuickLink label="About" icon="document-text" color="#C48518" background="#FFF0CB" onPress={() => navigation.navigate('About')} />
-            <QuickLink label="Join" icon="person-add" color="#16845B" background="#DCF7EA" onPress={() => open(LINKS.highlander)} />
-            <QuickLink label="Share a Photo" icon="camera" color="#7650B5" background="#ECE4FB" onPress={() => navigation.navigate('Capture')} />
-            <QuickLink label="Website" icon="open-outline" color="#F06C43" background="#FFE8DF" onPress={() => open(LINKS.website)} />
+          <Text style={[styles.quickHeading, { marginTop: (compactHeight ? 10 : 14) * scale }]}>QUICK LINKS</Text>
+          <View style={[styles.quickGrid, { gap: Math.max(5, 7 * scale) }]}>
+            <QuickLink scale={scale} label="Events" icon="calendar" color="#C01C3B" background="#FCE5E9" onPress={() => navigation.navigate('Events')} />
+            <QuickLink scale={scale} label="E-Board" icon="people" color="#0794C8" background="#DFF5FC" onPress={() => navigation.navigate('EBoard')} />
+            <QuickLink scale={scale} label="About" icon="document-text" color="#C48518" background="#FFF0CB" onPress={() => navigation.navigate('About')} />
+            <QuickLink scale={scale} label="Join" icon="person-add" color="#16845B" background="#DCF7EA" onPress={() => open(LINKS.highlander)} />
+            <QuickLink scale={scale} label="Share a Photo" icon="camera" color="#7650B5" background="#ECE4FB" onPress={() => navigation.navigate('Capture')} />
+            <QuickLink scale={scale} label="Website" icon="open-outline" color="#F06C43" background="#FFE8DF" onPress={() => open(LINKS.website)} />
           </View>
 
           <View style={styles.bottomMessage}>
@@ -128,27 +141,28 @@ export default function HomeScreen() {
   );
 }
 
-function QuickLink({ label, icon, color, background, onPress }: {
+function QuickLink({ label, icon, color, background, onPress, scale }: {
   label: string;
   icon: keyof typeof Ionicons.glyphMap;
   color: string;
   background: string;
   onPress: () => void;
+  scale: number;
 }) {
   return (
-    <TouchableOpacity style={styles.quickCard} activeOpacity={0.76} onPress={onPress}>
-      <View style={[styles.quickIcon, { backgroundColor: background }]}>
-        <Ionicons name={icon} size={17} color={color} />
+    <TouchableOpacity style={[styles.quickCard, { minHeight: 42 * scale, borderRadius: 13 * scale, paddingHorizontal: 9 * scale }]} activeOpacity={0.76} onPress={onPress}>
+      <View style={[styles.quickIcon, { backgroundColor: background, width: 28 * scale, height: 28 * scale, borderRadius: 9 * scale }]}>
+        <Ionicons name={icon} size={17 * scale} color={color} />
       </View>
-      <Text style={styles.quickLabel}>{label}</Text>
-      <Ionicons name="chevron-forward" size={13} color="#89909A" />
+      <Text style={[styles.quickLabel, { fontSize: 10 * scale }]} numberOfLines={1}>{label}</Text>
+      <Ionicons name="chevron-forward" size={13 * scale} color="#89909A" />
     </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: '#FAF8F4', overflow: 'hidden' },
-  content: { paddingHorizontal: 14 },
+  content: {},
   brandRow: { flexDirection: 'row', alignItems: 'center', minHeight: 52 },
   logo: { width: 54, height: 54, borderRadius: 10, backgroundColor: '#0F102E' },
   brandCopy: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10, marginLeft: 9 },

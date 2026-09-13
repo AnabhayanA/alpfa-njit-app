@@ -11,6 +11,7 @@ import {
   Platform,
   StyleSheet,
   Text,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -54,11 +55,13 @@ function MainApp() {
 
 export default function App() {
   const { colors } = useTheme();
+  const { width, height } = useWindowDimensions();
   const [loading, setLoading] = useState(true);
   const logoOpacity = useRef(new Animated.Value(0)).current;
   const logoScale = useRef(new Animated.Value(0.72)).current;
   const leftShard = useRef(new Animated.Value(-420)).current;
   const rightShard = useRef(new Animated.Value(420)).current;
+  const shimmer = useRef(new Animated.Value(-1)).current;
   const loadingWidth = useRef(new Animated.Value(0)).current;
   const splashOpacity = useRef(new Animated.Value(1)).current;
 
@@ -69,6 +72,14 @@ export default function App() {
       Animated.timing(logoOpacity, { toValue: 1, duration: 650, delay: 180, easing: Easing.out(Easing.ease), useNativeDriver: true }),
       Animated.spring(logoScale, { toValue: 1, delay: 180, speed: 10, bounciness: 5, useNativeDriver: true }),
     ]).start();
+
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(shimmer, { toValue: 1, duration: 1200, delay: 500, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+        Animated.timing(shimmer, { toValue: -1, duration: 0, delay: 650, useNativeDriver: true }),
+      ]),
+      { iterations: 1 }
+    ).start();
 
     Animated.timing(loadingWidth, {
       toValue: 1,
@@ -98,18 +109,32 @@ export default function App() {
         <View style={[styles.appViewport, Platform.OS === 'web' && styles.webViewport]}>
         {loading ? (
           <Animated.View style={[styles.splash, { opacity: splashOpacity }]}>
-            <Animated.View style={[styles.shard, styles.leftShard, { transform: [{ translateX: leftShard }, { rotate: '-12deg' }] }]} />
-            <Animated.View style={[styles.shard, styles.rightShard, { transform: [{ translateX: rightShard }, { rotate: '-12deg' }] }]} />
+            <Animated.View style={[styles.shard, styles.leftShard, { width: width * 1.18, height: Math.max(100, height * 0.16), transform: [{ translateX: leftShard }, { rotate: '-14deg' }] }]} />
+            <Animated.View style={[styles.shard, styles.leftShardAccent, { width: width, transform: [{ translateX: leftShard }, { rotate: '-14deg' }] }]} />
+            <Animated.View style={[styles.shard, styles.rightShard, { width: width * 1.18, height: Math.max(100, height * 0.16), transform: [{ translateX: rightShard }, { rotate: '-14deg' }] }]} />
+            <Animated.View style={[styles.shard, styles.rightShardAccent, { width: width, transform: [{ translateX: rightShard }, { rotate: '-14deg' }] }]} />
             <Animated.View style={[styles.brandContainer, { opacity: logoOpacity, transform: [{ scale: logoScale }] }]}>
-              <View style={styles.splashLogoFrame}>
+              <View style={[styles.splashLogoFrame, { width: Math.min(width * 0.62, height * 0.31, 280), height: Math.min(width * 0.62, height * 0.31, 280), borderRadius: Math.min(width * 0.1, 42) }]}>
                 <Image
                   source={require('./assets/images/ALPFANJITLOGO.png')}
                   style={styles.splashLogo}
                   resizeMode="contain"
                 />
+                <Animated.View
+                  pointerEvents="none"
+                  style={[
+                    styles.logoShimmer,
+                    {
+                      transform: [
+                        { translateX: shimmer.interpolate({ inputRange: [-1, 1], outputRange: [-300, 300] }) },
+                        { rotate: '18deg' },
+                      ],
+                    },
+                  ]}
+                />
               </View>
             </Animated.View>
-            <View style={styles.loadingGroup}>
+            <View style={[styles.loadingGroup, { bottom: Math.max(14, height * 0.025) }]}>
               <View style={styles.loadingBar}>
                 <Animated.View
                   style={[
@@ -188,9 +213,12 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  shard: { position: 'absolute', width: '120%', height: 155 },
-  leftShard: { top: '14%', left: '-55%', backgroundColor: '#0F102E' },
-  rightShard: { bottom: '15%', right: '-55%', backgroundColor: '#6E1B2D' },
+  shard: { position: 'absolute', height: 155 },
+  leftShard: { top: '13%', left: '-55%', backgroundColor: '#0F102E' },
+  leftShardAccent: { top: '22%', left: '-58%', height: 24, backgroundColor: '#C99731', opacity: 0.72 },
+  rightShard: { bottom: '14%', right: '-55%', backgroundColor: '#6E1B2D' },
+  rightShardAccent: { bottom: '23%', right: '-58%', height: 22, backgroundColor: '#0F102E', opacity: 0.9 },
+  logoShimmer: { position: 'absolute', top: -50, bottom: -50, width: 34, backgroundColor: 'rgba(255,218,128,0.30)' },
   loadingGroup: { position: 'absolute', bottom: 16, left: 0, right: 0, alignItems: 'center' },
   loadingBar: {
     width: '86%',
