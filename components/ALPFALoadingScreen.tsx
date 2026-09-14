@@ -4,6 +4,7 @@ import {
   Animated,
   Easing,
   Image,
+  Platform,
   StyleSheet,
   Text,
   useWindowDimensions,
@@ -11,11 +12,12 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-// Exact red ALPFA + Highlander artwork requested for the loading screen.
-const ALPFA_LOGO = require('../assets/images/NJITalpfa logo.pdf (6).png');
+// White ALPFA + Highlander + NJIT lockup requested for the loading screen.
+const ALPFA_LOGO = require('../assets/images/NJITalpfa Logo.pdf (7).png');
 
 const NAVY = '#050A16';
 const WHITE = '#F5F6F8';
+const RED = '#E5223D';
 const TOTAL_MS = 6200;
 
 type Props = {
@@ -49,7 +51,7 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
   }, []);
 
   const safeHeight = Math.max(1, height - insets.top - insets.bottom);
-  const logoWidth = Math.min(width * 0.64, 300);
+  const logoWidth = Math.min(width * 0.72, 340);
   const logoHeight = logoWidth;
 
   useEffect(() => {
@@ -109,7 +111,6 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
     extrapolate: 'clamp',
   });
 
-  // Calm beginning, then a much faster finish so the transition has more punch.
   const logoScale = timeline.interpolate({
     inputRange: [0, 0.18, 0.42, 0.64, 0.78, 0.86, 0.91, 0.95, 1],
     outputRange: [0.96, 1, 1.04, 1.12, 1.38, 1.9, 3.1, 5.8, 8.5],
@@ -134,6 +135,12 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
     extrapolate: 'clamp',
   });
 
+  const accentOpacity = timeline.interpolate({
+    inputRange: [0, 0.12, 0.26, 0.82, 0.94, 1],
+    outputRange: [0, 0, 0.34, 0.34, 0.16, 0],
+    extrapolate: 'clamp',
+  });
+
   const flashOpacity = timeline.interpolate({
     inputRange: [0, 0.91, 0.955, 0.985, 1],
     outputRange: [0, 0, 0.88, 0.18, 0],
@@ -145,6 +152,8 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
     outputRange: [1, 1, 0],
     extrapolate: 'clamp',
   });
+
+  const accentThickness = Math.max(3, Math.min(width * 0.012, 5));
 
   return (
     <Animated.View
@@ -164,6 +173,43 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
           },
         ]}
       >
+        <Animated.View
+          style={[
+            styles.accentLayer,
+            {
+              width: logoWidth,
+              height: logoHeight,
+              opacity: accentOpacity,
+              transform: [{ translateY: logoY }, { scale: logoScale }],
+            },
+          ]}
+        >
+          <View
+            style={[
+              styles.redAccent,
+              {
+                width: logoWidth * 0.36,
+                height: accentThickness,
+                left: logoWidth * 0.14,
+                top: logoHeight * 0.21,
+                transform: [{ rotate: '-58deg' }],
+              },
+            ]}
+          />
+          <View
+            style={[
+              styles.redAccent,
+              {
+                width: logoWidth * 0.29,
+                height: accentThickness,
+                left: logoWidth * 0.57,
+                top: logoHeight * 0.21,
+                transform: [{ rotate: '63deg' }],
+              },
+            ]}
+          />
+        </Animated.View>
+
         <Animated.View
           style={[
             styles.logoGroup,
@@ -241,6 +287,19 @@ const styles = StyleSheet.create({
     right: 0,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  accentLayer: {
+    position: 'absolute',
+  },
+  redAccent: {
+    position: 'absolute',
+    borderRadius: 999,
+    backgroundColor: RED,
+    shadowColor: RED,
+    shadowOpacity: Platform.OS === 'android' ? 0.45 : 0.72,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 0 },
+    elevation: 6,
   },
   logoGroup: {
     alignItems: 'center',
