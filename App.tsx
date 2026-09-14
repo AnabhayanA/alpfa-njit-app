@@ -14,32 +14,32 @@ import CaptureScreen from './screens/CaptureScreen';
 import useTheme from './utils/useTheme';
 
 const Tab = createBottomTabNavigator();
-const LOADING_LOGO = require('./assets/images/NJITalpfa logo (2).png');
-const SPLASH_NAVY = '#060B1A';
-const ALPFA_RED = '#E5223D';
+const SPLASH_NAVY = '#050A18';
+const ALPFA_RED = '#FF2947';
 
 const STARS = [
-  ['6%', '8%', 2, 0.5], ['13%', '18%', 1, 0.38], ['21%', '11%', 2, 0.62], ['29%', '27%', 1, 0.34],
-  ['37%', '14%', 2, 0.52], ['46%', '7%', 1, 0.36], ['58%', '19%', 2, 0.68], ['67%', '10%', 1, 0.42],
-  ['77%', '25%', 2, 0.52], ['88%', '13%', 1, 0.40], ['95%', '31%', 2, 0.60], ['9%', '38%', 1, 0.32],
-  ['18%', '52%', 2, 0.58], ['28%', '43%', 1, 0.36], ['40%', '57%', 2, 0.64], ['51%', '39%', 1, 0.30],
-  ['61%', '51%', 2, 0.54], ['72%', '42%', 1, 0.38], ['84%', '57%', 2, 0.62], ['93%', '48%', 1, 0.34],
-  ['7%', '69%', 2, 0.48], ['17%', '82%', 1, 0.32], ['31%', '72%', 2, 0.60], ['44%', '88%', 1, 0.36],
-  ['55%', '74%', 2, 0.58], ['66%', '90%', 1, 0.34], ['79%', '76%', 2, 0.52], ['91%', '88%', 1, 0.40],
-  ['24%', '94%', 2, 0.48], ['73%', '64%', 1, 0.34], ['49%', '25%', 2, 0.52], ['82%', '35%', 1, 0.34],
+  ['7%','10%',2,.75],['15%','22%',1,.45],['24%','8%',2,.62],['32%','31%',1,.42],['41%','14%',2,.55],
+  ['50%','6%',1,.38],['58%','24%',2,.78],['67%','12%',1,.42],['76%','30%',2,.58],['88%','16%',1,.46],
+  ['94%','34%',2,.66],['9%','41%',1,.38],['18%','54%',2,.62],['28%','45%',1,.42],['39%','60%',2,.72],
+  ['50%','42%',1,.36],['61%','56%',2,.60],['72%','46%',1,.46],['83%','61%',2,.70],['93%','51%',1,.40],
+  ['6%','72%',2,.54],['16%','85%',1,.36],['29%','75%',2,.68],['43%','91%',1,.40],['54%','78%',2,.62],
+  ['66%','92%',1,.38],['78%','80%',2,.58],['91%','90%',1,.42],['22%','95%',2,.50],['73%','66%',1,.38],
+  ['47%','26%',2,.62],['84%','38%',1,.40],['12%','64%',1,.45],['35%','20%',1,.50],['69%','34%',2,.56],
 ] as const;
 
 const STREAKS = [
-  { left: '2%', top: '24%', rotate: '18deg', width: 128 },
-  { left: '67%', top: '21%', rotate: '-18deg', width: 132 },
-  { left: '-4%', top: '43%', rotate: '8deg', width: 112 },
-  { left: '73%', top: '45%', rotate: '-8deg', width: 126 },
-  { left: '4%', top: '67%', rotate: '-18deg', width: 132 },
-  { left: '68%', top: '70%', rotate: '18deg', width: 128 },
-  { left: '21%', top: '8%', rotate: '62deg', width: 118 },
-  { left: '58%', top: '10%', rotate: '118deg', width: 118 },
-  { left: '25%', top: '82%', rotate: '-62deg', width: 118 },
-  { left: '57%', top: '82%', rotate: '62deg', width: 118 },
+  { left:'-4%', top:'22%', rot:'16deg', len:150 },
+  { left:'68%', top:'18%', rot:'-18deg', len:160 },
+  { left:'-8%', top:'42%', rot:'6deg', len:135 },
+  { left:'72%', top:'41%', rot:'-7deg', len:145 },
+  { left:'0%', top:'66%', rot:'-16deg', len:155 },
+  { left:'69%', top:'70%', rot:'17deg', len:150 },
+  { left:'16%', top:'7%', rot:'58deg', len:135 },
+  { left:'61%', top:'8%', rot:'122deg', len:135 },
+  { left:'18%', top:'83%', rot:'-58deg', len:140 },
+  { left:'60%', top:'82%', rot:'58deg', len:140 },
+  { left:'-2%', top:'53%', rot:'11deg', len:95 },
+  { left:'79%', top:'56%', rot:'-10deg', len:100 },
 ] as const;
 
 function Tabs() {
@@ -58,167 +58,115 @@ function MainApp() {
   return <NavigationContainer><Tabs /></NavigationContainer>;
 }
 
+function CinematicAlpfaMark({ size }: { size: number }) {
+  const barW = size * 0.12;
+  const barH = size * 0.78;
+  return (
+    <View style={{ width: size, height: size * 0.88, alignItems: 'center', justifyContent: 'center' }}>
+      <View style={[styles.redBar, { width: barW, height: barH, left: size * 0.22, top: size * 0.04, transform: [{ rotate: '31deg' }] }]} />
+      <View style={[styles.redBar, { width: barW, height: barH, right: size * 0.22, top: size * 0.04, transform: [{ rotate: '-31deg' }] }]} />
+      <View style={[styles.whiteSlash, { width: size * 0.42, height: Math.max(3, size * 0.022), bottom: size * 0.18, transform: [{ rotate: '-8deg' }] }]} />
+      <Text style={[styles.alpfaWord, { fontSize: size * 0.11, letterSpacing: size * 0.015 }]}>ALPFA</Text>
+    </View>
+  );
+}
+
 export default function App() {
   const { colors } = useTheme();
   const { width, height } = useWindowDimensions();
   const [showSplash, setShowSplash] = useState(true);
 
   const starDrift = useRef(new Animated.Value(0)).current;
-  const logoOpacity = useRef(new Animated.Value(0)).current;
-  const logoScale = useRef(new Animated.Value(0.08)).current;
-  const logoLift = useRef(new Animated.Value(24)).current;
+  const markOpacity = useRef(new Animated.Value(0)).current;
+  const markScale = useRef(new Animated.Value(0.08)).current;
+  const markY = useRef(new Animated.Value(30)).current;
   const taglineOpacity = useRef(new Animated.Value(0)).current;
   const streakBuild = useRef(new Animated.Value(0)).current;
-  const streakRush = useRef(new Animated.Value(0)).current;
-  const redBloom = useRef(new Animated.Value(0)).current;
+  const rush = useRef(new Animated.Value(0)).current;
+  const wash = useRef(new Animated.Value(0)).current;
   const splashOpacity = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    const driftLoop = Animated.loop(
+    const drift = Animated.loop(
       Animated.sequence([
-        Animated.timing(starDrift, { toValue: 1, duration: 2600, easing: Easing.linear, useNativeDriver: true }),
-        Animated.timing(starDrift, { toValue: 0, duration: 2600, easing: Easing.linear, useNativeDriver: true }),
+        Animated.timing(starDrift, { toValue: 1, duration: 3000, easing: Easing.linear, useNativeDriver: true }),
+        Animated.timing(starDrift, { toValue: 0, duration: 3000, easing: Easing.linear, useNativeDriver: true }),
       ])
     );
-
-    driftLoop.start();
+    drift.start();
 
     Animated.sequence([
-      // 1. Stars only — let the space intro establish itself.
-      Animated.delay(800),
+      // 1. Stars only.
+      Animated.delay(700),
 
-      // 2. Distant logo appears.
+      // 2. Tiny distant logo.
       Animated.parallel([
-        Animated.timing(logoOpacity, {
-          toValue: 1,
-          duration: 420,
-          easing: Easing.out(Easing.quad),
-          useNativeDriver: true,
-        }),
-        Animated.timing(logoScale, {
-          toValue: 0.24,
-          duration: 800,
-          easing: Easing.bezier(0.18, 0.72, 0.22, 1),
-          useNativeDriver: true,
-        }),
-        Animated.timing(logoLift, {
-          toValue: 10,
-          duration: 800,
-          easing: Easing.out(Easing.cubic),
-          useNativeDriver: true,
-        }),
+        Animated.timing(markOpacity, { toValue: 1, duration: 300, useNativeDriver: true }),
+        Animated.timing(markScale, { toValue: 0.23, duration: 700, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
+        Animated.timing(markY, { toValue: 14, duration: 700, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
+      ]),
+      Animated.delay(150),
+
+      // 3. Approach with first faint streaks.
+      Animated.parallel([
+        Animated.timing(markScale, { toValue: 0.55, duration: 850, easing: Easing.bezier(0.2, 0.75, 0.22, 1), useNativeDriver: true }),
+        Animated.timing(markY, { toValue: 0, duration: 850, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
+        Animated.timing(streakBuild, { toValue: 0.28, duration: 850, useNativeDriver: true }),
       ]),
 
-      // 3. Slow cinematic approach.
+      // 4. Hero logo + tagline.
       Animated.parallel([
-        Animated.timing(logoScale, {
-          toValue: 0.56,
-          duration: 800,
-          easing: Easing.bezier(0.18, 0.76, 0.22, 1),
-          useNativeDriver: true,
-        }),
-        Animated.timing(logoLift, {
-          toValue: 0,
-          duration: 800,
-          easing: Easing.out(Easing.cubic),
-          useNativeDriver: true,
-        }),
-      ]),
-
-      // 4. Tagline reveal and readable hold.
-      Animated.timing(taglineOpacity, {
-        toValue: 1,
-        duration: 380,
-        easing: Easing.out(Easing.quad),
-        useNativeDriver: true,
-      }),
-      Animated.delay(420),
-
-      // 5. Red streaks visibly build around the logo.
-      Animated.parallel([
-        Animated.timing(streakBuild, {
-          toValue: 1,
-          duration: 620,
-          easing: Easing.out(Easing.cubic),
-          useNativeDriver: true,
-        }),
-        Animated.timing(logoScale, {
-          toValue: 0.72,
-          duration: 620,
-          easing: Easing.out(Easing.cubic),
-          useNativeDriver: true,
-        }),
-      ]),
-      Animated.delay(180),
-
-      // 6. Final push — logo and streaks rush toward the viewer.
-      Animated.parallel([
-        Animated.timing(logoScale, {
-          toValue: 2.7,
-          duration: 700,
-          easing: Easing.bezier(0.22, 0.82, 0.12, 1),
-          useNativeDriver: true,
-        }),
-        Animated.timing(streakRush, {
-          toValue: 1,
-          duration: 700,
-          easing: Easing.bezier(0.22, 0.82, 0.12, 1),
-          useNativeDriver: true,
-        }),
-        Animated.timing(taglineOpacity, {
-          toValue: 0,
-          duration: 260,
-          useNativeDriver: true,
-        }),
+        Animated.timing(markScale, { toValue: 0.72, duration: 430, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
         Animated.sequence([
-          Animated.delay(430),
-          Animated.timing(redBloom, {
-            toValue: 1,
-            duration: 220,
-            easing: Easing.out(Easing.quad),
-            useNativeDriver: true,
-          }),
+          Animated.delay(100),
+          Animated.timing(taglineOpacity, { toValue: 1, duration: 300, easing: Easing.out(Easing.quad), useNativeDriver: true }),
+        ]),
+      ]),
+      Animated.delay(500),
+
+      // 5. Red streaks build hard around the logo.
+      Animated.parallel([
+        Animated.timing(streakBuild, { toValue: 1, duration: 520, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
+        Animated.timing(markScale, { toValue: 0.83, duration: 520, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
+      ]),
+      Animated.delay(160),
+
+      // 6. Final push past camera.
+      Animated.parallel([
+        Animated.timing(rush, { toValue: 1, duration: 650, easing: Easing.bezier(0.18, 0.8, 0.1, 1), useNativeDriver: true }),
+        Animated.timing(markScale, { toValue: 3.4, duration: 650, easing: Easing.bezier(0.18, 0.8, 0.1, 1), useNativeDriver: true }),
+        Animated.timing(taglineOpacity, { toValue: 0, duration: 220, useNativeDriver: true }),
+        Animated.sequence([
+          Animated.delay(420),
+          Animated.timing(wash, { toValue: 1, duration: 180, easing: Easing.out(Easing.quad), useNativeDriver: true }),
         ]),
       ]),
 
-      // 7. Quick red light wash, then reveal the real Home screen underneath.
+      // 7. Light wash into Home.
       Animated.parallel([
-        Animated.timing(redBloom, {
-          toValue: 0,
-          duration: 260,
-          useNativeDriver: true,
-        }),
-        Animated.timing(logoOpacity, {
-          toValue: 0,
-          duration: 220,
-          useNativeDriver: true,
-        }),
-        Animated.timing(splashOpacity, {
-          toValue: 0,
-          duration: 420,
-          easing: Easing.out(Easing.quad),
-          useNativeDriver: true,
-        }),
+        Animated.timing(markOpacity, { toValue: 0, duration: 180, useNativeDriver: true }),
+        Animated.timing(wash, { toValue: 0, duration: 300, useNativeDriver: true }),
+        Animated.timing(splashOpacity, { toValue: 0, duration: 420, easing: Easing.out(Easing.quad), useNativeDriver: true }),
       ]),
     ]).start(() => {
-      driftLoop.stop();
+      drift.stop();
       setShowSplash(false);
     });
 
-    return () => driftLoop.stop();
-  }, [logoLift, logoOpacity, logoScale, redBloom, splashOpacity, starDrift, streakBuild, streakRush, taglineOpacity]);
+    return () => drift.stop();
+  }, [markOpacity, markScale, markY, rush, splashOpacity, starDrift, streakBuild, taglineOpacity, wash]);
 
-  const logoSize = Math.min(width * 0.78, 360);
-  const starTranslateY = starDrift.interpolate({ inputRange: [0, 1], outputRange: [0, 12] });
-  const starScale = starDrift.interpolate({ inputRange: [0, 1], outputRange: [1, 1.04] });
-  const streakOpacity = streakBuild.interpolate({ inputRange: [0, 0.08, 1], outputRange: [0, 0.15, 1] });
+  const markSize = Math.min(width * 0.70, 300);
+  const starTranslateY = starDrift.interpolate({ inputRange: [0, 1], outputRange: [0, 10] });
+  const starScale = starDrift.interpolate({ inputRange: [0, 1], outputRange: [1, 1.035] });
+  const streakOpacity = streakBuild.interpolate({ inputRange: [0, 0.12, 1], outputRange: [0, 0.22, 1] });
   const streakScaleX = Animated.multiply(
-    streakBuild.interpolate({ inputRange: [0, 1], outputRange: [0.05, 1] }),
-    streakRush.interpolate({ inputRange: [0, 1], outputRange: [1, 3.8] })
+    streakBuild.interpolate({ inputRange: [0, 1], outputRange: [0.08, 1] }),
+    rush.interpolate({ inputRange: [0, 1], outputRange: [1, 4.8] })
   );
-  const streakTranslateX = streakRush.interpolate({ inputRange: [0, 1], outputRange: [0, 115] });
-  const bloomOpacity = redBloom.interpolate({ inputRange: [0, 1], outputRange: [0, 0.68] });
-  const bloomScale = redBloom.interpolate({ inputRange: [0, 1], outputRange: [0.45, 3.4] });
+  const streakTranslateX = rush.interpolate({ inputRange: [0, 1], outputRange: [0, 95] });
+  const washOpacity = wash.interpolate({ inputRange: [0, 1], outputRange: [0, 0.92] });
+  const washScale = wash.interpolate({ inputRange: [0, 1], outputRange: [0.2, 3.8] });
 
   return (
     <SafeAreaProvider style={styles.safeArea}>
@@ -234,46 +182,31 @@ export default function App() {
         {showSplash && (
           <Animated.View pointerEvents="none" style={[styles.splash, { width, height, opacity: splashOpacity }]}>
             <Animated.View style={[styles.starField, { transform: [{ translateY: starTranslateY }, { scale: starScale }] }]}>
-              {STARS.map(([left, top, size, opacity], index) => (
-                <View
-                  key={`${left}-${top}-${index}`}
-                  style={[styles.star, { left, top, width: size, height: size, borderRadius: size, opacity }]}
-                />
+              {STARS.map(([left, top, size, opacity], i) => (
+                <View key={i} style={[styles.star, { left, top, width: size, height: size, borderRadius: size, opacity }]} />
               ))}
             </Animated.View>
 
             <View style={styles.streakLayer}>
-              {STREAKS.map((streak, index) => (
+              {STREAKS.map((s, i) => (
                 <Animated.View
-                  key={`${streak.left}-${streak.top}-${index}`}
+                  key={i}
                   style={[
                     styles.streak,
                     {
-                      left: streak.left,
-                      top: streak.top,
-                      width: streak.width,
+                      left: s.left,
+                      top: s.top,
+                      width: s.len,
                       opacity: streakOpacity,
-                      transform: [
-                        { rotate: streak.rotate },
-                        { translateX: streakTranslateX },
-                        { scaleX: streakScaleX },
-                      ],
+                      transform: [{ rotate: s.rot }, { translateX: streakTranslateX }, { scaleX: streakScaleX }],
                     },
                   ]}
                 />
               ))}
             </View>
 
-            <Animated.View
-              style={[
-                styles.logoWrap,
-                {
-                  opacity: logoOpacity,
-                  transform: [{ translateY: logoLift }, { scale: logoScale }],
-                },
-              ]}
-            >
-              <Animated.Image source={LOADING_LOGO} resizeMode="contain" style={{ width: logoSize, height: logoSize }} />
+            <Animated.View style={[styles.markWrap, { opacity: markOpacity, transform: [{ translateY: markY }, { scale: markScale }] }]}>
+              <CinematicAlpfaMark size={markSize} />
             </Animated.View>
 
             <Animated.View style={[styles.taglineWrap, { opacity: taglineOpacity }]}>
@@ -282,13 +215,13 @@ export default function App() {
 
             <Animated.View
               style={[
-                styles.redBloom,
+                styles.wash,
                 {
-                  width: Math.min(width, height) * 0.38,
-                  height: Math.min(width, height) * 0.38,
-                  borderRadius: Math.min(width, height) * 0.19,
-                  opacity: bloomOpacity,
-                  transform: [{ scale: bloomScale }],
+                  width: Math.min(width, height) * 0.42,
+                  height: Math.min(width, height) * 0.42,
+                  borderRadius: Math.min(width, height) * 0.21,
+                  opacity: washOpacity,
+                  transform: [{ scale: washScale }],
                 },
               ]}
             />
@@ -329,38 +262,46 @@ const styles = StyleSheet.create({
     elevation: 99999,
   },
   starField: { ...StyleSheet.absoluteFillObject },
-  star: { position: 'absolute', backgroundColor: '#DDEBFF' },
-  streakLayer: { ...StyleSheet.absoluteFillObject, zIndex: 3 },
+  star: { position: 'absolute', backgroundColor: '#E6F1FF' },
+  streakLayer: { ...StyleSheet.absoluteFillObject, zIndex: 2 },
   streak: {
     position: 'absolute',
-    height: 4,
+    height: 3,
     borderRadius: 999,
     backgroundColor: ALPFA_RED,
-    shadowColor: ALPFA_RED,
-    shadowOpacity: 0.95,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 0 },
   },
-  logoWrap: { alignItems: 'center', justifyContent: 'center', zIndex: 5 },
+  markWrap: { zIndex: 4, alignItems: 'center', justifyContent: 'center' },
+  redBar: {
+    position: 'absolute',
+    borderRadius: 3,
+    backgroundColor: ALPFA_RED,
+  },
+  whiteSlash: {
+    position: 'absolute',
+    borderRadius: 999,
+    backgroundColor: '#FFFFFF',
+  },
+  alpfaWord: {
+    color: '#FFFFFF',
+    fontWeight: '900',
+    position: 'absolute',
+    top: '49%',
+  },
   taglineWrap: {
     position: 'absolute',
-    top: '67%',
+    top: '66%',
     alignItems: 'center',
-    zIndex: 6,
+    zIndex: 5,
   },
   tagline: {
     color: '#FFFFFF',
     fontSize: 10,
     fontWeight: '800',
-    letterSpacing: 2.2,
+    letterSpacing: 2.1,
   },
-  redBloom: {
+  wash: {
     position: 'absolute',
-    backgroundColor: ALPFA_RED,
     zIndex: 10,
-    shadowColor: ALPFA_RED,
-    shadowOpacity: 0.9,
-    shadowRadius: 34,
-    shadowOffset: { width: 0, height: 0 },
+    backgroundColor: '#FF5A70',
   },
 });
