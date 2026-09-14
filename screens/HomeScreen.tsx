@@ -27,8 +27,6 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const contentWidth = Math.min(width, 560);
-  // Use a comfortable reading scale and let the page scroll. The previous
-  // version compressed short phones too aggressively to fit one viewport.
   const scale = Math.max(1.06, Math.min(contentWidth / 350, 1.3));
   const [nextEvent, setNextEvent] = useState<CalendarEvent | null>(null);
   const fade = useRef(new Animated.Value(0)).current;
@@ -57,10 +55,17 @@ export default function HomeScreen() {
   return (
     <View style={styles.screen}>
       <StatusBar style="dark" />
-      <View style={styles.topRedSlash} />
-      <View style={styles.topNavySlash} />
+
+      {/* Decorative brand geometry stays behind all readable/tappable content. */}
+      <View pointerEvents="none" style={styles.backgroundDecor}>
+        <View style={styles.topRedSlash} />
+        <View style={styles.topNavySlash} />
+        <View style={styles.bottomNavySlash} />
+        <View style={styles.bottomRedSlash} />
+      </View>
 
       <ScrollView
+        style={styles.foreground}
         showsVerticalScrollIndicator={false}
         alwaysBounceVertical
         bounces
@@ -75,7 +80,7 @@ export default function HomeScreen() {
           },
         ]}
       >
-        <Animated.View style={{ opacity: fade, transform: [{ translateY: rise }] }}>
+        <Animated.View style={{ opacity: fade, transform: [{ translateY: rise }], zIndex: 2 }}>
           <View style={[styles.brandRow, { minHeight: 52 * scale }]}>
             <Image source={require('../assets/images/ALPFANJITLOGO.png')} style={[styles.logo, { width: 54 * scale, height: 54 * scale, borderRadius: 10 * scale }]} resizeMode="cover" />
             <View style={styles.brandCopy}>
@@ -92,33 +97,38 @@ export default function HomeScreen() {
           <Text style={styles.motto}>BUILD  •  CONNECT  •  BELONG</Text>
 
           <TouchableOpacity style={[styles.eventCard, { minHeight: 164 * scale, marginTop: 12 * scale, padding: 14 * scale, borderRadius: 18 * scale }]} activeOpacity={0.9} onPress={() => navigation.navigate('Events')}>
-            <View style={styles.eventRedSlash} />
-            <View style={styles.eventBurgundySlash} />
-            <View style={styles.eventTop}>
-              <View style={styles.dateTile}>
-                <Text style={styles.month}>{nextEvent ? nextEvent.startDate.toLocaleDateString('en-US', { month: 'short' }).toUpperCase() : 'NEXT'}</Text>
-                <Text style={styles.day}>{nextEvent ? nextEvent.startDate.getDate() : '—'}</Text>
-                <Text style={styles.hour}>{nextEvent ? nextEvent.startDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : 'EVENT'}</Text>
-              </View>
-              <View style={styles.nextCopy}>
-                <Text style={styles.nextLabel}>NEXT EVENT</Text>
-                <View style={styles.goldLine} />
-              </View>
-              <Text style={styles.cardWords}>PEOPLE{`\n`}PURPOSE{`\n`}PROGRESS</Text>
+            <View pointerEvents="none" style={styles.eventDecor}>
+              <View style={styles.eventRedSlash} />
+              <View style={styles.eventBurgundySlash} />
             </View>
 
-            <Text style={[styles.eventTitle, { fontSize: 16 * scale, lineHeight: 19 * scale }]} numberOfLines={2}>{nextEvent?.title || 'More ALPFA NJIT events coming soon'}</Text>
-            <View style={styles.metaRow}>
-              <Ionicons name="calendar-outline" size={14} color="#FFFFFF" />
-              <Text style={styles.metaText}>{nextEvent ? nextEvent.startDate.toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : 'Check the Events page for updates'}</Text>
-            </View>
-            {!!nextEvent?.location && (
-              <View style={styles.metaRow}>
-                <Ionicons name="location-outline" size={14} color="#FFFFFF" />
-                <Text style={styles.metaText} numberOfLines={1}>{nextEvent.location}</Text>
+            <View style={styles.eventContent}>
+              <View style={styles.eventTop}>
+                <View style={styles.dateTile}>
+                  <Text style={styles.month}>{nextEvent ? nextEvent.startDate.toLocaleDateString('en-US', { month: 'short' }).toUpperCase() : 'NEXT'}</Text>
+                  <Text style={styles.day}>{nextEvent ? nextEvent.startDate.getDate() : '—'}</Text>
+                  <Text style={styles.hour}>{nextEvent ? nextEvent.startDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : 'EVENT'}</Text>
+                </View>
+                <View style={styles.nextCopy}>
+                  <Text style={styles.nextLabel}>NEXT EVENT</Text>
+                  <View style={styles.goldLine} />
+                </View>
+                <Text style={styles.cardWords}>PEOPLE{`\n`}PURPOSE{`\n`}PROGRESS</Text>
               </View>
-            )}
-            <View style={styles.eventArrow}><Ionicons name="chevron-forward" size={17} color="#FFFFFF" /></View>
+
+              <Text style={[styles.eventTitle, { fontSize: 16 * scale, lineHeight: 19 * scale }]} numberOfLines={2}>{nextEvent?.title || 'More ALPFA NJIT events coming soon'}</Text>
+              <View style={styles.metaRow}>
+                <Ionicons name="calendar-outline" size={14} color="#FFFFFF" />
+                <Text style={styles.metaText}>{nextEvent ? nextEvent.startDate.toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : 'Check the Events page for updates'}</Text>
+              </View>
+              {!!nextEvent?.location && (
+                <View style={styles.metaRow}>
+                  <Ionicons name="location-outline" size={14} color="#FFFFFF" />
+                  <Text style={styles.metaText} numberOfLines={1}>{nextEvent.location}</Text>
+                </View>
+              )}
+              <View style={styles.eventArrow}><Ionicons name="chevron-forward" size={17} color="#FFFFFF" /></View>
+            </View>
           </TouchableOpacity>
 
           <Text style={[styles.quickHeading, { marginTop: 18 * scale, marginBottom: 9 * scale }]}>QUICK LINKS</Text>
@@ -137,9 +147,6 @@ export default function HomeScreen() {
           </View>
         </Animated.View>
       </ScrollView>
-
-      <View pointerEvents="none" style={styles.bottomNavySlash} />
-      <View pointerEvents="none" style={styles.bottomRedSlash} />
     </View>
   );
 }
@@ -165,17 +172,21 @@ function QuickLink({ label, icon, color, background, onPress, scale }: {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: '#FAF8F4', overflow: 'hidden' },
+  backgroundDecor: { ...StyleSheet.absoluteFillObject, zIndex: 0 },
+  foreground: { flex: 1, zIndex: 1 },
   content: {},
   brandRow: { flexDirection: 'row', alignItems: 'center', minHeight: 52 },
   logo: { width: 54, height: 54, borderRadius: 10, backgroundColor: '#0F102E' },
   brandCopy: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10, marginLeft: 9 },
   brandName: { color: '#081C37', fontSize: 18, fontWeight: '900', letterSpacing: 0.4 },
   brandTag: { color: '#081C37', fontSize: 8, lineHeight: 10, letterSpacing: 0.3 },
-  profileButton: { width: 34, height: 34, borderRadius: 17, backgroundColor: 'rgba(255,255,255,0.75)', alignItems: 'center', justifyContent: 'center' },
+  profileButton: { width: 34, height: 34, borderRadius: 17, backgroundColor: 'rgba(255,255,255,0.82)', alignItems: 'center', justifyContent: 'center' },
   welcome: { color: '#081C37', fontSize: 29, lineHeight: 31, fontWeight: '900', marginTop: 9 },
   familia: { color: '#9D1734', fontSize: 29, lineHeight: 30, fontWeight: '900' },
   motto: { color: '#081C37', fontSize: 9, fontWeight: '800', letterSpacing: 1.5, marginTop: 7 },
   eventCard: { minHeight: 151, marginTop: 10, padding: 12, borderRadius: 16, backgroundColor: '#081C37', overflow: 'hidden', shadowColor: '#081C37', shadowOpacity: 0.24, shadowRadius: 10, shadowOffset: { width: 0, height: 6 } },
+  eventDecor: { ...StyleSheet.absoluteFillObject, zIndex: 0 },
+  eventContent: { zIndex: 1 },
   eventRedSlash: { position: 'absolute', width: 150, height: 52, right: -47, top: -10, backgroundColor: '#B51C35', transform: [{ rotate: '-42deg' }] },
   eventBurgundySlash: { position: 'absolute', width: 150, height: 48, right: -58, bottom: -4, backgroundColor: '#6E1B2D', transform: [{ rotate: '-42deg' }] },
   eventTop: { flexDirection: 'row', alignItems: 'center' },
