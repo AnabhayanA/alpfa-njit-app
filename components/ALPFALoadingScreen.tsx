@@ -18,7 +18,6 @@ import StarField from './StarField';
 const ALPFA_LOGO = require('../assets/images/NJITalpfa logo (2).png');
 
 const NAVY = '#030817';
-const ALPFA_RED = '#FF2444';
 
 const STREAKS = [
   { startX: -0.28, startY: 0.18, angle: '18deg', lengthRatio: 0.34, delay: 0.00, directionX: -1, directionY: -0.2 },
@@ -40,7 +39,7 @@ type Props = {
 export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
   const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
-  const [reducedMotion, setReducedMotion] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState<boolean | null>(null);
 
   const starsMotion = useRef(new Animated.Value(0)).current;
   const logoOpacity = useRef(new Animated.Value(0)).current;
@@ -60,10 +59,17 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
 
   useEffect(() => {
     let mounted = true;
-    AccessibilityInfo.isReduceMotionEnabled().then((enabled) => {
-      if (mounted) setReducedMotion(enabled);
-    });
+
+    AccessibilityInfo.isReduceMotionEnabled()
+      .then((enabled) => {
+        if (mounted) setReducedMotion(enabled);
+      })
+      .catch(() => {
+        if (mounted) setReducedMotion(false);
+      });
+
     const subscription = AccessibilityInfo.addEventListener?.('reduceMotionChanged', setReducedMotion);
+
     return () => {
       mounted = false;
       subscription?.remove?.();
@@ -71,15 +77,25 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
   }, []);
 
   useEffect(() => {
+    if (reducedMotion === null) return;
+
     if (reducedMotion) {
-      Animated.sequence([
+      const reduced = Animated.sequence([
         Animated.timing(logoOpacity, { toValue: 1, duration: 350, useNativeDriver: true }),
-        Animated.delay(500),
-        Animated.timing(taglineOpacity, { toValue: 1, duration: 250, useNativeDriver: true }),
-        Animated.delay(500),
+        Animated.delay(450),
+        Animated.parallel([
+          Animated.timing(taglineOpacity, { toValue: 1, duration: 250, useNativeDriver: true }),
+          Animated.timing(taglineY, { toValue: 0, duration: 250, useNativeDriver: true }),
+        ]),
+        Animated.delay(450),
         Animated.timing(overlayOpacity, { toValue: 0, duration: 350, useNativeDriver: true }),
-      ]).start(() => onAnimationComplete?.());
-      return;
+      ]);
+
+      reduced.start(({ finished }) => {
+        if (finished) onAnimationComplete?.();
+      });
+
+      return () => reduced.stop();
     }
 
     const starLoop = Animated.loop(
@@ -99,13 +115,8 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
       ])
     );
 
-    starLoop.start();
-
-    Animated.sequence([
-      // 0.00-0.40 — stars only
+    const intro = Animated.sequence([
       Animated.delay(400),
-
-      // 0.40-1.00 — distant logo approaches
       Animated.parallel([
         Animated.timing(logoOpacity, {
           toValue: 1,
@@ -134,8 +145,6 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
           }),
         ]),
       ]),
-
-      // 1.00-1.50 — stronger approach + streaks
       Animated.parallel([
         Animated.timing(logoScale, {
           toValue: 0.96,
@@ -156,8 +165,6 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
           useNativeDriver: true,
         }),
       ]),
-
-      // 1.50-2.00 — settle + tagline
       Animated.parallel([
         Animated.timing(logoScale, {
           toValue: 1.06,
@@ -190,8 +197,6 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
         ]),
       ]),
       Animated.delay(80),
-
-      // 2.00-2.40 — final push through camera
       Animated.parallel([
         Animated.timing(rushProgress, {
           toValue: 1,
@@ -223,8 +228,6 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
           useNativeDriver: true,
         }),
       ]),
-
-      // 2.40-2.80 — space falls away into the app
       Animated.parallel([
         Animated.timing(glowOpacity, {
           toValue: 0,
@@ -243,12 +246,18 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
           useNativeDriver: true,
         }),
       ]),
-    ]).start(() => {
+    ]);
+
+    starLoop.start();
+    intro.start(({ finished }) => {
       starLoop.stop();
-      onAnimationComplete?.();
+      if (finished) onAnimationComplete?.();
     });
 
-    return () => starLoop.stop();
+    return () => {
+      starLoop.stop();
+      intro.stop();
+    };
   }, [
     backgroundZoom,
     glowOpacity,
@@ -268,16 +277,16 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
 
   const backgroundScale = backgroundZoom.interpolate({ inputRange: [0, 1], outputRange: [1, 1.16] });
   const heroGlowScale = logoScale.interpolate({ inputRange: [0.18, 1.06, 4.8], outputRange: [0.4, 1, 1.6] });
-
   const streakItems = useMemo(() => STREAKS, []);
+  const shouldReduce = reducedMotion === true;
 
   return (
     <Animated.View style={[styles.root, { width, height, opacity: overlayOpacity }]} pointerEvents="auto">
       <Animated.View style={[styles.spaceLayer, { transform: [{ scale: backgroundScale }] }]}>
-        <StarField width={width} height={height} motion={starsMotion} reducedMotion={reducedMotion} />
+        <StarField width={width} height={height} motion={starsMotion} reducedMotion={shouldReduce} />
       </Animated.View>
 
-      {!reducedMotion && (
+      {!shouldReduce && (
         <View pointerEvents="none" style={StyleSheet.absoluteFillObject}>
           {streakItems.map((streak, index) => (
             <LightStreak
