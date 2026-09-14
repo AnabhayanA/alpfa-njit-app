@@ -56,7 +56,6 @@ export default function HomeScreen() {
     <View style={styles.screen}>
       <StatusBar style="dark" />
 
-      {/* Decorative brand geometry stays behind all readable/tappable content. */}
       <View pointerEvents="none" style={styles.backgroundDecor}>
         <View style={styles.topRedSlash} />
         <View style={styles.topNavySlash} />
@@ -173,7 +172,7 @@ function QuickLink({ label, icon, color, background, onPress, scale }: {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: '#FAF8F4', overflow: 'hidden' },
   backgroundDecor: { ...StyleSheet.absoluteFillObject, zIndex: 0 },
-  foreground: { flex: 1, zIndex: 1 },
+  foreground: { flex: 1, zIndex: 1, backgroundColor: 'transparent' },
   content: {},
   brandRow: { flexDirection: 'row', alignItems: 'center', minHeight: 52 },
   logo: { width: 54, height: 54, borderRadius: 10, backgroundColor: '#0F102E' },
@@ -212,6 +211,6 @@ const styles = StyleSheet.create({
   bottomSub: { color: '#9D1734', fontSize: 9, fontWeight: '800', marginTop: 7, letterSpacing: 1.2 },
   topRedSlash: { position: 'absolute', width: 220, height: 40, right: -80, top: 54, backgroundColor: '#B51C35', transform: [{ rotate: '-39deg' }], opacity: 0.96 },
   topNavySlash: { position: 'absolute', width: 190, height: 25, right: -90, top: 85, backgroundColor: '#081C37', transform: [{ rotate: '-39deg' }] },
-  bottomNavySlash: { position: 'absolute', width: 240, height: 62, right: -89, bottom: 20, backgroundColor: '#081C37', transform: [{ rotate: '-27deg' }] },
-  bottomRedSlash: { position: 'absolute', width: 260, height: 34, left: -130, bottom: 30, backgroundColor: '#9D1734', transform: [{ rotate: '-27deg' }], opacity: 0.95 },
+  bottomNavySlash: { position: 'absolute', width: 250, height: 66, right: -82, bottom: 16, backgroundColor: '#081C37', transform: [{ rotate: '-27deg' }], opacity: 0.96 },
+  bottomRedSlash: { position: 'absolute', width: 270, height: 38, right: -118, bottom: 60, backgroundColor: '#9D1734', transform: [{ rotate: '-27deg' }], opacity: 0.92 },
 });
