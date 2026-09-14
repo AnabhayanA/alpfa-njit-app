@@ -16,6 +16,7 @@ import useTheme from './utils/useTheme';
 const Tab = createBottomTabNavigator();
 const LOADING_LOGO = require('./assets/images/NJITalpfa logo (2).png');
 const SPLASH_NAVY = '#0F102E';
+const ALPFA_RED = '#E5223D';
 
 function Tabs() {
   return (
@@ -82,7 +83,7 @@ export default function App() {
   const pulse = useRef(new Animated.Value(0)).current;
   const burst = useRef(new Animated.Value(0)).current;
   const logoOpacity = useRef(new Animated.Value(0)).current;
-  const logoScale = useRef(new Animated.Value(0.88)).current;
+  const logoScale = useRef(new Animated.Value(0.92)).current;
   const splashOpacity = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
@@ -96,20 +97,20 @@ export default function App() {
       }),
       Animated.parallel([
         Animated.sequence([
-          Animated.timing(pulse, { toValue: 1, duration: 110, useNativeDriver: true }),
-          Animated.timing(pulse, { toValue: 0, duration: 150, useNativeDriver: true }),
+          Animated.timing(pulse, { toValue: 1, duration: 150, easing: Easing.out(Easing.quad), useNativeDriver: true }),
+          Animated.timing(pulse, { toValue: 0, duration: 240, easing: Easing.in(Easing.quad), useNativeDriver: true }),
         ]),
         Animated.sequence([
-          Animated.delay(70),
+          Animated.delay(110),
           Animated.timing(logoOpacity, {
             toValue: 1,
-            duration: 240,
+            duration: 280,
             easing: Easing.out(Easing.quad),
             useNativeDriver: true,
           }),
         ]),
       ]),
-      Animated.delay(320),
+      Animated.delay(300),
       Animated.parallel([
         Animated.timing(burst, {
           toValue: 1,
@@ -118,19 +119,19 @@ export default function App() {
           useNativeDriver: true,
         }),
         Animated.sequence([
-          Animated.delay(110),
+          Animated.delay(100),
           Animated.timing(logoScale, {
-            toValue: 1.08,
+            toValue: 1.06,
             duration: 420,
             easing: Easing.out(Easing.cubic),
             useNativeDriver: true,
           }),
         ]),
       ]),
-      Animated.delay(260),
+      Animated.delay(280),
       Animated.parallel([
         Animated.timing(logoScale, {
-          toValue: 1.22,
+          toValue: 1.18,
           duration: 340,
           easing: Easing.out(Easing.cubic),
           useNativeDriver: true,
@@ -154,8 +155,8 @@ export default function App() {
   const stage = Math.min(width * 0.88, 390);
   const strokeLength = stage * 0.38;
   const strokeThickness = Math.max(5, stage * 0.016);
-  const pulseScale = pulse.interpolate({ inputRange: [0, 1], outputRange: [0.2, 1.9] });
-  const pulseOpacity = pulse.interpolate({ inputRange: [0, 0.2, 1], outputRange: [0, 0.75, 0] });
+  const pulseScale = pulse.interpolate({ inputRange: [0, 1], outputRange: [0.35, 1.55] });
+  const pulseOpacity = pulse.interpolate({ inputRange: [0, 0.25, 1], outputRange: [0, 0.42, 0] });
 
   return (
     <SafeAreaProvider style={styles.safeArea}>
@@ -179,9 +180,9 @@ export default function App() {
                 style={[
                   styles.pulse,
                   {
-                    width: stage * 0.18,
-                    height: stage * 0.18,
-                    borderRadius: stage * 0.09,
+                    width: stage * 0.28,
+                    height: stage * 0.28,
+                    borderRadius: stage * 0.14,
                     opacity: pulseOpacity,
                     transform: [{ scale: pulseScale }],
                   },
@@ -242,13 +243,15 @@ const styles = StyleSheet.create({
   stroke: {
     position: 'absolute',
     borderRadius: 999,
-    backgroundColor: '#E5223D',
+    backgroundColor: ALPFA_RED,
   },
   pulse: {
     position: 'absolute',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: ALPFA_RED,
+    shadowColor: ALPFA_RED,
+    shadowOpacity: 0.6,
+    shadowRadius: 24,
+    shadowOffset: { width: 0, height: 0 },
   },
-  loadingLogo: {
-    position: 'absolute',
-  },
+  loadingLogo: { position: 'absolute' },
 });
