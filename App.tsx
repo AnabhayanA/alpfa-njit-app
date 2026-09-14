@@ -15,7 +15,7 @@ import useTheme from './utils/useTheme';
 
 const Tab = createBottomTabNavigator();
 
-// Use only the red/color and white supplied logos on the navy splash.
+// Splash uses only the red/color and white supplied logos.
 const LOGO_COLOR = require('./assets/images/NJITalpfa logo (2).png');
 const LOGO_WHITE = require('./assets/images/NJITalpfa Logo.pdf (7).png');
 const SPLASH_NAVY = '#0F102E';
@@ -120,66 +120,79 @@ export default function App() {
     <SafeAreaProvider>
       <View style={[styles.container, Platform.OS === 'web' && styles.webContainer]}>
         <StatusBar style={showSplash ? 'light' : colors.statusBarStyle} />
+
         <View style={[styles.appViewport, Platform.OS === 'web' && styles.webViewport]}>
           <View style={[styles.mainApp, { backgroundColor: colors.background }]}>
             <MainApp />
           </View>
+        </View>
 
-          {showSplash && (
-            <Animated.View style={[styles.splash, { opacity: splashOpacity }]} pointerEvents="none">
+        {showSplash && (
+          <Animated.View style={[styles.splash, { opacity: splashOpacity }]} pointerEvents="none">
+            <Animated.View
+              style={[
+                styles.logoStage,
+                {
+                  width: logoWidth,
+                  height: logoHeight,
+                  transform: [
+                    { translateY: introY },
+                    { scale: introScale },
+                    { scale: mascotScale },
+                  ],
+                },
+              ]}
+            >
+              <Animated.Image
+                source={LOGO_COLOR}
+                resizeMode="contain"
+                style={[styles.fullLogo, { opacity: colorOpacity }]}
+              />
+
+              <Animated.Image
+                source={LOGO_WHITE}
+                resizeMode="contain"
+                style={[styles.fullLogo, { opacity: whiteOpacity }]}
+              />
+
               <Animated.View
-                style={[
-                  styles.logoStage,
-                  {
-                    width: logoWidth,
-                    height: logoHeight,
-                    transform: [
-                      { translateY: introY },
-                      { scale: introScale },
-                      { scale: mascotScale },
-                    ],
-                  },
-                ]}
+                style={[styles.doorHalf, styles.leftHalf, { transform: [{ translateX: leftDoor }] }]}
               >
-                <Animated.Image
-                  source={LOGO_COLOR}
-                  resizeMode="contain"
-                  style={[styles.fullLogo, { opacity: colorOpacity }]}
-                />
-
-                <Animated.Image
+                <Image source={LOGO_WHITE} resizeMode="contain" style={styles.doorImage} />
+              </Animated.View>
+              <Animated.View
+                style={[styles.doorHalf, styles.rightHalf, { transform: [{ translateX: rightDoor }] }]}
+              >
+                <Image
                   source={LOGO_WHITE}
                   resizeMode="contain"
-                  style={[styles.fullLogo, { opacity: whiteOpacity }]}
+                  style={[styles.doorImage, { left: -logoWidth / 2 }]}
                 />
-
-                <Animated.View
-                  style={[styles.doorHalf, styles.leftHalf, { transform: [{ translateX: leftDoor }] }]}
-                >
-                  <Image source={LOGO_WHITE} resizeMode="contain" style={styles.doorImage} />
-                </Animated.View>
-                <Animated.View
-                  style={[styles.doorHalf, styles.rightHalf, { transform: [{ translateX: rightDoor }] }]}
-                >
-                  <Image
-                    source={LOGO_WHITE}
-                    resizeMode="contain"
-                    style={[styles.doorImage, { left: -logoWidth / 2 }]}
-                  />
-                </Animated.View>
               </Animated.View>
             </Animated.View>
-          )}
-        </View>
+          </Animated.View>
+        )}
       </View>
     </SafeAreaProvider>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: SPLASH_NAVY },
-  webContainer: { backgroundColor: '#201F1D' },
-  appViewport: { flex: 1, width: '100%', position: 'relative', overflow: 'hidden' },
+  container: {
+    flex: 1,
+    width: '100%',
+    backgroundColor: SPLASH_NAVY,
+    position: 'relative',
+  },
+  webContainer: {
+    backgroundColor: '#201F1D',
+  },
+  appViewport: {
+    flex: 1,
+    width: '100%',
+    position: 'relative',
+    overflow: 'hidden',
+  },
   webViewport: {
     width: '100%',
     maxWidth: 430,
@@ -199,8 +212,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
-    zIndex: 1000,
-    elevation: 1000,
+    zIndex: 9999,
+    elevation: 9999,
   },
   logoStage: { position: 'relative', overflow: 'visible' },
   fullLogo: { ...StyleSheet.absoluteFillObject, width: '100%', height: '100%' },
