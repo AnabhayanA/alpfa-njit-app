@@ -10,6 +10,7 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import AnimatedALPFAMark from './AnimatedALPFAMark';
 
 const ALPFA_LOGO = require('../assets/images/NJITalpfa logo.pdf (6).png');
 
@@ -24,6 +25,7 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
   const insets = useSafeAreaInsets();
   const [reducedMotion, setReducedMotion] = useState<boolean | null>(null);
   const timeline = useRef(new Animated.Value(0)).current;
+  const drawProgress = useRef(new Animated.Value(0)).current;
 
   const safeHeight = Math.max(1, height - insets.top - insets.bottom);
   const logoSize = Math.min(width * 0.80, safeHeight * 0.45, 380);
@@ -58,6 +60,7 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
     if (reducedMotion === null) return;
 
     timeline.setValue(0);
+    drawProgress.setValue(reducedMotion ? 1 : 0);
 
     const animation = reducedMotion
       ? Animated.sequence([
@@ -82,12 +85,25 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
           useNativeDriver: true,
         });
 
+    const drawingAnimation = reducedMotion
+      ? null
+      : Animated.timing(drawProgress, {
+          toValue: 1,
+          duration: 1600,
+          easing: Easing.inOut(Easing.cubic),
+          useNativeDriver: false,
+        });
+
+    drawingAnimation?.start();
     animation.start(({ finished }) => {
       if (finished) onAnimationComplete?.();
     });
 
-    return () => animation.stop();
-  }, [onAnimationComplete, reducedMotion, timeline]);
+    return () => {
+      animation.stop();
+      drawingAnimation?.stop();
+    };
+  }, [drawProgress, onAnimationComplete, reducedMotion, timeline]);
 
   const logoScale = timeline.interpolate({
     inputRange: [0, 0.08, 0.28, 0.42, 0.55, 0.68, 0.78, 0.86, 0.92, 0.97, 1],
@@ -95,9 +111,15 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
     extrapolate: 'clamp',
   });
 
+  const vectorOpacity = timeline.interpolate({
+    inputRange: [0, 0.025, 0.24, 0.34, 0.40, 1],
+    outputRange: [0, 1, 1, 0.38, 0, 0],
+    extrapolate: 'clamp',
+  });
+
   const logoOpacity = timeline.interpolate({
-    inputRange: [0, 0.08, 0.18, 0.93, 0.985, 1],
-    outputRange: [0, 0.65, 1, 1, 0.78, 0],
+    inputRange: [0, 0.20, 0.34, 0.93, 0.985, 1],
+    outputRange: [0, 0, 1, 1, 0.78, 0],
     extrapolate: 'clamp',
   });
 
@@ -167,30 +189,38 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
         <Animated.View
           style={[
             styles.logoStage,
-            {
-              opacity: logoOpacity,
-              transform: [{ translateY: logoY }, { scale: logoScale }],
-            },
+            { transform: [{ translateY: logoY }, { scale: logoScale }] },
           ]}
         >
           <View style={{ width: logoSize, height: logoSize }}>
-            <Image
-              source={ALPFA_LOGO}
-              resizeMode="contain"
-              style={styles.image}
-              accessibilityIgnoresInvertColors
-            />
+            <Animated.View
+              pointerEvents="none"
+              style={[StyleSheet.absoluteFillObject, { opacity: vectorOpacity }]}
+            >
+              <AnimatedALPFAMark progress={drawProgress} size={logoSize} />
+            </Animated.View>
 
-            <View style={styles.njitOverlay} pointerEvents="none">
-              <Text
-                style={[
-                  styles.njitText,
-                  { fontSize: Math.max(8, Math.min(logoSize * 0.032, 12)) },
-                ]}
-              >
-                NEW JERSEY INSTITUTE{`\n`}OF TECHNOLOGY
-              </Text>
-            </View>
+            <Animated.View
+              style={{ width: logoSize, height: logoSize, opacity: logoOpacity }}
+            >
+              <Image
+                source={ALPFA_LOGO}
+                resizeMode="contain"
+                style={styles.image}
+                accessibilityIgnoresInvertColors
+              />
+
+              <View style={styles.njitOverlay} pointerEvents="none">
+                <Text
+                  style={[
+                    styles.njitText,
+                    { fontSize: Math.max(8, Math.min(logoSize * 0.032, 12)) },
+                  ]}
+                >
+                  NEW JERSEY INSTITUTE{`\n`}OF TECHNOLOGY
+                </Text>
+              </View>
+            </Animated.View>
           </View>
         </Animated.View>
 
