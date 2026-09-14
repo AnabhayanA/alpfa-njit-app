@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   AccessibilityInfo,
   Animated,
@@ -12,36 +12,16 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import LightStreak from './LightStreak';
-import StarField from './StarField';
-
 const ALPFA_LOGO = require('../assets/images/NJITalpfa logo (2).png');
-const NAVY = '#030817';
-const DURATION = 7600;
+const WHITE_LOCKUP = require('../assets/images/NJITalpfa Logo.pdf (7).png');
 
-const STREAKS = [
-  // First outward wave during the approach.
-  { angleDeg: 202, lengthRatio: 0.24, thickness: 1.0, start: 0.16, peak: 0.205, end: 0.29, startRadius: 0.03, endRadius: 0.58, intensity: 0.62 },
-  { angleDeg: 338, lengthRatio: 0.26, thickness: 1.1, start: 0.18, peak: 0.225, end: 0.31, startRadius: 0.04, endRadius: 0.62, intensity: 0.72 },
-  { angleDeg: 178, lengthRatio: 0.22, thickness: 0.9, start: 0.20, peak: 0.245, end: 0.33, startRadius: 0.02, endRadius: 0.68, intensity: 0.58 },
-  { angleDeg: 4, lengthRatio: 0.23, thickness: 1.0, start: 0.22, peak: 0.265, end: 0.35, startRadius: 0.03, endRadius: 0.70, intensity: 0.68 },
-  { angleDeg: 142, lengthRatio: 0.23, thickness: 1.0, start: 0.24, peak: 0.285, end: 0.37, startRadius: 0.02, endRadius: 0.64, intensity: 0.62 },
-  { angleDeg: 38, lengthRatio: 0.25, thickness: 1.1, start: 0.26, peak: 0.305, end: 0.39, startRadius: 0.03, endRadius: 0.68, intensity: 0.72 },
-  { angleDeg: 226, lengthRatio: 0.22, thickness: 0.9, start: 0.28, peak: 0.325, end: 0.41, startRadius: 0.02, endRadius: 0.62, intensity: 0.58 },
-  { angleDeg: 314, lengthRatio: 0.24, thickness: 1.0, start: 0.30, peak: 0.345, end: 0.43, startRadius: 0.03, endRadius: 0.66, intensity: 0.66 },
-
-  // Fast starburst wave before the final camera pass.
-  { angleDeg: 188, lengthRatio: 0.34, thickness: 1.55, start: 0.48, peak: 0.515, end: 0.61, startRadius: 0.04, endRadius: 0.88, intensity: 1.00 },
-  { angleDeg: 352, lengthRatio: 0.36, thickness: 1.65, start: 0.49, peak: 0.525, end: 0.62, startRadius: 0.04, endRadius: 0.90, intensity: 1.00 },
-  { angleDeg: 155, lengthRatio: 0.31, thickness: 1.45, start: 0.50, peak: 0.535, end: 0.63, startRadius: 0.03, endRadius: 0.86, intensity: 0.92 },
-  { angleDeg: 25, lengthRatio: 0.33, thickness: 1.55, start: 0.51, peak: 0.545, end: 0.64, startRadius: 0.03, endRadius: 0.88, intensity: 0.98 },
-  { angleDeg: 132, lengthRatio: 0.30, thickness: 1.40, start: 0.52, peak: 0.555, end: 0.65, startRadius: 0.03, endRadius: 0.84, intensity: 0.90 },
-  { angleDeg: 48, lengthRatio: 0.31, thickness: 1.45, start: 0.53, peak: 0.565, end: 0.66, startRadius: 0.03, endRadius: 0.86, intensity: 0.94 },
-  { angleDeg: 225, lengthRatio: 0.33, thickness: 1.55, start: 0.54, peak: 0.575, end: 0.67, startRadius: 0.04, endRadius: 0.90, intensity: 1.00 },
-  { angleDeg: 315, lengthRatio: 0.34, thickness: 1.60, start: 0.55, peak: 0.585, end: 0.68, startRadius: 0.04, endRadius: 0.92, intensity: 1.00 },
-  { angleDeg: 270, lengthRatio: 0.30, thickness: 1.45, start: 0.56, peak: 0.595, end: 0.69, startRadius: 0.03, endRadius: 0.88, intensity: 0.92 },
-  { angleDeg: 90, lengthRatio: 0.30, thickness: 1.45, start: 0.565, peak: 0.60, end: 0.695, startRadius: 0.03, endRadius: 0.88, intensity: 0.92 },
-] as const;
+const TOTAL_MS = 10000;
+const NAVY = '#050A16';
+const NAVY_DEEP = '#02040A';
+const RED = '#E3212B';
+const WHITE = '#F5F6F8';
+const CREAM = '#F7F2E9';
+const INK = '#1A1A2E';
 
 type Props = {
   onAnimationComplete?: () => void;
@@ -53,47 +33,49 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
   const [reducedMotion, setReducedMotion] = useState<boolean | null>(null);
 
   const timeline = useRef(new Animated.Value(0)).current;
-  const reducedOpacity = useRef(new Animated.Value(0)).current;
-
-  const safeHeight = Math.max(1, height - insets.top - insets.bottom);
-  const heroWidth = Math.min(width * 0.54, 360);
-  const streakItems = useMemo(() => STREAKS, []);
+  const revealWidth = useRef(new Animated.Value(0)).current;
+  const stageScale = useRef(new Animated.Value(1)).current;
+  const bumpScale = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     let mounted = true;
-
     AccessibilityInfo.isReduceMotionEnabled()
-      .then((enabled) => {
-        if (mounted) setReducedMotion(enabled);
-      })
-      .catch(() => {
-        if (mounted) setReducedMotion(false);
-      });
+      .then((enabled) => mounted && setReducedMotion(enabled))
+      .catch(() => mounted && setReducedMotion(false));
 
     const subscription = AccessibilityInfo.addEventListener?.('reduceMotionChanged', setReducedMotion);
-
     return () => {
       mounted = false;
       subscription?.remove?.();
     };
   }, []);
 
+  const logoWidth = Math.min(width * 0.64, 280);
+  const logoHeight = logoWidth;
+  const safeTop = insets.top;
+  const safeBottom = insets.bottom;
+
   useEffect(() => {
     if (reducedMotion === null) return;
 
     if (reducedMotion) {
+      revealWidth.setValue(logoWidth);
+      stageScale.setValue(1);
+      bumpScale.setValue(1);
+
       const reduced = Animated.sequence([
-        Animated.timing(reducedOpacity, {
-          toValue: 1,
-          duration: 300,
+        Animated.delay(450),
+        Animated.timing(timeline, {
+          toValue: 0.86,
+          duration: 700,
           easing: Easing.out(Easing.quad),
           useNativeDriver: true,
         }),
-        Animated.delay(800),
-        Animated.timing(reducedOpacity, {
-          toValue: 0,
-          duration: 300,
-          easing: Easing.in(Easing.quad),
+        Animated.delay(500),
+        Animated.timing(timeline, {
+          toValue: 1,
+          duration: 450,
+          easing: Easing.out(Easing.quad),
           useNativeDriver: true,
         }),
       ]);
@@ -101,252 +83,253 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
       reduced.start(({ finished }) => {
         if (finished) onAnimationComplete?.();
       });
-
       return () => reduced.stop();
     }
 
-    timeline.setValue(0);
-
-    const run = Animated.timing(timeline, {
+    const master = Animated.timing(timeline, {
       toValue: 1,
-      duration: DURATION,
+      duration: TOTAL_MS,
       easing: Easing.linear,
       useNativeDriver: true,
     });
 
+    const reveal = Animated.timing(revealWidth, {
+      toValue: logoWidth,
+      duration: 2000,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: false,
+    });
+
+    const zoomEase = Easing.bezier(0.45, 0.02, 0.8, 0.35);
+    const scaleSequence = Animated.sequence([
+      Animated.timing(stageScale, { toValue: 1.02, duration: 2000, easing: zoomEase, useNativeDriver: true }),
+      Animated.timing(stageScale, { toValue: 1.15, duration: 2500, easing: zoomEase, useNativeDriver: true }),
+      Animated.timing(stageScale, { toValue: 1.6, duration: 1500, easing: zoomEase, useNativeDriver: true }),
+      Animated.timing(stageScale, { toValue: 2.6, duration: 1000, easing: zoomEase, useNativeDriver: true }),
+      Animated.timing(stageScale, { toValue: 4.2, duration: 600, easing: zoomEase, useNativeDriver: true }),
+      Animated.timing(stageScale, { toValue: 7, duration: 400, easing: zoomEase, useNativeDriver: true }),
+      Animated.timing(stageScale, { toValue: 9, duration: 300, easing: zoomEase, useNativeDriver: true }),
+      Animated.delay(1700),
+    ]);
+
+    const bumpSequence = Animated.sequence([
+      Animated.delay(2500),
+      Animated.timing(bumpScale, { toValue: 1.16, duration: 300, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
+      Animated.timing(bumpScale, { toValue: 0.97, duration: 400, easing: Easing.inOut(Easing.quad), useNativeDriver: true }),
+      Animated.timing(bumpScale, { toValue: 1, duration: 400, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
+      Animated.delay(6400),
+    ]);
+
+    const run = Animated.parallel([master, reveal, scaleSequence, bumpSequence]);
     run.start(({ finished }) => {
       if (finished) onAnimationComplete?.();
     });
 
     return () => run.stop();
-  }, [onAnimationComplete, reducedMotion, reducedOpacity, timeline]);
+  }, [bumpScale, logoWidth, onAnimationComplete, reducedMotion, revealWidth, stageScale, timeline]);
 
-  const shouldReduce = reducedMotion === true;
+  const creamOpacity = timeline.interpolate({
+    inputRange: [0, 0.72, 0.82, 1],
+    outputRange: [0, 0, 1, 1],
+    extrapolate: 'clamp',
+  });
 
-  // Logo appears far away, approaches quickly, then holds cleanly before the final pass.
   const logoOpacity = timeline.interpolate({
-    inputRange: [0, 0.045, 0.085, 0.70, 0.76, 1],
-    outputRange: [0, 0, 1, 1, 0.96, 0],
+    inputRange: [0, 0.76, 0.83, 1],
+    outputRange: [1, 1, 0, 0],
     extrapolate: 'clamp',
   });
 
-  const logoScale = timeline.interpolate({
-    inputRange: [0, 0.045, 0.14, 0.30, 0.42, 0.48, 0.60, 0.70, 0.76, 1],
-    outputRange: [0.14, 0.14, 0.24, 0.62, 0.94, 1.02, 1.18, 3.7, 5.4, 5.4],
-    extrapolate: 'clamp',
-  });
-
-  const logoY = timeline.interpolate({
-    inputRange: [0, 0.08, 0.30, 0.48, 0.60, 0.70, 0.76, 1],
-    outputRange: [height * 0.018, height * 0.018, height * 0.005, 0, 0, -height * 0.02, -height * 0.035, -height * 0.035],
-    extrapolate: 'clamp',
-  });
-
-  const logoX = timeline.interpolate({
-    inputRange: [0, 0.60, 0.70, 0.76, 1],
-    outputRange: [0, 0, -width * 0.03, -width * 0.14, -width * 0.14],
-    extrapolate: 'clamp',
-  });
-
-  const logoRotate = timeline.interpolate({
-    inputRange: [0, 0.60, 0.70, 0.76, 1],
-    outputRange: ['0deg', '0deg', '-0.5deg', '-1.5deg', '-1.5deg'],
+  const glowOpacity = timeline.interpolate({
+    inputRange: [0, 0.18, 0.25, 0.28, 0.36, 0.6, 0.76, 0.83, 1],
+    outputRange: [0.26, 0.42, 0.52, 0.95, 0.48, 0.62, 0.42, 0, 0],
     extrapolate: 'clamp',
   });
 
   const taglineOpacity = timeline.interpolate({
-    inputRange: [0, 0.34, 0.40, 0.55, 0.61, 1],
+    inputRange: [0, 0.34, 0.40, 0.50, 0.58, 1],
     outputRange: [0, 0, 1, 1, 0, 0],
     extrapolate: 'clamp',
   });
 
   const taglineY = timeline.interpolate({
-    inputRange: [0, 0.34, 0.40, 0.55, 1],
-    outputRange: [10, 10, 0, 0, 0],
+    inputRange: [0, 0.34, 0.40, 1],
+    outputRange: [4, 4, 0, 0],
     extrapolate: 'clamp',
   });
 
-  const glowOpacity = timeline.interpolate({
-    inputRange: [0, 0.08, 0.28, 0.48, 0.60, 0.72, 1],
-    outputRange: [0, 0.10, 0.24, 0.34, 0.50, 0.64, 0],
+  const lockupOpacity = timeline.interpolate({
+    inputRange: [0, 0.37, 0.43, 0.50, 0.58, 1],
+    outputRange: [0, 0, 1, 1, 0, 0],
     extrapolate: 'clamp',
   });
 
-  // The star field accelerates outward with the logo instead of sliding sideways.
-  const spaceScale = timeline.interpolate({
-    inputRange: [0, 0.30, 0.48, 0.60, 0.70, 0.78, 1],
-    outputRange: [1, 1.01, 1.025, 1.08, 1.24, 1.42, 1.42],
+  const lockupY = timeline.interpolate({
+    inputRange: [0, 0.37, 0.43, 1],
+    outputRange: [6, 6, 0, 0],
     extrapolate: 'clamp',
   });
 
-  const spaceOpacity = timeline.interpolate({
-    inputRange: [0, 0.72, 0.80, 0.90, 1],
-    outputRange: [1, 1, 0.88, 0.30, 0],
+  const flashOpacity = timeline.interpolate({
+    inputRange: [0, 0.74, 0.79, 0.88, 1],
+    outputRange: [0, 0, 0.9, 0, 0],
     extrapolate: 'clamp',
   });
 
-  // A large diagonal red edge replaces the old side-to-side streak transition.
-  const sweepOpacity = timeline.interpolate({
-    inputRange: [0, 0.675, 0.705, 0.755, 0.80, 1],
-    outputRange: [0, 0, 0.20, 1, 0, 0],
+  const homeOpacity = timeline.interpolate({
+    inputRange: [0, 0.76, 0.86, 0.96, 1],
+    outputRange: [0, 0, 1, 1, 1],
     extrapolate: 'clamp',
   });
 
-  const sweepX = timeline.interpolate({
-    inputRange: [0, 0.68, 0.72, 0.79, 1],
-    outputRange: [width * 1.10, width * 1.10, width * 0.18, -width * 1.20, -width * 1.20],
+  const homeY = timeline.interpolate({
+    inputRange: [0, 0.76, 0.86, 1],
+    outputRange: [10, 10, 0, 0],
     extrapolate: 'clamp',
   });
 
-  const sweepScale = timeline.interpolate({
-    inputRange: [0, 0.68, 0.76, 1],
-    outputRange: [0.9, 0.9, 1.35, 1.35],
-    extrapolate: 'clamp',
-  });
-
-  const whiteoutOpacity = timeline.interpolate({
-    inputRange: [0, 0.73, 0.775, 0.82, 0.89, 1],
-    outputRange: [0, 0, 0.12, 0.88, 0.24, 0],
+  const homeLogoScale = timeline.interpolate({
+    inputRange: [0, 0.75, 0.84, 0.90, 1],
+    outputRange: [0.6, 0.6, 1.08, 1, 1],
     extrapolate: 'clamp',
   });
 
   const overlayOpacity = timeline.interpolate({
-    inputRange: [0, 0.80, 0.91, 1],
-    outputRange: [1, 1, 0.56, 0],
+    inputRange: [0, 0.965, 1],
+    outputRange: [1, 1, 0],
     extrapolate: 'clamp',
   });
 
-  if (shouldReduce) {
-    return (
-      <Animated.View style={[styles.root, { width, height, opacity: reducedOpacity }]}>
-        <StarField width={width} height={height} reducedMotion />
-        <View style={[styles.safeContent, { top: insets.top, bottom: insets.bottom, height: safeHeight }]}>
-          <Image source={ALPFA_LOGO} resizeMode="contain" style={{ width: heroWidth, height: heroWidth }} />
-          <Text style={[styles.tagline, { marginTop: Math.max(10, width * 0.02) }]}>FAMILIA · LEADERSHIP · LEGACY</Text>
-        </View>
-      </Animated.View>
-    );
-  }
+  const glowSize = Math.min(width * 0.82, 420);
+  const outerSize = Math.max(width * 1.25, height * 0.72);
+  const innerSize = Math.max(width * 0.86, 280);
 
   return (
     <Animated.View style={[styles.root, { width, height, opacity: overlayOpacity }]} pointerEvents="auto">
-      <Animated.View style={[styles.spaceLayer, { opacity: spaceOpacity, transform: [{ scale: spaceScale }] }]}>
-        <StarField width={width} height={height} motion={timeline} reducedMotion={false} />
-      </Animated.View>
-
-      <View pointerEvents="none" style={StyleSheet.absoluteFillObject}>
-        {streakItems.map((streak, index) => (
-          <LightStreak
-            key={`streak-${index}`}
-            timeline={timeline}
-            screenWidth={width}
-            screenHeight={height}
-            angleDeg={streak.angleDeg}
-            lengthRatio={streak.lengthRatio}
-            thickness={Math.max(1.8, Math.min(width * 0.0048, 3.0)) * streak.thickness}
-            start={streak.start}
-            peak={streak.peak}
-            end={streak.end}
-            startRadius={streak.startRadius}
-            endRadius={streak.endRadius}
-            intensity={streak.intensity}
-          />
-        ))}
-      </View>
-
+      <View style={styles.deepBackdrop} />
       <View
-        pointerEvents="none"
         style={[
-          styles.safeContent,
+          styles.radialOuter,
           {
-            top: insets.top,
-            bottom: insets.bottom,
-            height: safeHeight,
+            width: outerSize,
+            height: outerSize,
+            borderRadius: outerSize / 2,
+            left: (width - outerSize) / 2,
+            top: height * 0.40 - outerSize / 2,
           },
         ]}
-      >
-        <Animated.View
-          style={[
-            styles.radialGlow,
-            {
-              width: Math.min(width * 0.74, 500),
-              height: Math.min(width * 0.74, 500),
-              borderRadius: Math.min(width * 0.37, 250),
-              opacity: glowOpacity,
-              transform: [{ scale: logoScale }],
-            },
-          ]}
-        />
+      />
+      <View
+        style={[
+          styles.radialInner,
+          {
+            width: innerSize,
+            height: innerSize,
+            borderRadius: innerSize / 2,
+            left: (width - innerSize) / 2,
+            top: height * 0.40 - innerSize / 2,
+          },
+        ]}
+      />
 
-        <Animated.View
-          style={[
-            styles.logoWrap,
-            {
-              opacity: logoOpacity,
-              transform: [
-                { translateX: logoX },
-                { translateY: logoY },
-                { rotate: logoRotate },
-                { scale: logoScale },
-              ],
-            },
-          ]}
-        >
-          <Image
-            source={ALPFA_LOGO}
-            resizeMode="contain"
-            style={{ width: heroWidth, height: heroWidth }}
-            accessibilityIgnoresInvertColors
-          />
-        </Animated.View>
-
-        <Animated.View
-          style={[
-            styles.taglineWrap,
-            {
-              opacity: taglineOpacity,
-              transform: [{ translateY: taglineY }],
-              marginTop: Math.max(10, width * 0.02),
-            },
-          ]}
-        >
-          <Text
-            style={[
-              styles.tagline,
-              {
-                fontSize: Math.max(9, Math.min(width * 0.025, 12)),
-                letterSpacing: Math.max(1.5, Math.min(width * 0.005, 2.4)),
-              },
-            ]}
-          >
-            FAMILIA · LEADERSHIP · LEGACY
-          </Text>
-        </Animated.View>
-      </View>
+      <Animated.View style={[styles.creamLayer, { opacity: creamOpacity }]} />
 
       <Animated.View
         pointerEvents="none"
         style={[
-          styles.redSweep,
+          styles.logoStage,
           {
-            width: width * 0.72,
-            height: height * 1.45,
-            left: width * 0.42,
-            top: -height * 0.22,
-            opacity: sweepOpacity,
-            transform: [
-              { translateX: sweepX },
-              { rotate: '-28deg' },
-              { scale: sweepScale },
-            ],
+            top: safeTop,
+            bottom: safeBottom,
+            transform: [{ scale: stageScale }],
           },
         ]}
       >
-        <View style={styles.redSweepGlow} />
-        <View style={styles.redSweepCore} />
+        <Animated.View
+          style={[
+            styles.neonGlow,
+            {
+              width: glowSize,
+              height: glowSize,
+              borderRadius: glowSize / 2,
+              opacity: glowOpacity,
+              transform: [{ scale: bumpScale }],
+            },
+          ]}
+        />
+
+        <Animated.View style={[styles.logoHolder, { opacity: logoOpacity, transform: [{ scale: bumpScale }] }]}>
+          <View style={{ width: logoWidth, height: logoHeight }}>
+            <Animated.View style={[styles.revealClip, { width: revealWidth, height: logoHeight }]}>
+              <Image
+                source={ALPFA_LOGO}
+                resizeMode="contain"
+                style={{ width: logoWidth, height: logoHeight }}
+                accessibilityIgnoresInvertColors
+              />
+            </Animated.View>
+          </View>
+        </Animated.View>
+
+        <Animated.Text
+          style={[
+            styles.tagline,
+            {
+              marginTop: Math.max(18, width * 0.05),
+              opacity: taglineOpacity,
+              transform: [{ translateY: taglineY }],
+              fontSize: Math.max(10, Math.min(width * 0.028, 12)),
+              letterSpacing: Math.max(2.1, Math.min(width * 0.0075, 3)),
+            },
+          ]}
+        >
+          FAMILIA  ·  LEADERSHIP  ·  LEGACY
+        </Animated.Text>
+
+        <Animated.View
+          style={[
+            styles.bottomLockup,
+            {
+              marginTop: Math.max(16, width * 0.04),
+              opacity: lockupOpacity,
+              transform: [{ translateY: lockupY }],
+            },
+          ]}
+        >
+          <Image source={WHITE_LOCKUP} resizeMode="contain" style={{ width: Math.min(width * 0.38, 165), height: 56 }} />
+        </Animated.View>
       </Animated.View>
 
-      <Animated.View pointerEvents="none" style={[styles.whiteout, { opacity: whiteoutOpacity }]} />
+      <Animated.View style={[styles.flash, { opacity: flashOpacity }]} pointerEvents="none" />
+
+      <Animated.View
+        style={[
+          styles.homePreview,
+          {
+            top: safeTop,
+            bottom: safeBottom,
+            opacity: homeOpacity,
+            transform: [{ translateY: homeY }],
+          },
+        ]}
+        pointerEvents="none"
+      >
+        <Animated.Image
+          source={ALPFA_LOGO}
+          resizeMode="contain"
+          style={[
+            styles.homeMark,
+            {
+              width: Math.min(width * 0.24, 100),
+              height: Math.min(width * 0.24, 100),
+              transform: [{ scale: homeLogoScale }],
+            },
+          ]}
+        />
+        <Text style={[styles.welcome, { fontSize: Math.max(14, Math.min(width * 0.038, 16)) }]}>Welcome to</Text>
+        <Text style={[styles.brand, { fontSize: Math.max(28, Math.min(width * 0.078, 32)) }]}>ALPFA <Text style={styles.brandRed}>NJIT</Text></Text>
+        <Text style={[styles.sub, { fontSize: Math.max(9, Math.min(width * 0.026, 11)) }]}>LEAD  ·  CONNECT  ·  BELONG</Text>
+      </Animated.View>
     </Animated.View>
   );
 }
@@ -356,63 +339,101 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 0,
     top: 0,
-    backgroundColor: NAVY,
     overflow: 'hidden',
     zIndex: 99999,
     elevation: 99999,
+    backgroundColor: NAVY_DEEP,
   },
-  spaceLayer: {
+  deepBackdrop: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: NAVY,
+    backgroundColor: NAVY_DEEP,
   },
-  safeContent: {
+  radialOuter: {
+    position: 'absolute',
+    backgroundColor: NAVY,
+    opacity: 0.95,
+  },
+  radialInner: {
+    position: 'absolute',
+    backgroundColor: '#0A1330',
+    opacity: 0.96,
+  },
+  creamLayer: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: CREAM,
+    zIndex: 6,
+  },
+  logoStage: {
     position: 'absolute',
     left: 0,
     right: 0,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  radialGlow: {
-    position: 'absolute',
-    backgroundColor: Platform.select({
-      ios: 'rgba(255, 36, 68, 0.10)',
-      android: 'rgba(255, 36, 68, 0.08)',
-      default: 'rgba(255, 36, 68, 0.09)',
-    }),
-  },
-  logoWrap: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 4,
-  },
-  taglineWrap: {
-    alignItems: 'center',
-    justifyContent: 'center',
     zIndex: 5,
   },
-  tagline: {
-    color: '#F6F8FC',
-    fontWeight: '800',
-    textAlign: 'center',
-  },
-  redSweep: {
+  neonGlow: {
     position: 'absolute',
-    zIndex: 20,
+    backgroundColor: Platform.select({
+      ios: 'rgba(227,33,43,0.15)',
+      android: 'rgba(227,33,43,0.12)',
+      default: 'rgba(227,33,43,0.13)',
+    }),
+    shadowColor: RED,
+    shadowOpacity: 0.8,
+    shadowRadius: 32,
+    shadowOffset: { width: 0, height: 0 },
+  },
+  logoHolder: {
+    alignItems: 'center',
     justifyContent: 'center',
   },
-  redSweepGlow: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(255, 36, 68, 0.24)',
+  revealClip: {
+    overflow: 'hidden',
   },
-  redSweepCore: {
-    width: '34%',
-    height: '100%',
-    alignSelf: 'center',
-    backgroundColor: '#FF2444',
+  tagline: {
+    color: WHITE,
+    fontWeight: '700',
+    textAlign: 'center',
   },
-  whiteout: {
+  bottomLockup: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  flash: {
     ...StyleSheet.absoluteFillObject,
-    zIndex: 25,
-    backgroundColor: '#FFF8F8',
+    backgroundColor: '#FFFFFF',
+    zIndex: 20,
+  },
+  homePreview: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 15,
+  },
+  homeMark: {
+    marginBottom: 14,
+  },
+  welcome: {
+    color: INK,
+    fontWeight: '500',
+    opacity: 0.75,
+  },
+  brand: {
+    color: INK,
+    fontWeight: '800',
+    letterSpacing: 0.5,
+    marginTop: 2,
+    marginBottom: 10,
+  },
+  brandRed: {
+    color: RED,
+  },
+  sub: {
+    color: INK,
+    fontWeight: '700',
+    letterSpacing: 3,
+    opacity: 0.6,
   },
 });
