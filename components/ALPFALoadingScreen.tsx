@@ -16,7 +16,8 @@ const ALPFA_LOGO = require('../assets/images/NJITalpfa logo.pdf (6).png');
 
 const NAVY = '#030712';
 const WHITE = '#F7F8FA';
-const TOTAL_MS = 5200;
+const RED = '#E02125';
+const TOTAL_MS = 5600;
 
 type Props = { onAnimationComplete?: () => void };
 
@@ -35,6 +36,15 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
       [8, 12, 1], [18, 28, 1.5], [29, 9, 1], [42, 21, 1.2], [55, 11, 1.6],
       [67, 30, 1], [82, 16, 1.4], [92, 35, 1], [12, 56, 1.3], [25, 72, 1],
       [39, 62, 1.5], [58, 76, 1], [73, 58, 1.3], [88, 68, 1], [49, 89, 1.2],
+      [5, 82, 1], [16, 91, 1.3], [33, 40, 1], [63, 43, 1.4], [95, 83, 1.2],
+    ],
+    []
+  );
+
+  const streaks = useMemo(
+    () => [
+      [-34, 3, 72], [-28, 14, 54], [-20, 28, 62], [-13, 42, 78], [-8, 56, 66],
+      [8, 6, 64], [15, 20, 80], [22, 36, 56], [29, 50, 70], [35, 66, 52],
     ],
     []
   );
@@ -87,12 +97,15 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
 
     const drawingAnimation = reducedMotion
       ? null
-      : Animated.timing(drawProgress, {
-          toValue: 1,
-          duration: 1600,
-          easing: Easing.inOut(Easing.cubic),
-          useNativeDriver: false,
-        });
+      : Animated.sequence([
+          Animated.delay(700),
+          Animated.timing(drawProgress, {
+            toValue: 1,
+            duration: 1250,
+            easing: Easing.inOut(Easing.cubic),
+            useNativeDriver: false,
+          }),
+        ]);
 
     drawingAnimation?.start();
     animation.start(({ finished }) => {
@@ -106,50 +119,74 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
   }, [drawProgress, onAnimationComplete, reducedMotion, timeline]);
 
   const logoScale = timeline.interpolate({
-    inputRange: [0, 0.08, 0.28, 0.42, 0.55, 0.68, 0.78, 0.86, 0.92, 0.97, 1],
-    outputRange: [1.45, 1.45, 1.22, 1.02, 0.90, 0.90, 1.05, 1.45, 2.45, 5.2, 8.6],
-    extrapolate: 'clamp',
-  });
-
-  const vectorOpacity = timeline.interpolate({
-    inputRange: [0, 0.025, 0.24, 0.34, 0.40, 1],
-    outputRange: [0, 1, 1, 0.38, 0, 0],
-    extrapolate: 'clamp',
-  });
-
-  const logoOpacity = timeline.interpolate({
-    inputRange: [0, 0.20, 0.34, 0.93, 0.985, 1],
-    outputRange: [0, 0, 1, 1, 0.78, 0],
+    inputRange: [0, 0.12, 0.35, 0.48, 0.61, 0.72, 0.80, 0.88, 0.94, 0.985, 1],
+    outputRange: [1.34, 1.34, 1.18, 1.00, 0.66, 0.66, 0.82, 1.30, 2.60, 6.3, 9.2],
     extrapolate: 'clamp',
   });
 
   const logoY = timeline.interpolate({
-    inputRange: [0, 0.42, 0.70, 0.90, 1],
-    outputRange: [safeHeight * 0.015, 0, 0, -safeHeight * 0.01, -safeHeight * 0.045],
+    inputRange: [0, 0.48, 0.61, 0.80, 0.94, 1],
+    outputRange: [safeHeight * 0.02, 0, safeHeight * 0.02, 0, -safeHeight * 0.015, -safeHeight * 0.06],
     extrapolate: 'clamp',
   });
 
-  const taglineOpacity = timeline.interpolate({
-    inputRange: [0, 0.42, 0.50, 0.66, 0.74, 1],
+  const vectorOpacity = timeline.interpolate({
+    inputRange: [0, 0.10, 0.16, 0.34, 0.42, 1],
     outputRange: [0, 0, 1, 1, 0, 0],
     extrapolate: 'clamp',
   });
 
+  const vectorGlowOpacity = timeline.interpolate({
+    inputRange: [0, 0.13, 0.22, 0.35, 0.42, 1],
+    outputRange: [0, 0, 0.20, 0.34, 0, 0],
+    extrapolate: 'clamp',
+  });
+
+  const logoOpacity = timeline.interpolate({
+    inputRange: [0, 0.31, 0.40, 0.91, 0.985, 1],
+    outputRange: [0, 0, 1, 1, 0.76, 0],
+    extrapolate: 'clamp',
+  });
+
+  const taglineOpacity = timeline.interpolate({
+    inputRange: [0, 0.49, 0.55, 0.69, 0.77, 1],
+    outputRange: [0, 0, 1, 1, 0, 0],
+    extrapolate: 'clamp',
+  });
+
+  const horizonOpacity = timeline.interpolate({
+    inputRange: [0, 0.08, 0.16, 0.76, 0.88, 1],
+    outputRange: [0, 0.14, 0.26, 0.26, 0.10, 0],
+    extrapolate: 'clamp',
+  });
+
+  const streakOpacity = timeline.interpolate({
+    inputRange: [0, 0.76, 0.82, 0.94, 0.985, 1],
+    outputRange: [0, 0, 0.12, 0.95, 0.58, 0],
+    extrapolate: 'clamp',
+  });
+
+  const streakScale = timeline.interpolate({
+    inputRange: [0, 0.80, 0.94, 1],
+    outputRange: [0.2, 0.2, 1.6, 2.4],
+    extrapolate: 'clamp',
+  });
+
   const flashOpacity = timeline.interpolate({
-    inputRange: [0, 0.92, 0.965, 0.99, 1],
-    outputRange: [0, 0, 0.58, 0.10, 0],
+    inputRange: [0, 0.93, 0.975, 0.993, 1],
+    outputRange: [0, 0, 0.92, 0.28, 0],
     extrapolate: 'clamp',
   });
 
   const splashOpacity = timeline.interpolate({
-    inputRange: [0, 0.95, 1],
+    inputRange: [0, 0.965, 1],
     outputRange: [1, 1, 0],
     extrapolate: 'clamp',
   });
 
   const starOpacity = timeline.interpolate({
-    inputRange: [0, 0.08, 0.82, 1],
-    outputRange: [0.18, 0.45, 0.45, 0],
+    inputRange: [0, 0.10, 0.78, 0.94, 1],
+    outputRange: [0.05, 0.38, 0.44, 0.20, 0],
     extrapolate: 'clamp',
   });
 
@@ -160,10 +197,7 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
     >
       <View style={styles.background} />
 
-      <Animated.View
-        pointerEvents="none"
-        style={[styles.starField, { opacity: starOpacity }]}
-      >
+      <Animated.View pointerEvents="none" style={[styles.starField, { opacity: starOpacity }]}> 
         {stars.map(([x, y, size], index) => (
           <View
             key={index}
@@ -175,7 +209,39 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
                 width: size,
                 height: size,
                 borderRadius: size,
-                opacity: 0.45 + (index % 3) * 0.14,
+                opacity: 0.42 + (index % 3) * 0.16,
+              },
+            ]}
+          />
+        ))}
+      </Animated.View>
+
+      <Animated.View
+        pointerEvents="none"
+        style={[styles.horizon, { opacity: horizonOpacity }]}
+      />
+
+      <Animated.View
+        pointerEvents="none"
+        style={[
+          styles.streakField,
+          {
+            opacity: streakOpacity,
+            transform: [{ scale: streakScale }],
+          },
+        ]}
+      >
+        {streaks.map(([rotate, left, length], index) => (
+          <View
+            key={index}
+            style={[
+              styles.streak,
+              {
+                width: `${length}%`,
+                left: `${left}%`,
+                top: `${46 + (index % 4) * 4}%`,
+                transform: [{ rotate: `${rotate}deg` }],
+                opacity: 0.30 + (index % 3) * 0.20,
               },
             ]}
           />
@@ -193,6 +259,17 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
           ]}
         >
           <View style={{ width: logoSize, height: logoSize }}>
+            <Animated.View
+              pointerEvents="none"
+              style={[
+                StyleSheet.absoluteFillObject,
+                styles.vectorGlow,
+                { opacity: vectorGlowOpacity },
+              ]}
+            >
+              <AnimatedALPFAMark progress={drawProgress} size={logoSize} />
+            </Animated.View>
+
             <Animated.View
               pointerEvents="none"
               style={[StyleSheet.absoluteFillObject, { opacity: vectorOpacity }]}
@@ -239,10 +316,7 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
         </Animated.View>
       </View>
 
-      <Animated.View
-        pointerEvents="none"
-        style={[styles.flash, { opacity: flashOpacity }]}
-      />
+      <Animated.View pointerEvents="none" style={[styles.flash, { opacity: flashOpacity }]} />
     </Animated.View>
   );
 }
@@ -268,6 +342,29 @@ const styles = StyleSheet.create({
     position: 'absolute',
     backgroundColor: '#DDEBFF',
   },
+  horizon: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: '67%',
+    height: 1,
+    backgroundColor: '#CFE3FF',
+    shadowColor: '#DCEBFF',
+    shadowOpacity: 0.55,
+    shadowRadius: 8,
+  },
+  streakField: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  streak: {
+    position: 'absolute',
+    height: 1.5,
+    backgroundColor: RED,
+    borderRadius: 3,
+    shadowColor: RED,
+    shadowOpacity: 0.55,
+    shadowRadius: 4,
+  },
   safeContent: {
     position: 'absolute',
     left: 0,
@@ -278,6 +375,12 @@ const styles = StyleSheet.create({
   logoStage: {
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  vectorGlow: {
+    shadowColor: RED,
+    shadowOpacity: 0.72,
+    shadowRadius: 11,
+    shadowOffset: { width: 0, height: 0 },
   },
   image: {
     width: '100%',
