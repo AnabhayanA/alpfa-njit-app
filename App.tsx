@@ -15,8 +15,7 @@ import useTheme from './utils/useTheme';
 
 const Tab = createBottomTabNavigator();
 
-// These are the three loading-screen assets you just pushed.
-const LOGO_OUTLINE = require('./assets/images/NJITalpfa logo.pdf (6).png');
+// Use only the red/color and white supplied logos on the navy splash.
 const LOGO_COLOR = require('./assets/images/NJITalpfa logo (2).png');
 const LOGO_WHITE = require('./assets/images/NJITalpfa Logo.pdf (7).png');
 const SPLASH_NAVY = '#0F102E';
@@ -42,8 +41,7 @@ export default function App() {
   const { width, height } = useWindowDimensions();
   const [showSplash, setShowSplash] = useState(true);
 
-  const build = useRef(new Animated.Value(0)).current;
-  const outlineOpacity = useRef(new Animated.Value(0)).current;
+  const intro = useRef(new Animated.Value(0)).current;
   const colorOpacity = useRef(new Animated.Value(0)).current;
   const whiteOpacity = useRef(new Animated.Value(0)).current;
   const exit = useRef(new Animated.Value(0)).current;
@@ -53,46 +51,34 @@ export default function App() {
   useEffect(() => {
     Animated.sequence([
       Animated.parallel([
-        Animated.timing(outlineOpacity, {
+        Animated.timing(intro, {
           toValue: 1,
-          duration: 260,
-          easing: Easing.out(Easing.quad),
-          useNativeDriver: true,
-        }),
-        Animated.timing(build, {
-          toValue: 1,
-          duration: 1050,
+          duration: 760,
           easing: Easing.bezier(0.18, 0.82, 0.22, 1),
           useNativeDriver: true,
         }),
-      ]),
-      Animated.parallel([
         Animated.timing(colorOpacity, {
           toValue: 1,
-          duration: 360,
+          duration: 420,
           easing: Easing.out(Easing.cubic),
           useNativeDriver: true,
         }),
-        Animated.timing(outlineOpacity, {
-          toValue: 0,
-          duration: 360,
-          useNativeDriver: true,
-        }),
       ]),
+      Animated.delay(620),
       Animated.parallel([
         Animated.timing(whiteOpacity, {
           toValue: 1,
-          duration: 280,
+          duration: 320,
           easing: Easing.out(Easing.quad),
           useNativeDriver: true,
         }),
         Animated.timing(colorOpacity, {
           toValue: 0,
-          duration: 280,
+          duration: 320,
           useNativeDriver: true,
         }),
       ]),
-      Animated.delay(1200),
+      Animated.delay(1150),
       Animated.parallel([
         Animated.timing(exit, {
           toValue: 1,
@@ -101,7 +87,7 @@ export default function App() {
           useNativeDriver: true,
         }),
         Animated.sequence([
-          Animated.delay(180),
+          Animated.delay(220),
           Animated.timing(mascotScale, {
             toValue: 1.08,
             duration: 420,
@@ -110,7 +96,7 @@ export default function App() {
           }),
         ]),
         Animated.sequence([
-          Animated.delay(420),
+          Animated.delay(430),
           Animated.timing(splashOpacity, {
             toValue: 0,
             duration: 360,
@@ -120,23 +106,15 @@ export default function App() {
         ]),
       ]),
     ]).start(() => setShowSplash(false));
-  }, [build, colorOpacity, exit, mascotScale, outlineOpacity, splashOpacity, whiteOpacity]);
+  }, [colorOpacity, exit, intro, mascotScale, splashOpacity, whiteOpacity]);
 
-  const logoWidth = Math.min(width * 0.86, 430);
-  const logoHeight = Math.min(height * 0.42, 360);
+  const logoWidth = Math.min(width * 0.84, 420);
+  const logoHeight = Math.min(height * 0.36, 320);
 
-  const leftDoor = exit.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, -width * 0.58],
-  });
-  const rightDoor = exit.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, width * 0.58],
-  });
-  const buildScale = build.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0.93, 1],
-  });
+  const leftDoor = exit.interpolate({ inputRange: [0, 1], outputRange: [0, -width * 0.72] });
+  const rightDoor = exit.interpolate({ inputRange: [0, 1], outputRange: [0, width * 0.72] });
+  const introScale = intro.interpolate({ inputRange: [0, 1], outputRange: [0.9, 1] });
+  const introY = intro.interpolate({ inputRange: [0, 1], outputRange: [18, 0] });
 
   return (
     <SafeAreaProvider>
@@ -155,47 +133,33 @@ export default function App() {
                   {
                     width: logoWidth,
                     height: logoHeight,
-                    transform: [{ scale: buildScale }, { scale: mascotScale }],
+                    transform: [
+                      { translateY: introY },
+                      { scale: introScale },
+                      { scale: mascotScale },
+                    ],
                   },
                 ]}
               >
-                {/* First: faint outline version appears. */}
-                <Animated.Image
-                  source={LOGO_OUTLINE}
-                  resizeMode="contain"
-                  style={[styles.fullLogo, { opacity: outlineOpacity }]}
-                />
-
-                {/* Then the colored supplied logo fades in. */}
                 <Animated.Image
                   source={LOGO_COLOR}
                   resizeMode="contain"
                   style={[styles.fullLogo, { opacity: colorOpacity }]}
                 />
 
-                {/* Finally the full white supplied logo locks into place. */}
                 <Animated.Image
                   source={LOGO_WHITE}
                   resizeMode="contain"
                   style={[styles.fullLogo, { opacity: whiteOpacity }]}
                 />
 
-                {/* Split the assembled artwork into two panels so it opens like doors and reveals Home below. */}
                 <Animated.View
-                  style={[
-                    styles.doorHalf,
-                    styles.leftHalf,
-                    { transform: [{ translateX: leftDoor }] },
-                  ]}
+                  style={[styles.doorHalf, styles.leftHalf, { transform: [{ translateX: leftDoor }] }]}
                 >
                   <Image source={LOGO_WHITE} resizeMode="contain" style={styles.doorImage} />
                 </Animated.View>
                 <Animated.View
-                  style={[
-                    styles.doorHalf,
-                    styles.rightHalf,
-                    { transform: [{ translateX: rightDoor }] },
-                  ]}
+                  style={[styles.doorHalf, styles.rightHalf, { transform: [{ translateX: rightDoor }] }]}
                 >
                   <Image
                     source={LOGO_WHITE}
@@ -214,12 +178,12 @@ export default function App() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: SPLASH_NAVY },
-  webContainer: { backgroundColor: '#201F1D', paddingVertical: 24 },
-  appViewport: { flex: 1, width: '100%' },
+  webContainer: { backgroundColor: '#201F1D' },
+  appViewport: { flex: 1, width: '100%', position: 'relative', overflow: 'hidden' },
   webViewport: {
     width: '100%',
     maxWidth: 430,
-    minHeight: '100%',
+    flex: 1,
     alignSelf: 'center',
     borderRadius: 34,
     overflow: 'hidden',
@@ -235,17 +199,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
-    zIndex: 100,
+    zIndex: 1000,
+    elevation: 1000,
   },
-  logoStage: {
-    position: 'relative',
-    overflow: 'visible',
-  },
-  fullLogo: {
-    ...StyleSheet.absoluteFillObject,
-    width: '100%',
-    height: '100%',
-  },
+  logoStage: { position: 'relative', overflow: 'visible' },
+  fullLogo: { ...StyleSheet.absoluteFillObject, width: '100%', height: '100%' },
   doorHalf: {
     position: 'absolute',
     top: 0,
