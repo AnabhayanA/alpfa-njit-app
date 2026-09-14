@@ -12,17 +12,13 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-// Red ALPFA artwork used for the main reveal.  The NJIT lockup is rendered
-// separately in white so the splash stays clean and does not stack logos.
+// Single splash asset: red ALPFA mark + Highlander + white NJIT lockup.
 const ALPFA_LOGO = require('../assets/images/NJITalpfa logo.pdf (6).png');
 
 const NAVY = '#050A16';
-const NAVY_DEEP = '#02040A';
+const WHITE = '#F7F8FA';
 const RED = '#E3212B';
-const WHITE = '#F5F6F8';
-const CREAM = '#F7F2E9';
-const INK = '#1A1A2E';
-const TOTAL_MS = 10000;
+const TOTAL_MS = 4800;
 
 type Props = {
   onAnimationComplete?: () => void;
@@ -35,6 +31,9 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
 
   const timeline = useRef(new Animated.Value(0)).current;
   const reveal = useRef(new Animated.Value(0)).current;
+
+  const safeHeight = Math.max(1, height - insets.top - insets.bottom);
+  const logoSize = Math.min(width * 0.76, safeHeight * 0.43, 360);
 
   useEffect(() => {
     let mounted = true;
@@ -54,10 +53,6 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
     };
   }, []);
 
-  const safeHeight = Math.max(1, height - insets.top - insets.bottom);
-  const logoWidth = Math.min(width * 0.64, 250);
-  const logoHeight = logoWidth;
-
   useEffect(() => {
     if (reducedMotion === null) return;
 
@@ -66,18 +61,17 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
 
     if (reducedMotion) {
       reveal.setValue(1);
-
       const simple = Animated.sequence([
         Animated.timing(timeline, {
           toValue: 0.58,
-          duration: 450,
+          duration: 350,
           easing: Easing.out(Easing.quad),
           useNativeDriver: true,
         }),
-        Animated.delay(700),
+        Animated.delay(650),
         Animated.timing(timeline, {
           toValue: 1,
-          duration: 450,
+          duration: 300,
           easing: Easing.out(Easing.quad),
           useNativeDriver: true,
         }),
@@ -86,27 +80,23 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
       simple.start(({ finished }) => {
         if (finished) onAnimationComplete?.();
       });
-
       return () => simple.stop();
     }
 
-    // This is the same 10-second master clock used by the HTML prototype.
-    const master = Animated.timing(timeline, {
-      toValue: 1,
-      duration: TOTAL_MS,
-      easing: Easing.linear,
-      useNativeDriver: true,
-    });
-
-    // HTML mask reveal: 0 -> 2.0 seconds with cubic-out easing.
-    const logoReveal = Animated.timing(reveal, {
-      toValue: 1,
-      duration: 2000,
-      easing: Easing.out(Easing.cubic),
-      useNativeDriver: true,
-    });
-
-    const run = Animated.parallel([master, logoReveal]);
+    const run = Animated.parallel([
+      Animated.timing(timeline, {
+        toValue: 1,
+        duration: TOTAL_MS,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      }),
+      Animated.timing(reveal, {
+        toValue: 1,
+        duration: 1050,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+    ]);
 
     run.start(({ finished }) => {
       if (finished) onAnimationComplete?.();
@@ -115,37 +105,41 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
     return () => run.stop();
   }, [onAnimationComplete, reducedMotion, reveal, timeline]);
 
-  // HTML logoScaleTimeline: 1 -> 1.02 -> 1.15 -> 1.6 -> 2.6 -> 4.2 -> 7 -> 9.
-  const stageScale = timeline.interpolate({
-    inputRange: [0, 0.20, 0.45, 0.60, 0.70, 0.76, 0.80, 0.83, 1],
-    outputRange: [1, 1.02, 1.15, 1.6, 2.6, 4.2, 7, 9, 9],
-    extrapolate: 'clamp',
-  });
-
-  // The HTML transform-origin is center 42%; this small upward move recreates
-  // that feeling during the large camera push without hard-coding a phone size.
-  const stageY = timeline.interpolate({
-    inputRange: [0, 0.60, 0.76, 0.83, 1],
-    outputRange: [0, 0, -safeHeight * 0.01, -safeHeight * 0.035, -safeHeight * 0.045],
+  // Calm entrance, short hold, then a strong accelerating camera pass.
+  const logoScale = timeline.interpolate({
+    inputRange: [0, 0.18, 0.48, 0.64, 0.76, 0.84, 0.90, 0.95, 1],
+    outputRange: [0.90, 1, 1.02, 1.05, 1.22, 1.65, 2.55, 4.8, 7.6],
     extrapolate: 'clamp',
   });
 
   const logoOpacity = timeline.interpolate({
-    inputRange: [0, 0.76, 0.83, 1],
-    outputRange: [1, 1, 0, 0],
+    inputRange: [0, 0.05, 0.12, 0.91, 0.97, 1],
+    outputRange: [0, 0.45, 1, 1, 0.82, 0],
     extrapolate: 'clamp',
   });
 
-  // Netflix-style bump from the HTML: 25% -> 28% -> 32% -> 36%.
-  const bumpScale = timeline.interpolate({
-    inputRange: [0, 0.25, 0.28, 0.32, 0.36, 1],
-    outputRange: [1, 1, 1.16, 0.97, 1, 1],
+  const logoY = timeline.interpolate({
+    inputRange: [0, 0.55, 0.84, 1],
+    outputRange: [safeHeight * 0.012, 0, -safeHeight * 0.008, -safeHeight * 0.035],
     extrapolate: 'clamp',
   });
 
-  const bumpFlashOpacity = timeline.interpolate({
-    inputRange: [0, 0.25, 0.28, 0.32, 0.36, 1],
-    outputRange: [0, 0, 0.20, 0.04, 0, 0],
+  // A small red edge glow only during the camera push.
+  const glowOpacity = timeline.interpolate({
+    inputRange: [0, 0.66, 0.76, 0.90, 0.97, 1],
+    outputRange: [0, 0, 0.10, 0.26, 0.12, 0],
+    extrapolate: 'clamp',
+  });
+
+  const taglineOpacity = timeline.interpolate({
+    inputRange: [0, 0.25, 0.34, 0.62, 0.72, 1],
+    outputRange: [0, 0, 1, 1, 0, 0],
+    extrapolate: 'clamp',
+  });
+
+  const taglineY = timeline.interpolate({
+    inputRange: [0, 0.25, 0.34, 1],
+    outputRange: [7, 7, 0, 0],
     extrapolate: 'clamp',
   });
 
@@ -154,63 +148,19 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
     outputRange: [0.001, 1],
   });
 
-  // Keep the reveal anchored to the left, matching the CSS mask wipe.
   const revealTranslateX = reveal.interpolate({
     inputRange: [0, 1],
-    outputRange: [-logoWidth / 2, 0],
-  });
-
-  const taglineOpacity = timeline.interpolate({
-    inputRange: [0, 0.34, 0.40, 0.50, 0.58, 1],
-    outputRange: [0, 0, 1, 1, 0, 0],
-    extrapolate: 'clamp',
-  });
-
-  const taglineY = timeline.interpolate({
-    inputRange: [0, 0.34, 0.40, 1],
-    outputRange: [4, 4, 0, 0],
-    extrapolate: 'clamp',
-  });
-
-  const lockupOpacity = timeline.interpolate({
-    inputRange: [0, 0.37, 0.43, 0.50, 0.58, 1],
-    outputRange: [0, 0, 1, 1, 0, 0],
-    extrapolate: 'clamp',
-  });
-
-  const lockupY = timeline.interpolate({
-    inputRange: [0, 0.37, 0.43, 1],
-    outputRange: [6, 6, 0, 0],
-    extrapolate: 'clamp',
-  });
-
-  const creamOpacity = timeline.interpolate({
-    inputRange: [0, 0.72, 0.82, 1],
-    outputRange: [0, 0, 1, 1],
-    extrapolate: 'clamp',
+    outputRange: [-logoSize / 2, 0],
   });
 
   const flashOpacity = timeline.interpolate({
-    inputRange: [0, 0.74, 0.79, 0.88, 1],
-    outputRange: [0, 0, 0.90, 0, 0],
+    inputRange: [0, 0.91, 0.955, 0.985, 1],
+    outputRange: [0, 0, 0.55, 0.12, 0],
     extrapolate: 'clamp',
   });
 
-  const homeOpacity = timeline.interpolate({
-    inputRange: [0, 0.76, 0.86, 1],
-    outputRange: [0, 0, 1, 1],
-    extrapolate: 'clamp',
-  });
-
-  const homeY = timeline.interpolate({
-    inputRange: [0, 0.76, 0.86, 1],
-    outputRange: [safeHeight * 0.02, safeHeight * 0.02, 0, 0],
-    extrapolate: 'clamp',
-  });
-
-  // Let the real app underneath take over at the very end.
   const splashOpacity = timeline.interpolate({
-    inputRange: [0, 0.96, 1],
+    inputRange: [0, 0.94, 1],
     outputRange: [1, 1, 0],
     extrapolate: 'clamp',
   });
@@ -220,12 +170,7 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
       pointerEvents="auto"
       style={[styles.root, { width, height, opacity: splashOpacity }]}
     >
-      <View style={styles.backdrop} />
-
-      <Animated.View
-        pointerEvents="none"
-        style={[styles.creamLayer, { opacity: creamOpacity }]}
-      />
+      <View style={styles.background} />
 
       <View
         pointerEvents="none"
@@ -241,36 +186,27 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
           style={[
             styles.logoStage,
             {
-              transform: [{ translateY: stageY }, { scale: stageScale }],
+              opacity: logoOpacity,
+              transform: [{ translateY: logoY }, { scale: logoScale }],
             },
           ]}
         >
-          <Animated.View
-            style={[
-              styles.logoHolder,
-              {
-                width: logoWidth,
-                height: logoHeight,
-                opacity: logoOpacity,
-                transform: [{ scale: bumpScale }],
-              },
-            ]}
-          >
+          <View style={{ width: logoSize, height: logoSize }}>
             <Animated.View
               pointerEvents="none"
               style={[
-                styles.logoGlow,
+                styles.glowLayer,
                 {
-                  width: logoWidth,
-                  height: logoHeight,
-                  opacity: logoOpacity,
+                  width: logoSize,
+                  height: logoSize,
+                  opacity: glowOpacity,
                 },
               ]}
             >
               <Image
                 source={ALPFA_LOGO}
                 resizeMode="contain"
-                style={[styles.fullImage, styles.glowImage]}
+                style={styles.image}
               />
             </Animated.View>
 
@@ -278,8 +214,8 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
               style={[
                 styles.revealClip,
                 {
-                  width: logoWidth,
-                  height: logoHeight,
+                  width: logoSize,
+                  height: logoSize,
                   transform: [
                     { translateX: revealTranslateX },
                     { scaleX: revealScaleX },
@@ -290,86 +226,39 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
               <Image
                 source={ALPFA_LOGO}
                 resizeMode="contain"
-                style={styles.fullImage}
+                style={styles.image}
                 accessibilityIgnoresInvertColors
               />
             </Animated.View>
+          </View>
+        </Animated.View>
 
-            <Animated.View
-              pointerEvents="none"
-              style={[
-                styles.bumpFlash,
-                {
-                  width: logoWidth * 0.58,
-                  height: logoHeight * 0.58,
-                  opacity: bumpFlashOpacity,
-                },
-              ]}
-            />
-          </Animated.View>
-
-          <Animated.Text
+        <Animated.View
+          style={[
+            styles.taglineWrap,
+            {
+              opacity: taglineOpacity,
+              transform: [{ translateY: taglineY }],
+            },
+          ]}
+        >
+          <Text
             style={[
               styles.tagline,
               {
-                fontSize: Math.max(10, Math.min(width * 0.031, 12)),
-                letterSpacing: Math.max(2.2, Math.min(width * 0.008, 3)),
-                opacity: taglineOpacity,
-                transform: [{ translateY: taglineY }],
+                fontSize: Math.max(9, Math.min(width * 0.027, 12)),
+                letterSpacing: Math.max(1.8, Math.min(width * 0.0065, 2.8)),
               },
             ]}
           >
             FAMILIA · LEADERSHIP · LEGACY
-          </Animated.Text>
-
-          <Animated.View
-            style={[
-              styles.bottomLockup,
-              {
-                opacity: lockupOpacity,
-                transform: [{ translateY: lockupY }],
-              },
-            ]}
-          >
-            <Text style={[styles.njitWordmark, { fontSize: Math.max(13, width * 0.038) }]}>
-              NEW JERSEY INSTITUTE{`\n`}OF TECHNOLOGY
-            </Text>
-          </Animated.View>
+          </Text>
         </Animated.View>
       </View>
 
       <Animated.View
         pointerEvents="none"
-        style={[
-          styles.homeReveal,
-          {
-            top: insets.top,
-            height: safeHeight,
-            opacity: homeOpacity,
-            transform: [{ translateY: homeY }],
-          },
-        ]}
-      >
-        <Text style={[styles.welcome, { fontSize: Math.max(14, width * 0.038) }]}>Welcome to</Text>
-        <Text style={[styles.brand, { fontSize: Math.max(27, Math.min(width * 0.078, 32)) }]}>
-          ALPFA <Text style={styles.brandRed}>NJIT</Text>
-        </Text>
-        <Text
-          style={[
-            styles.sub,
-            {
-              fontSize: Math.max(10, Math.min(width * 0.027, 12)),
-              letterSpacing: Math.max(2.2, Math.min(width * 0.008, 3)),
-            },
-          ]}
-        >
-          LEAD · CONNECT · BELONG
-        </Text>
-      </Animated.View>
-
-      <Animated.View
-        pointerEvents="none"
-        style={[styles.whiteFlash, { opacity: flashOpacity }]}
+        style={[styles.flash, { opacity: flashOpacity }]}
       />
     </Animated.View>
   );
@@ -383,15 +272,11 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     zIndex: 99999,
     elevation: 99999,
-    backgroundColor: NAVY_DEEP,
-  },
-  backdrop: {
-    ...StyleSheet.absoluteFillObject,
     backgroundColor: NAVY,
   },
-  creamLayer: {
+  background: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: CREAM,
+    backgroundColor: NAVY,
   },
   safeContent: {
     position: 'absolute',
@@ -404,97 +289,49 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  logoHolder: {
-    position: 'relative',
-    alignItems: 'center',
-    justifyContent: 'center',
+  revealClip: {
+    overflow: 'hidden',
+  },
+  image: {
+    width: '100%',
+    height: '100%',
+  },
+  glowLayer: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    transform: [{ scale: 1.018 }],
     ...Platform.select({
       ios: {
         shadowColor: RED,
         shadowOpacity: 0.45,
-        shadowRadius: 15,
+        shadowRadius: 9,
         shadowOffset: { width: 0, height: 0 },
       },
       android: {
-        elevation: 5,
+        elevation: 3,
       },
       default: {
         shadowColor: RED,
-        shadowOpacity: 0.40,
-        shadowRadius: 15,
+        shadowOpacity: 0.35,
+        shadowRadius: 8,
         shadowOffset: { width: 0, height: 0 },
       },
     }),
   },
-  logoGlow: {
-    position: 'absolute',
+  taglineWrap: {
+    marginTop: 6,
     alignItems: 'center',
     justifyContent: 'center',
-    transform: [{ scale: 1.025 }],
-  },
-  glowImage: {
-    opacity: 0.24,
-  },
-  fullImage: {
-    width: '100%',
-    height: '100%',
-  },
-  revealClip: {
-    overflow: 'hidden',
-  },
-  bumpFlash: {
-    position: 'absolute',
-    backgroundColor: WHITE,
-    borderRadius: 12,
   },
   tagline: {
-    marginTop: 22,
     color: WHITE,
-    fontWeight: '600',
-    textAlign: 'center',
-  },
-  bottomLockup: {
-    marginTop: 22,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  njitWordmark: {
-    color: WHITE,
-    textAlign: 'center',
-    fontWeight: '600',
-    letterSpacing: 0.4,
-    lineHeight: 18,
-  },
-  homeReveal: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  welcome: {
-    color: INK,
-    fontWeight: '500',
-    opacity: 0.75,
-  },
-  brand: {
-    color: INK,
-    fontWeight: '800',
-    letterSpacing: 0.5,
-    marginTop: 2,
-    marginBottom: 10,
-  },
-  brandRed: {
-    color: RED,
-  },
-  sub: {
-    color: INK,
     fontWeight: '700',
-    opacity: 0.60,
+    textAlign: 'center',
   },
-  whiteFlash: {
+  flash: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: '#FFFFFF',
-    zIndex: 50,
+    backgroundColor: WHITE,
+    zIndex: 20,
   },
 });
