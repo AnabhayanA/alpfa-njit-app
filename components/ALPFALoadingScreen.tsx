@@ -11,12 +11,12 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-// Loading screen uses only the red ALPFA artwork.
-const ALPFA_LOGO = require('../assets/images/NJITalpfa logo (2).png');
+// Exact red ALPFA + Highlander artwork requested for the loading screen.
+const ALPFA_LOGO = require('../assets/images/NJITalpfa logo.pdf (6).png');
 
 const NAVY = '#050A16';
 const WHITE = '#F5F6F8';
-const TOTAL_MS = 7200;
+const TOTAL_MS = 6200;
 
 type Props = {
   onAnimationComplete?: () => void;
@@ -49,7 +49,7 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
   }, []);
 
   const safeHeight = Math.max(1, height - insets.top - insets.bottom);
-  const logoWidth = Math.min(width * 0.62, 290);
+  const logoWidth = Math.min(width * 0.64, 300);
   const logoHeight = logoWidth;
 
   useEffect(() => {
@@ -59,15 +59,15 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
       revealWidth.setValue(logoWidth);
       const reduced = Animated.sequence([
         Animated.timing(timeline, {
-          toValue: 0.58,
-          duration: 500,
+          toValue: 0.7,
+          duration: 450,
           easing: Easing.out(Easing.quad),
           useNativeDriver: true,
         }),
-        Animated.delay(650),
+        Animated.delay(450),
         Animated.timing(timeline, {
           toValue: 1,
-          duration: 450,
+          duration: 300,
           easing: Easing.out(Easing.quad),
           useNativeDriver: true,
         }),
@@ -89,7 +89,7 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
 
     const reveal = Animated.timing(revealWidth, {
       toValue: logoWidth,
-      duration: 1500,
+      duration: 1250,
       easing: Easing.out(Easing.cubic),
       useNativeDriver: false,
     });
@@ -104,25 +104,26 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
   }, [logoWidth, onAnimationComplete, reducedMotion, revealWidth, timeline]);
 
   const logoOpacity = timeline.interpolate({
-    inputRange: [0, 0.03, 0.12, 0.82, 0.92, 1],
+    inputRange: [0, 0.03, 0.10, 0.84, 0.94, 1],
     outputRange: [0, 0.25, 1, 1, 0.98, 0],
     extrapolate: 'clamp',
   });
 
+  // Calm beginning, then a much faster finish so the transition has more punch.
   const logoScale = timeline.interpolate({
-    inputRange: [0, 0.16, 0.36, 0.56, 0.72, 0.84, 0.92, 1],
-    outputRange: [0.96, 1, 1.04, 1.14, 1.5, 2.5, 5.4, 7.2],
+    inputRange: [0, 0.18, 0.42, 0.64, 0.78, 0.86, 0.91, 0.95, 1],
+    outputRange: [0.96, 1, 1.04, 1.12, 1.38, 1.9, 3.1, 5.8, 8.5],
     extrapolate: 'clamp',
   });
 
   const logoY = timeline.interpolate({
-    inputRange: [0, 0.56, 0.84, 1],
-    outputRange: [8, 0, -height * 0.01, -height * 0.025],
+    inputRange: [0, 0.64, 0.86, 0.95, 1],
+    outputRange: [8, 0, -height * 0.006, -height * 0.02, -height * 0.04],
     extrapolate: 'clamp',
   });
 
   const taglineOpacity = timeline.interpolate({
-    inputRange: [0, 0.30, 0.38, 0.56, 0.66, 1],
+    inputRange: [0, 0.30, 0.38, 0.58, 0.69, 1],
     outputRange: [0, 0, 1, 1, 0, 0],
     extrapolate: 'clamp',
   });
@@ -134,13 +135,13 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
   });
 
   const flashOpacity = timeline.interpolate({
-    inputRange: [0, 0.86, 0.93, 0.975, 1],
-    outputRange: [0, 0, 0.92, 0.26, 0],
+    inputRange: [0, 0.91, 0.955, 0.985, 1],
+    outputRange: [0, 0, 0.88, 0.18, 0],
     extrapolate: 'clamp',
   });
 
   const overlayOpacity = timeline.interpolate({
-    inputRange: [0, 0.94, 1],
+    inputRange: [0, 0.955, 1],
     outputRange: [1, 1, 0],
     extrapolate: 'clamp',
   });
