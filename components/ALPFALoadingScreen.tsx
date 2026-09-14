@@ -29,7 +29,7 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
   const drawProgress = useRef(new Animated.Value(0)).current;
 
   const safeHeight = Math.max(1, height - insets.top - insets.bottom);
-  const logoSize = Math.min(width * 0.80, safeHeight * 0.45, 380);
+  const logoSize = Math.min(width * 0.8, safeHeight * 0.45, 380);
 
   const stars = useMemo(
     () => [
@@ -41,16 +41,9 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
     []
   );
 
-  const streaks = useMemo(
-    () => [
-      [-34, 3, 72], [-28, 14, 54], [-20, 28, 62], [-13, 42, 78], [-8, 56, 66],
-      [8, 6, 64], [15, 20, 80], [22, 36, 56], [29, 50, 70], [35, 66, 52],
-    ],
-    []
-  );
-
   useEffect(() => {
     let mounted = true;
+
     AccessibilityInfo.isReduceMotionEnabled()
       .then((enabled) => mounted && setReducedMotion(enabled))
       .catch(() => mounted && setReducedMotion(false));
@@ -120,7 +113,7 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
 
   const logoScale = timeline.interpolate({
     inputRange: [0, 0.12, 0.35, 0.48, 0.61, 0.72, 0.80, 0.88, 0.94, 0.985, 1],
-    outputRange: [1.34, 1.34, 1.18, 1.00, 0.66, 0.66, 0.82, 1.30, 2.60, 6.3, 9.2],
+    outputRange: [1.34, 1.34, 1.18, 1.0, 0.66, 0.66, 0.82, 1.30, 2.60, 6.3, 9.2],
     extrapolate: 'clamp',
   });
 
@@ -138,7 +131,7 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
 
   const vectorGlowOpacity = timeline.interpolate({
     inputRange: [0, 0.13, 0.22, 0.35, 0.42, 1],
-    outputRange: [0, 0, 0.20, 0.34, 0, 0],
+    outputRange: [0, 0, 0.12, 0.22, 0, 0],
     extrapolate: 'clamp',
   });
 
@@ -151,24 +144,6 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
   const taglineOpacity = timeline.interpolate({
     inputRange: [0, 0.49, 0.55, 0.69, 0.77, 1],
     outputRange: [0, 0, 1, 1, 0, 0],
-    extrapolate: 'clamp',
-  });
-
-  const horizonOpacity = timeline.interpolate({
-    inputRange: [0, 0.08, 0.16, 0.76, 0.88, 1],
-    outputRange: [0, 0.14, 0.26, 0.26, 0.10, 0],
-    extrapolate: 'clamp',
-  });
-
-  const streakOpacity = timeline.interpolate({
-    inputRange: [0, 0.76, 0.82, 0.94, 0.985, 1],
-    outputRange: [0, 0, 0.12, 0.95, 0.58, 0],
-    extrapolate: 'clamp',
-  });
-
-  const streakScale = timeline.interpolate({
-    inputRange: [0, 0.80, 0.94, 1],
-    outputRange: [0.2, 0.2, 1.6, 2.4],
     extrapolate: 'clamp',
   });
 
@@ -197,7 +172,7 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
     >
       <View style={styles.background} />
 
-      <Animated.View pointerEvents="none" style={[styles.starField, { opacity: starOpacity }]}> 
+      <Animated.View pointerEvents="none" style={[styles.starField, { opacity: starOpacity }]}>
         {stars.map(([x, y, size], index) => (
           <View
             key={index}
@@ -210,38 +185,6 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
                 height: size,
                 borderRadius: size,
                 opacity: 0.42 + (index % 3) * 0.16,
-              },
-            ]}
-          />
-        ))}
-      </Animated.View>
-
-      <Animated.View
-        pointerEvents="none"
-        style={[styles.horizon, { opacity: horizonOpacity }]}
-      />
-
-      <Animated.View
-        pointerEvents="none"
-        style={[
-          styles.streakField,
-          {
-            opacity: streakOpacity,
-            transform: [{ scale: streakScale }],
-          },
-        ]}
-      >
-        {streaks.map(([rotate, left, length], index) => (
-          <View
-            key={index}
-            style={[
-              styles.streak,
-              {
-                width: `${length}%`,
-                left: `${left}%`,
-                top: `${46 + (index % 4) * 4}%`,
-                transform: [{ rotate: `${rotate}deg` }],
-                opacity: 0.30 + (index % 3) * 0.20,
               },
             ]}
           />
@@ -342,29 +285,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     backgroundColor: '#DDEBFF',
   },
-  horizon: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    top: '67%',
-    height: 1,
-    backgroundColor: '#CFE3FF',
-    shadowColor: '#DCEBFF',
-    shadowOpacity: 0.55,
-    shadowRadius: 8,
-  },
-  streakField: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  streak: {
-    position: 'absolute',
-    height: 1.5,
-    backgroundColor: RED,
-    borderRadius: 3,
-    shadowColor: RED,
-    shadowOpacity: 0.55,
-    shadowRadius: 4,
-  },
   safeContent: {
     position: 'absolute',
     left: 0,
@@ -378,8 +298,8 @@ const styles = StyleSheet.create({
   },
   vectorGlow: {
     shadowColor: RED,
-    shadowOpacity: 0.72,
-    shadowRadius: 11,
+    shadowOpacity: 0.45,
+    shadowRadius: 7,
     shadowOffset: { width: 0, height: 0 },
   },
   image: {
