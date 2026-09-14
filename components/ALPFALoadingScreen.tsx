@@ -137,9 +137,9 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
     extrapolate: 'clamp',
   });
 
-  const instituteY = timeline.interpolate({
+  const instituteX = timeline.interpolate({
     inputRange: [0, 0.34, 0.48, 1],
-    outputRange: [14, 14, 0, 0],
+    outputRange: [16, 16, 0, 0],
     extrapolate: 'clamp',
   });
 
@@ -207,16 +207,17 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
                   styles.njitOverlay,
                   {
                     opacity: instituteOpacity,
-                    transform: [{ translateY: instituteY }],
+                    transform: [{ translateX: instituteX }],
                   },
                 ]}
               >
+                <View style={styles.njitDivider} />
                 <Text
                   style={[
                     styles.njitText,
                     {
-                      fontSize: Math.max(10, Math.min(logoSize * 0.036, 14)),
-                      lineHeight: Math.max(12, Math.min(logoSize * 0.043, 17)),
+                      fontSize: Math.max(8, Math.min(logoSize * 0.028, 11)),
+                      lineHeight: Math.max(10, Math.min(logoSize * 0.035, 14)),
                     },
                   ]}
                 >
@@ -270,18 +271,27 @@ const styles = StyleSheet.create({
   },
   njitOverlay: {
     position: 'absolute',
-    left: 0,
-    right: 0,
-    top: '76%',
+    left: '46%',
+    top: '67%',
+    width: '50%',
+    minHeight: '18%',
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: '8%',
+    justifyContent: 'flex-start',
+  },
+  njitDivider: {
+    width: 1,
+    height: '72%',
+    minHeight: 34,
+    marginRight: 10,
+    backgroundColor: 'rgba(247,248,250,0.82)',
   },
   njitText: {
+    flexShrink: 1,
     color: WHITE,
-    textAlign: 'center',
+    textAlign: 'left',
     fontWeight: '800',
-    letterSpacing: 0.3,
+    letterSpacing: 0.2,
   },
   flash: {
     ...StyleSheet.absoluteFillObject,
