@@ -5,12 +5,12 @@ import {
   Easing,
   Image,
   StyleSheet,
-  Text,
   useWindowDimensions,
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AnimatedALPFAMark from './AnimatedALPFAMark';
+import NJITInstituteText from './NJITInstituteText';
 
 const ALPFA_LOGO = require('../assets/images/NJITalpfa logo.pdf (6).png');
 
@@ -204,25 +204,14 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
               <Animated.View
                 pointerEvents="none"
                 style={[
-                  styles.njitOverlay,
+                  StyleSheet.absoluteFillObject,
                   {
                     opacity: instituteOpacity,
                     transform: [{ translateX: instituteX }],
                   },
                 ]}
               >
-                <View style={styles.njitDivider} />
-                <Text
-                  style={[
-                    styles.njitText,
-                    {
-                      fontSize: Math.max(8, Math.min(logoSize * 0.028, 11)),
-                      lineHeight: Math.max(10, Math.min(logoSize * 0.035, 14)),
-                    },
-                  ]}
-                >
-                  NEW JERSEY INSTITUTE{`\n`}OF TECHNOLOGY
-                </Text>
+                <NJITInstituteText size={logoSize} />
               </Animated.View>
             </Animated.View>
           </View>
@@ -268,30 +257,6 @@ const styles = StyleSheet.create({
   image: {
     width: '100%',
     height: '100%',
-  },
-  njitOverlay: {
-    position: 'absolute',
-    left: '46%',
-    top: '67%',
-    width: '50%',
-    minHeight: '18%',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-  },
-  njitDivider: {
-    width: 1,
-    height: '72%',
-    minHeight: 34,
-    marginRight: 10,
-    backgroundColor: 'rgba(247,248,250,0.82)',
-  },
-  njitText: {
-    flexShrink: 1,
-    color: WHITE,
-    textAlign: 'left',
-    fontWeight: '800',
-    letterSpacing: 0.2,
   },
   flash: {
     ...StyleSheet.absoluteFillObject,
