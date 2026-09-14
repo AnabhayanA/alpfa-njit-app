@@ -5,16 +5,14 @@ type Props = {
   timeline: Animated.Value;
   screenWidth: number;
   screenHeight: number;
-  startX: number;
-  startY: number;
-  angle: string;
+  angleDeg: number;
   lengthRatio: number;
   thickness: number;
   start: number;
   peak: number;
   end: number;
-  travelX: number;
-  travelY: number;
+  startRadius?: number;
+  endRadius?: number;
   intensity?: number;
 };
 
@@ -22,42 +20,47 @@ export default function LightStreak({
   timeline,
   screenWidth,
   screenHeight,
-  startX,
-  startY,
-  angle,
+  angleDeg,
   lengthRatio,
   thickness,
   start,
   peak,
   end,
-  travelX,
-  travelY,
+  startRadius = 0.05,
+  endRadius = 0.78,
   intensity = 1,
 }: Props) {
-  const length = Math.max(screenWidth * lengthRatio, 72);
-  const fadeOut = Math.min(end + 0.02, 1);
+  const length = Math.max(screenWidth * lengthRatio, 64);
+  const centerX = screenWidth / 2;
+  const centerY = screenHeight / 2;
+  const theta = (angleDeg * Math.PI) / 180;
+  const baseRadius = Math.min(screenWidth, screenHeight);
+  const fadeOut = Math.min(end + 0.025, 1);
 
   const opacity = timeline.interpolate({
     inputRange: [0, start, peak, end, fadeOut, 1],
-    outputRange: [0, 0, Math.min(1, 0.88 * intensity), 0.52 * intensity, 0, 0],
+    outputRange: [0, 0, Math.min(1, 0.96 * intensity), 0.52 * intensity, 0, 0],
     extrapolate: 'clamp',
   });
 
-  const translateX = timeline.interpolate({
+  const radius = timeline.interpolate({
     inputRange: [0, start, peak, end, 1],
-    outputRange: [0, 0, travelX * screenWidth * 0.58, travelX * screenWidth, travelX * screenWidth],
+    outputRange: [
+      baseRadius * startRadius,
+      baseRadius * startRadius,
+      baseRadius * ((startRadius + endRadius) * 0.34),
+      baseRadius * endRadius,
+      baseRadius * endRadius,
+    ],
     extrapolate: 'clamp',
   });
 
-  const translateY = timeline.interpolate({
-    inputRange: [0, start, peak, end, 1],
-    outputRange: [0, 0, travelY * screenHeight * 0.58, travelY * screenHeight, travelY * screenHeight],
-    extrapolate: 'clamp',
-  });
+  const translateX = Animated.multiply(radius, Math.cos(theta));
+  const translateY = Animated.multiply(radius, Math.sin(theta));
 
   const scaleX = timeline.interpolate({
     inputRange: [0, start, peak, end, 1],
-    outputRange: [0.18, 0.18, 1.2, 1.85, 1.85],
+    outputRange: [0.18, 0.18, 1.15, 1.7, 1.7],
     extrapolate: 'clamp',
   });
 
@@ -67,15 +70,15 @@ export default function LightStreak({
       style={[
         styles.wrap,
         {
-          left: screenWidth * startX,
-          top: screenHeight * startY,
+          left: centerX - length / 2,
+          top: centerY - thickness * 2.5,
           width: length,
           height: thickness * 5,
           opacity,
           transform: [
-            { rotate: angle },
             { translateX },
             { translateY },
+            { rotate: `${angleDeg}deg` },
             { scaleX },
           ],
         },
@@ -96,7 +99,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 0,
     right: 0,
-    backgroundColor: 'rgba(255, 36, 68, 0.20)',
+    backgroundColor: 'rgba(255, 36, 68, 0.22)',
   },
   core: {
     position: 'absolute',
