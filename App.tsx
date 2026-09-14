@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Animated, Easing, Image, Platform, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { Animated, Easing, Platform, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
@@ -14,10 +14,7 @@ import CaptureScreen from './screens/CaptureScreen';
 import useTheme from './utils/useTheme';
 
 const Tab = createBottomTabNavigator();
-
-// Loading-screen artwork only. ALPFANJITLOGO.png stays reserved for the in-app logo.
-const LOGO_COLOR = require('./assets/images/NJITalpfa logo (2).png');
-const LOGO_WHITE = require('./assets/images/NJITalpfa Logo.pdf (7).png');
+const LOADING_LOGO = require('./assets/images/NJITalpfa logo (2).png');
 const SPLASH_NAVY = '#0F102E';
 
 function Tabs() {
@@ -36,9 +33,9 @@ function MainApp() {
   return <NavigationContainer><Tabs /></NavigationContainer>;
 }
 
-type BeamProps = {
+type StrokeProps = {
   progress: Animated.Value;
-  exit: Animated.Value;
+  burst: Animated.Value;
   width: number;
   height: number;
   left: number;
@@ -50,60 +47,29 @@ type BeamProps = {
   outY: number;
 };
 
-function Beam({ progress, exit, width, height, left, top, rotate, fromX, fromY, outX, outY }: BeamProps) {
+function Stroke({ progress, burst, width, height, left, top, rotate, fromX, fromY, outX, outY }: StrokeProps) {
+  const opacity = progress.interpolate({ inputRange: [0, 0.08, 0.92, 1], outputRange: [0, 1, 1, 1] });
   return (
     <Animated.View
       style={[
-        styles.beamGlow,
+        styles.stroke,
         {
           width,
           height,
           left,
           top,
-          opacity: progress.interpolate({ inputRange: [0, 0.12, 1], outputRange: [0, 1, 1] }),
+          opacity,
           transform: [
             { rotate },
             { translateX: progress.interpolate({ inputRange: [0, 1], outputRange: [fromX, 0] }) },
             { translateY: progress.interpolate({ inputRange: [0, 1], outputRange: [fromY, 0] }) },
-            { translateX: exit.interpolate({ inputRange: [0, 1], outputRange: [0, outX] }) },
-            { translateY: exit.interpolate({ inputRange: [0, 1], outputRange: [0, outY] }) },
+            { translateX: burst.interpolate({ inputRange: [0, 1], outputRange: [0, outX] }) },
+            { translateY: burst.interpolate({ inputRange: [0, 1], outputRange: [0, outY] }) },
+            { scaleX: burst.interpolate({ inputRange: [0, 1], outputRange: [1, 1.45] }) },
           ],
         },
       ]}
-    >
-      <View style={styles.beamCore} />
-    </Animated.View>
-  );
-}
-
-function HighlanderCrop({ size, scale, opacity }: { size: number; scale: Animated.Value; opacity: Animated.Value }) {
-  const cropW = size * 0.38;
-  const cropH = size * 0.30;
-
-  return (
-    <Animated.View
-      style={[
-        styles.highlanderCrop,
-        {
-          width: cropW,
-          height: cropH,
-          opacity,
-          transform: [{ scale }],
-        },
-      ]}
-    >
-      <Image
-        source={LOGO_COLOR}
-        resizeMode="stretch"
-        style={{
-          position: 'absolute',
-          width: size,
-          height: size,
-          left: -size * 0.02,
-          top: -size * 0.59,
-        }}
-      />
-    </Animated.View>
+    />
   );
 }
 
@@ -112,152 +78,67 @@ export default function App() {
   const { width, height } = useWindowDimensions();
   const [showSplash, setShowSplash] = useState(true);
 
-  const outlineOpacity = useRef(new Animated.Value(0)).current;
-  const linesIn = useRef(new Animated.Value(0)).current;
-  const colorOpacity = useRef(new Animated.Value(0)).current;
-  const whiteOpacity = useRef(new Animated.Value(0)).current;
-  const whiteScale = useRef(new Animated.Value(1)).current;
-  const linesOut = useRef(new Animated.Value(0)).current;
-  const splitOut = useRef(new Animated.Value(0)).current;
-  const highlanderOpacity = useRef(new Animated.Value(0)).current;
-  const highlanderScale = useRef(new Animated.Value(0.84)).current;
+  const enter = useRef(new Animated.Value(0)).current;
+  const pulse = useRef(new Animated.Value(0)).current;
+  const burst = useRef(new Animated.Value(0)).current;
+  const logoOpacity = useRef(new Animated.Value(0)).current;
+  const logoScale = useRef(new Animated.Value(0.88)).current;
   const splashOpacity = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     Animated.sequence([
-      // 1. Initial state: faint outline-like logo.
-      Animated.timing(outlineOpacity, {
-        toValue: 0.13,
-        duration: 260,
-        easing: Easing.out(Easing.quad),
+      Animated.delay(120),
+      Animated.timing(enter, {
+        toValue: 1,
+        duration: 620,
+        easing: Easing.bezier(0.16, 0.84, 0.24, 1),
         useNativeDriver: true,
       }),
-      Animated.delay(90),
-
-      // 2. Lines animate in.
       Animated.parallel([
-        Animated.timing(linesIn, {
+        Animated.sequence([
+          Animated.timing(pulse, { toValue: 1, duration: 110, useNativeDriver: true }),
+          Animated.timing(pulse, { toValue: 0, duration: 150, useNativeDriver: true }),
+        ]),
+        Animated.sequence([
+          Animated.delay(70),
+          Animated.timing(logoOpacity, {
+            toValue: 1,
+            duration: 240,
+            easing: Easing.out(Easing.quad),
+            useNativeDriver: true,
+          }),
+        ]),
+      ]),
+      Animated.delay(320),
+      Animated.parallel([
+        Animated.timing(burst, {
           toValue: 1,
-          duration: 520,
-          easing: Easing.bezier(0.16, 0.84, 0.26, 1),
+          duration: 560,
+          easing: Easing.bezier(0.58, 0.02, 0.16, 1),
           useNativeDriver: true,
         }),
         Animated.sequence([
-          Animated.delay(210),
-          Animated.timing(colorOpacity, {
-            toValue: 1,
-            duration: 360,
+          Animated.delay(110),
+          Animated.timing(logoScale, {
+            toValue: 1.08,
+            duration: 420,
             easing: Easing.out(Easing.cubic),
             useNativeDriver: true,
           }),
         ]),
       ]),
-
-      // 3. Color logo forms.
+      Animated.delay(260),
       Animated.parallel([
-        Animated.timing(outlineOpacity, {
-          toValue: 0,
-          duration: 200,
+        Animated.timing(logoScale, {
+          toValue: 1.22,
+          duration: 340,
+          easing: Easing.out(Easing.cubic),
           useNativeDriver: true,
         }),
-        Animated.timing(linesIn, {
-          toValue: 0.35,
-          duration: 240,
-          useNativeDriver: true,
-        }),
-      ]),
-      Animated.delay(220),
-
-      // 4. Final white logo with subtle pop/glow.
-      Animated.parallel([
-        Animated.timing(whiteOpacity, {
-          toValue: 1,
-          duration: 300,
-          easing: Easing.out(Easing.quad),
-          useNativeDriver: true,
-        }),
-        Animated.timing(colorOpacity, {
-          toValue: 0,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-        Animated.sequence([
-          Animated.timing(whiteScale, {
-            toValue: 1.045,
-            duration: 170,
-            easing: Easing.out(Easing.cubic),
-            useNativeDriver: true,
-          }),
-          Animated.timing(whiteScale, {
-            toValue: 1,
-            duration: 180,
-            easing: Easing.inOut(Easing.quad),
-            useNativeDriver: true,
-          }),
-        ]),
-      ]),
-
-      // 5. Hold.
-      Animated.delay(1500),
-
-      // 6. Open transition: logo halves and glowing lines move outward.
-      Animated.parallel([
-        Animated.timing(linesIn, {
-          toValue: 1,
-          duration: 140,
-          useNativeDriver: true,
-        }),
-        Animated.timing(linesOut, {
-          toValue: 1,
-          duration: 690,
-          easing: Easing.bezier(0.55, 0.03, 0.18, 1),
-          useNativeDriver: true,
-        }),
-        Animated.timing(splitOut, {
-          toValue: 1,
-          duration: 650,
-          easing: Easing.bezier(0.55, 0.03, 0.18, 1),
-          useNativeDriver: true,
-        }),
-        Animated.sequence([
-          Animated.delay(100),
-          Animated.timing(whiteOpacity, {
-            toValue: 0,
-            duration: 360,
-            useNativeDriver: true,
-          }),
-        ]),
-      ]),
-
-      // 7. Highlander focus.
-      Animated.parallel([
-        Animated.timing(highlanderOpacity, {
-          toValue: 1,
-          duration: 220,
-          easing: Easing.out(Easing.quad),
-          useNativeDriver: true,
-        }),
-        Animated.spring(highlanderScale, {
-          toValue: 1.08,
-          speed: 10,
-          bounciness: 3,
-          useNativeDriver: true,
-        }),
-      ]),
-      Animated.delay(650),
-
-      // 8. Reveal Home.
-      Animated.parallel([
-        Animated.timing(highlanderOpacity, {
+        Animated.timing(logoOpacity, {
           toValue: 0,
           duration: 300,
           easing: Easing.in(Easing.quad),
-          useNativeDriver: true,
-        }),
-        Animated.timing(highlanderScale, {
-          toValue: 1.16,
-          duration: 340,
-          easing: Easing.out(Easing.cubic),
           useNativeDriver: true,
         }),
         Animated.timing(splashOpacity, {
@@ -268,27 +149,13 @@ export default function App() {
         }),
       ]),
     ]).start(() => setShowSplash(false));
-  }, [
-    colorOpacity,
-    highlanderOpacity,
-    highlanderScale,
-    linesIn,
-    linesOut,
-    outlineOpacity,
-    splashOpacity,
-    splitOut,
-    whiteOpacity,
-    whiteScale,
-  ]);
+  }, [burst, enter, logoOpacity, logoScale, pulse, splashOpacity]);
 
-  const stage = Math.min(width * 0.90, 430);
-  const logoSize = stage * 0.78;
-  const beamLength = stage * 0.30;
-  const beamThickness = Math.max(4, stage * 0.012);
-  const highlanderSourceSize = Math.min(stage * 1.75, 680);
-
-  const leftLogoOut = splitOut.interpolate({ inputRange: [0, 1], outputRange: [0, -width * 0.70] });
-  const rightLogoOut = splitOut.interpolate({ inputRange: [0, 1], outputRange: [0, width * 0.70] });
+  const stage = Math.min(width * 0.88, 390);
+  const strokeLength = stage * 0.38;
+  const strokeThickness = Math.max(5, stage * 0.016);
+  const pulseScale = pulse.interpolate({ inputRange: [0, 1], outputRange: [0.2, 1.9] });
+  const pulseOpacity = pulse.interpolate({ inputRange: [0, 0.2, 1], outputRange: [0, 0.75, 0] });
 
   return (
     <SafeAreaProvider style={styles.safeArea}>
@@ -302,55 +169,38 @@ export default function App() {
         </View>
 
         {showSplash && (
-          <Animated.View
-            pointerEvents="none"
-            style={[styles.splash, { width, height, opacity: splashOpacity }]}
-          >
+          <Animated.View pointerEvents="none" style={[styles.splash, { width, height, opacity: splashOpacity }]}>
             <View style={[styles.stage, { width: stage, height: stage }]}>
-              <Animated.Image
-                source={LOGO_WHITE}
-                resizeMode="contain"
+              <Stroke progress={enter} burst={burst} width={strokeLength} height={strokeThickness} left={stage * 0.18} top={stage * 0.31} rotate="-55deg" fromX={-width * 0.72} fromY={height * 0.12} outX={-width * 0.82} outY={-height * 0.12} />
+              <Stroke progress={enter} burst={burst} width={strokeLength} height={strokeThickness} left={stage * 0.47} top={stage * 0.31} rotate="55deg" fromX={width * 0.72} fromY={-height * 0.12} outX={width * 0.82} outY={-height * 0.12} />
+              <Stroke progress={enter} burst={burst} width={strokeLength * 0.92} height={strokeThickness} left={stage * 0.34} top={stage * 0.60} rotate="0deg" fromX={0} fromY={height * 0.55} outX={0} outY={height * 0.72} />
+
+              <Animated.View
                 style={[
-                  styles.logoImage,
-                  { width: logoSize, height: logoSize, opacity: outlineOpacity },
-                ]}
-              />
-
-              <Beam progress={linesIn} exit={linesOut} width={beamLength} height={beamThickness} left={stage * 0.20} top={stage * 0.27} rotate="-53deg" fromX={-stage * 0.68} fromY={stage * 0.18} outX={-stage * 0.95} outY={-stage * 0.38} />
-              <Beam progress={linesIn} exit={linesOut} width={beamLength * 0.94} height={beamThickness} left={stage * 0.50} top={stage * 0.27} rotate="56deg" fromX={stage * 0.68} fromY={-stage * 0.20} outX={stage * 0.95} outY={-stage * 0.40} />
-              <Beam progress={linesIn} exit={linesOut} width={beamLength * 0.88} height={beamThickness * 0.88} left={stage * 0.18} top={stage * 0.61} rotate="-43deg" fromX={-stage * 0.52} fromY={stage * 0.42} outX={-stage * 0.98} outY={stage * 0.48} />
-              <Beam progress={linesIn} exit={linesOut} width={beamLength * 0.82} height={beamThickness * 0.80} left={stage * 0.50} top={stage * 0.62} rotate="18deg" fromX={stage * 0.48} fromY={stage * 0.40} outX={stage * 1.00} outY={stage * 0.50} />
-
-              <Animated.Image
-                source={LOGO_COLOR}
-                resizeMode="contain"
-                style={[styles.logoImage, { width: logoSize, height: logoSize, opacity: colorOpacity }]}
-              />
-
-              <Animated.Image
-                source={LOGO_WHITE}
-                resizeMode="contain"
-                style={[
-                  styles.logoImage,
+                  styles.pulse,
                   {
-                    width: logoSize,
-                    height: logoSize,
-                    opacity: whiteOpacity,
-                    transform: [{ scale: whiteScale }],
+                    width: stage * 0.18,
+                    height: stage * 0.18,
+                    borderRadius: stage * 0.09,
+                    opacity: pulseOpacity,
+                    transform: [{ scale: pulseScale }],
                   },
                 ]}
               />
 
-              <Animated.View style={[styles.logoHalf, styles.leftHalf, { width: logoSize / 2, height: logoSize, transform: [{ translateX: leftLogoOut }] }]}> 
-                <Image source={LOGO_WHITE} resizeMode="contain" style={{ position: 'absolute', width: logoSize, height: logoSize, left: 0, top: 0 }} />
-              </Animated.View>
-              <Animated.View style={[styles.logoHalf, styles.rightHalf, { width: logoSize / 2, height: logoSize, transform: [{ translateX: rightLogoOut }] }]}> 
-                <Image source={LOGO_WHITE} resizeMode="contain" style={{ position: 'absolute', width: logoSize, height: logoSize, left: -logoSize / 2, top: 0 }} />
-              </Animated.View>
-
-              <View style={styles.highlanderCenter}>
-                <HighlanderCrop size={highlanderSourceSize} scale={highlanderScale} opacity={highlanderOpacity} />
-              </View>
+              <Animated.Image
+                source={LOADING_LOGO}
+                resizeMode="contain"
+                style={[
+                  styles.loadingLogo,
+                  {
+                    width: stage * 0.66,
+                    height: stage * 0.66,
+                    opacity: logoOpacity,
+                    transform: [{ scale: logoScale }],
+                  },
+                ]}
+              />
             </View>
           </Animated.View>
         )}
@@ -389,27 +239,16 @@ const styles = StyleSheet.create({
     elevation: 99999,
   },
   stage: { position: 'relative', alignItems: 'center', justifyContent: 'center' },
-  logoImage: { position: 'absolute', alignSelf: 'center' },
-  beamGlow: {
+  stroke: {
     position: 'absolute',
     borderRadius: 999,
-    backgroundColor: 'rgba(255,43,61,0.28)',
-    shadowColor: '#FF243C',
-    shadowOpacity: 0.95,
-    shadowRadius: 13,
-    shadowOffset: { width: 0, height: 0 },
+    backgroundColor: '#E5223D',
   },
-  beamCore: { position: 'absolute', left: 0, right: 0, top: '27%', height: '46%', borderRadius: 999, backgroundColor: '#FF3047' },
-  logoHalf: { position: 'absolute', overflow: 'hidden', alignSelf: 'center' },
-  leftHalf: { left: '11%' },
-  rightHalf: { right: '11%' },
-  highlanderCenter: { ...StyleSheet.absoluteFillObject, alignItems: 'center', justifyContent: 'center' },
-  highlanderCrop: {
-    overflow: 'hidden',
-    borderRadius: 28,
-    shadowColor: '#FFFFFF',
-    shadowOpacity: 0.50,
-    shadowRadius: 22,
-    shadowOffset: { width: 0, height: 0 },
+  pulse: {
+    position: 'absolute',
+    backgroundColor: '#FFFFFF',
+  },
+  loadingLogo: {
+    position: 'absolute',
   },
 });
