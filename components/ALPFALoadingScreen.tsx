@@ -11,10 +11,10 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+// Loading screen uses only the red ALPFA artwork.
 const ALPFA_LOGO = require('../assets/images/NJITalpfa logo (2).png');
 
 const NAVY = '#050A16';
-const RED = '#E3212B';
 const WHITE = '#F5F6F8';
 const TOTAL_MS = 7200;
 
@@ -133,12 +133,6 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
     extrapolate: 'clamp',
   });
 
-  const glowOpacity = timeline.interpolate({
-    inputRange: [0, 0.08, 0.28, 0.56, 0.76, 0.90, 1],
-    outputRange: [0, 0.15, 0.34, 0.42, 0.6, 0.25, 0],
-    extrapolate: 'clamp',
-  });
-
   const flashOpacity = timeline.interpolate({
     inputRange: [0, 0.86, 0.93, 0.975, 1],
     outputRange: [0, 0, 0.92, 0.26, 0],
@@ -178,18 +172,6 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
             },
           ]}
         >
-          <Animated.View
-            style={[
-              styles.glow,
-              {
-                width: logoWidth * 0.82,
-                height: logoWidth * 0.28,
-                borderRadius: logoWidth * 0.14,
-                opacity: glowOpacity,
-              },
-            ]}
-          />
-
           <View style={{ width: logoWidth, height: logoHeight }}>
             <Animated.View
               style={[
@@ -262,14 +244,6 @@ const styles = StyleSheet.create({
   logoGroup: {
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  glow: {
-    position: 'absolute',
-    backgroundColor: 'rgba(227,33,43,0.16)',
-    shadowColor: RED,
-    shadowOpacity: 0.7,
-    shadowRadius: 24,
-    shadowOffset: { width: 0, height: 0 },
   },
   revealClip: {
     overflow: 'hidden',
