@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   AccessibilityInfo,
   Animated,
@@ -17,7 +17,7 @@ const ALPFA_LOGO = require('../assets/images/NJITalpfa logo.pdf (6).png');
 const NAVY = '#030712';
 const WHITE = '#F7F8FA';
 const RED = '#E02125';
-const TOTAL_MS = 5300;
+const TOTAL_MS = 5000;
 
 type Props = { onAnimationComplete?: () => void };
 
@@ -29,17 +29,7 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
   const drawProgress = useRef(new Animated.Value(0)).current;
 
   const safeHeight = Math.max(1, height - insets.top - insets.bottom);
-  const logoSize = Math.min(width * 0.8, safeHeight * 0.45, 380);
-
-  const stars = useMemo(
-    () => [
-      [8, 12, 1], [18, 28, 1.5], [29, 9, 1], [42, 21, 1.2], [55, 11, 1.6],
-      [67, 30, 1], [82, 16, 1.4], [92, 35, 1], [12, 56, 1.3], [25, 72, 1],
-      [39, 62, 1.5], [58, 76, 1], [73, 58, 1.3], [88, 68, 1], [49, 89, 1.2],
-      [5, 82, 1], [16, 91, 1.3], [33, 40, 1], [63, 43, 1.4], [95, 83, 1.2],
-    ],
-    []
-  );
+  const logoSize = Math.min(width * 0.82, safeHeight * 0.48, 390);
 
   useEffect(() => {
     let mounted = true;
@@ -68,15 +58,15 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
     const animation = reducedMotion
       ? Animated.sequence([
           Animated.timing(timeline, {
-            toValue: 0.62,
+            toValue: 0.7,
             duration: 450,
             easing: Easing.out(Easing.quad),
             useNativeDriver: true,
           }),
-          Animated.delay(650),
+          Animated.delay(550),
           Animated.timing(timeline, {
             toValue: 1,
-            duration: 350,
+            duration: 300,
             easing: Easing.out(Easing.quad),
             useNativeDriver: true,
           }),
@@ -91,7 +81,7 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
     const drawingAnimation = reducedMotion
       ? null
       : Animated.sequence([
-          Animated.delay(700),
+          Animated.delay(500),
           Animated.timing(drawProgress, {
             toValue: 1,
             duration: 1250,
@@ -112,44 +102,50 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
   }, [drawProgress, onAnimationComplete, reducedMotion, timeline]);
 
   const logoScale = timeline.interpolate({
-    inputRange: [0, 0.12, 0.35, 0.48, 0.61, 0.72, 0.82, 0.89, 0.94, 0.975, 1],
-    outputRange: [1.34, 1.34, 1.18, 1.0, 0.66, 0.66, 0.72, 1.12, 2.55, 6.8, 10.2],
+    inputRange: [0, 0.12, 0.34, 0.50, 0.64, 0.76, 0.84, 0.91, 0.955, 0.985, 1],
+    outputRange: [1.26, 1.26, 1.14, 1.0, 0.72, 0.72, 0.88, 1.42, 3.0, 7.2, 10.4],
     extrapolate: 'clamp',
   });
 
   const logoY = timeline.interpolate({
-    inputRange: [0, 0.48, 0.61, 0.82, 0.94, 1],
-    outputRange: [safeHeight * 0.02, 0, safeHeight * 0.02, 0, -safeHeight * 0.012, -safeHeight * 0.055],
+    inputRange: [0, 0.50, 0.64, 0.84, 0.955, 1],
+    outputRange: [safeHeight * 0.015, 0, safeHeight * 0.015, 0, -safeHeight * 0.01, -safeHeight * 0.05],
     extrapolate: 'clamp',
   });
 
   const vectorOpacity = timeline.interpolate({
-    inputRange: [0, 0.10, 0.16, 0.34, 0.42, 1],
+    inputRange: [0, 0.08, 0.14, 0.32, 0.40, 1],
     outputRange: [0, 0, 1, 1, 0, 0],
     extrapolate: 'clamp',
   });
 
   const vectorGlowOpacity = timeline.interpolate({
-    inputRange: [0, 0.13, 0.22, 0.35, 0.42, 1],
-    outputRange: [0, 0, 0.12, 0.22, 0, 0],
+    inputRange: [0, 0.10, 0.20, 0.32, 0.40, 1],
+    outputRange: [0, 0, 0.10, 0.18, 0, 0],
     extrapolate: 'clamp',
   });
 
   const logoOpacity = timeline.interpolate({
-    inputRange: [0, 0.31, 0.40, 0.94, 0.982, 1],
+    inputRange: [0, 0.28, 0.38, 0.94, 0.982, 1],
     outputRange: [0, 0, 1, 1, 0.70, 0],
     extrapolate: 'clamp',
   });
 
-  const taglineOpacity = timeline.interpolate({
-    inputRange: [0, 0.49, 0.55, 0.69, 0.77, 1],
-    outputRange: [0, 0, 1, 1, 0, 0],
+  const instituteOpacity = timeline.interpolate({
+    inputRange: [0, 0.34, 0.44, 0.90, 0.96, 1],
+    outputRange: [0, 0, 1, 1, 0.75, 0],
+    extrapolate: 'clamp',
+  });
+
+  const instituteY = timeline.interpolate({
+    inputRange: [0, 0.34, 0.48, 1],
+    outputRange: [14, 14, 0, 0],
     extrapolate: 'clamp',
   });
 
   const flashOpacity = timeline.interpolate({
-    inputRange: [0, 0.945, 0.978, 0.992, 1],
-    outputRange: [0, 0, 1, 0.30, 0],
+    inputRange: [0, 0.95, 0.98, 0.993, 1],
+    outputRange: [0, 0, 1, 0.28, 0],
     extrapolate: 'clamp',
   });
 
@@ -159,37 +155,12 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
     extrapolate: 'clamp',
   });
 
-  const starOpacity = timeline.interpolate({
-    inputRange: [0, 0.10, 0.78, 0.93, 1],
-    outputRange: [0.05, 0.38, 0.44, 0.16, 0],
-    extrapolate: 'clamp',
-  });
-
   return (
     <Animated.View
       pointerEvents="auto"
       style={[styles.root, { width, height, opacity: splashOpacity }]}
     >
       <View style={styles.background} />
-
-      <Animated.View pointerEvents="none" style={[styles.starField, { opacity: starOpacity }]}>
-        {stars.map(([x, y, size], index) => (
-          <View
-            key={index}
-            style={[
-              styles.star,
-              {
-                left: `${x}%`,
-                top: `${y}%`,
-                width: size,
-                height: size,
-                borderRadius: size,
-                opacity: 0.42 + (index % 3) * 0.16,
-              },
-            ]}
-          />
-        ))}
-      </Animated.View>
 
       <View
         pointerEvents="none"
@@ -230,32 +201,30 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
                 accessibilityIgnoresInvertColors
               />
 
-              <View style={styles.njitOverlay} pointerEvents="none">
+              <Animated.View
+                pointerEvents="none"
+                style={[
+                  styles.njitOverlay,
+                  {
+                    opacity: instituteOpacity,
+                    transform: [{ translateY: instituteY }],
+                  },
+                ]}
+              >
                 <Text
                   style={[
                     styles.njitText,
-                    { fontSize: Math.max(8, Math.min(logoSize * 0.032, 12)) },
+                    {
+                      fontSize: Math.max(10, Math.min(logoSize * 0.036, 14)),
+                      lineHeight: Math.max(12, Math.min(logoSize * 0.043, 17)),
+                    },
                   ]}
                 >
                   NEW JERSEY INSTITUTE{`\n`}OF TECHNOLOGY
                 </Text>
-              </View>
+              </Animated.View>
             </Animated.View>
           </View>
-        </Animated.View>
-
-        <Animated.View style={[styles.taglineWrap, { opacity: taglineOpacity }]}>
-          <Text
-            style={[
-              styles.tagline,
-              {
-                fontSize: Math.max(9, Math.min(width * 0.027, 12)),
-                letterSpacing: Math.max(1.8, Math.min(width * 0.0065, 2.8)),
-              },
-            ]}
-          >
-            FAMILIA · LEADERSHIP · LEGACY
-          </Text>
         </Animated.View>
       </View>
 
@@ -278,13 +247,6 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     backgroundColor: NAVY,
   },
-  starField: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  star: {
-    position: 'absolute',
-    backgroundColor: '#DDEBFF',
-  },
   safeContent: {
     position: 'absolute',
     left: 0,
@@ -298,8 +260,8 @@ const styles = StyleSheet.create({
   },
   vectorGlow: {
     shadowColor: RED,
-    shadowOpacity: 0.45,
-    shadowRadius: 7,
+    shadowOpacity: 0.4,
+    shadowRadius: 6,
     shadowOffset: { width: 0, height: 0 },
   },
   image: {
@@ -308,27 +270,18 @@ const styles = StyleSheet.create({
   },
   njitOverlay: {
     position: 'absolute',
-    left: '32%',
-    top: '68%',
-    width: '58%',
+    left: 0,
+    right: 0,
+    top: '76%',
     alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: '8%',
   },
   njitText: {
     color: WHITE,
     textAlign: 'center',
-    fontWeight: '700',
-    letterSpacing: 0.25,
-    lineHeight: 13,
-  },
-  taglineWrap: {
-    marginTop: 4,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  tagline: {
-    color: WHITE,
-    fontWeight: '700',
-    textAlign: 'center',
+    fontWeight: '800',
+    letterSpacing: 0.3,
   },
   flash: {
     ...StyleSheet.absoluteFillObject,
