@@ -26,18 +26,26 @@ export default function LightStreak({
   angle,
   lengthRatio,
   thickness,
+  delay = 0,
   directionX,
   directionY,
 }: Props) {
   const length = Math.max(screenWidth * lengthRatio, 64);
+  const start = Math.min(Math.max(delay, 0), 0.45);
+  const mid = Math.min(start + 0.34, 0.78);
+  const late = Math.min(start + 0.7, 0.95);
+
   const opacity = progress.interpolate({
-    inputRange: [0, 0.08, 0.55, 0.9, 1],
-    outputRange: [0, 0.18, 0.9, 0.7, 0],
+    inputRange: [0, start, mid, late, 1],
+    outputRange: [0, 0, 0.95, 0.62, 0],
   });
-  const buildScale = progress.interpolate({ inputRange: [0, 1], outputRange: [0.05, 1] });
-  const rushScale = rush.interpolate({ inputRange: [0, 1], outputRange: [1, 2.8] });
-  const translateX = rush.interpolate({ inputRange: [0, 1], outputRange: [0, directionX * screenWidth * 0.16] });
-  const translateY = rush.interpolate({ inputRange: [0, 1], outputRange: [0, directionY * screenHeight * 0.08] });
+  const buildScale = progress.interpolate({
+    inputRange: [0, start, 1],
+    outputRange: [0.04, 0.04, 1],
+  });
+  const rushScale = rush.interpolate({ inputRange: [0, 1], outputRange: [1, 3.1] });
+  const translateX = rush.interpolate({ inputRange: [0, 1], outputRange: [0, directionX * screenWidth * 0.18] });
+  const translateY = rush.interpolate({ inputRange: [0, 1], outputRange: [0, directionY * screenHeight * 0.09] });
 
   return (
     <Animated.View
@@ -66,15 +74,12 @@ export default function LightStreak({
 }
 
 const styles = StyleSheet.create({
-  wrap: {
-    position: 'absolute',
-    justifyContent: 'center',
-  },
+  wrap: { position: 'absolute', justifyContent: 'center' },
   glow: {
     position: 'absolute',
     left: 0,
     right: 0,
-    backgroundColor: 'rgba(255, 36, 68, 0.20)',
+    backgroundColor: 'rgba(255, 36, 68, 0.22)',
   },
   core: {
     position: 'absolute',
