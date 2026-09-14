@@ -4,7 +4,6 @@ import {
   Animated,
   Easing,
   Image,
-  Platform,
   StyleSheet,
   Text,
   useWindowDimensions,
@@ -16,7 +15,6 @@ const ALPFA_LOGO = require('../assets/images/NJITalpfa logo.pdf (6).png');
 
 const NAVY = '#030712';
 const WHITE = '#F7F8FA';
-const RED = '#E3212B';
 const TOTAL_MS = 5200;
 
 type Props = { onAnimationComplete?: () => void };
@@ -34,11 +32,13 @@ type StrokeProps = {
 function DrawingStroke({ progress, width, thickness, left, top, rotate, delay }: StrokeProps) {
   const start = delay;
   const end = Math.min(delay + 0.22, 0.42);
+
   const scaleX = progress.interpolate({
     inputRange: [0, start, end, 1],
     outputRange: [0.001, 0.001, 1, 1],
     extrapolate: 'clamp',
   });
+
   const opacity = progress.interpolate({
     inputRange: [0, start, start + 0.04, 0.48, 0.58, 1],
     outputRange: [0, 0, 1, 1, 0, 0],
@@ -51,7 +51,7 @@ function DrawingStroke({ progress, width, thickness, left, top, rotate, delay }:
         styles.strokeWrap,
         {
           width,
-          height: thickness * 5,
+          height: thickness,
           left,
           top,
           opacity,
@@ -59,8 +59,12 @@ function DrawingStroke({ progress, width, thickness, left, top, rotate, delay }:
         },
       ]}
     >
-      <View style={[styles.strokeGlow, { height: thickness * 5, borderRadius: thickness * 2.5 }]} />
-      <View style={[styles.strokeCore, { height: thickness, borderRadius: thickness / 2 }]} />
+      <View
+        style={[
+          styles.strokeCore,
+          { height: thickness, borderRadius: thickness / 2 },
+        ]}
+      />
     </Animated.View>
   );
 }
@@ -89,23 +93,50 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
     AccessibilityInfo.isReduceMotionEnabled()
       .then((enabled) => mounted && setReducedMotion(enabled))
       .catch(() => mounted && setReducedMotion(false));
-    const subscription = AccessibilityInfo.addEventListener?.('reduceMotionChanged', setReducedMotion);
-    return () => { mounted = false; subscription?.remove?.(); };
+
+    const subscription = AccessibilityInfo.addEventListener?.(
+      'reduceMotionChanged',
+      setReducedMotion
+    );
+
+    return () => {
+      mounted = false;
+      subscription?.remove?.();
+    };
   }, []);
 
   useEffect(() => {
     if (reducedMotion === null) return;
+
     timeline.setValue(0);
 
     const animation = reducedMotion
       ? Animated.sequence([
-          Animated.timing(timeline, { toValue: 0.62, duration: 450, easing: Easing.out(Easing.quad), useNativeDriver: true }),
+          Animated.timing(timeline, {
+            toValue: 0.62,
+            duration: 450,
+            easing: Easing.out(Easing.quad),
+            useNativeDriver: true,
+          }),
           Animated.delay(650),
-          Animated.timing(timeline, { toValue: 1, duration: 350, easing: Easing.out(Easing.quad), useNativeDriver: true }),
+          Animated.timing(timeline, {
+            toValue: 1,
+            duration: 350,
+            easing: Easing.out(Easing.quad),
+            useNativeDriver: true,
+          }),
         ])
-      : Animated.timing(timeline, { toValue: 1, duration: TOTAL_MS, easing: Easing.linear, useNativeDriver: true });
+      : Animated.timing(timeline, {
+          toValue: 1,
+          duration: TOTAL_MS,
+          easing: Easing.linear,
+          useNativeDriver: true,
+        });
 
-    animation.start(({ finished }) => { if (finished) onAnimationComplete?.(); });
+    animation.start(({ finished }) => {
+      if (finished) onAnimationComplete?.();
+    });
+
     return () => animation.stop();
   }, [onAnimationComplete, reducedMotion, timeline]);
 
@@ -124,12 +155,6 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
   const logoY = timeline.interpolate({
     inputRange: [0, 0.42, 0.70, 0.90, 1],
     outputRange: [safeHeight * 0.015, 0, 0, -safeHeight * 0.01, -safeHeight * 0.045],
-    extrapolate: 'clamp',
-  });
-
-  const glowOpacity = timeline.interpolate({
-    inputRange: [0, 0.22, 0.40, 0.68, 0.82, 0.94, 1],
-    outputRange: [0, 0.10, 0.14, 0.08, 0.16, 0.32, 0],
     extrapolate: 'clamp',
   });
 
@@ -158,10 +183,16 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
   });
 
   return (
-    <Animated.View pointerEvents="auto" style={[styles.root, { width, height, opacity: splashOpacity }]}>
+    <Animated.View
+      pointerEvents="auto"
+      style={[styles.root, { width, height, opacity: splashOpacity }]}
+    >
       <View style={styles.background} />
 
-      <Animated.View pointerEvents="none" style={[styles.starField, { opacity: starOpacity }]}>
+      <Animated.View
+        pointerEvents="none"
+        style={[styles.starField, { opacity: starOpacity }]}
+      >
         {stars.map(([x, y, size], index) => (
           <View
             key={index}
@@ -180,7 +211,10 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
         ))}
       </Animated.View>
 
-      <View pointerEvents="none" style={[styles.safeContent, { top: insets.top, height: safeHeight }]}>
+      <View
+        pointerEvents="none"
+        style={[styles.safeContent, { top: insets.top, height: safeHeight }]}
+      >
         <Animated.View
           style={[
             styles.logoStage,
@@ -221,16 +255,8 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
             )}
 
             <Animated.View
-              pointerEvents="none"
-              style={[
-                styles.glowLayer,
-                { width: logoSize, height: logoSize, opacity: glowOpacity },
-              ]}
+              style={{ width: logoSize, height: logoSize, opacity: logoOpacity }}
             >
-              <Image source={ALPFA_LOGO} resizeMode="contain" style={styles.image} />
-            </Animated.View>
-
-            <Animated.View style={{ width: logoSize, height: logoSize, opacity: logoOpacity }}>
               <Image
                 source={ALPFA_LOGO}
                 resizeMode="contain"
@@ -239,7 +265,12 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
               />
 
               <View style={styles.njitOverlay} pointerEvents="none">
-                <Text style={[styles.njitText, { fontSize: Math.max(8, Math.min(logoSize * 0.032, 12)) }]}>
+                <Text
+                  style={[
+                    styles.njitText,
+                    { fontSize: Math.max(8, Math.min(logoSize * 0.032, 12)) },
+                  ]}
+                >
                   NEW JERSEY INSTITUTE{`\n`}OF TECHNOLOGY
                 </Text>
               </View>
@@ -262,41 +293,59 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
         </Animated.View>
       </View>
 
-      <Animated.View pointerEvents="none" style={[styles.flash, { opacity: flashOpacity }]} />
+      <Animated.View
+        pointerEvents="none"
+        style={[styles.flash, { opacity: flashOpacity }]}
+      />
     </Animated.View>
   );
 }
 
 const styles = StyleSheet.create({
   root: {
-    position: 'absolute', left: 0, top: 0, overflow: 'hidden', zIndex: 99999, elevation: 99999,
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    overflow: 'hidden',
+    zIndex: 99999,
+    elevation: 99999,
     backgroundColor: NAVY,
   },
-  background: { ...StyleSheet.absoluteFillObject, backgroundColor: NAVY },
-  starField: { ...StyleSheet.absoluteFillObject },
-  star: { position: 'absolute', backgroundColor: '#DDEBFF' },
+  background: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: NAVY,
+  },
+  starField: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  star: {
+    position: 'absolute',
+    backgroundColor: '#DDEBFF',
+  },
   safeContent: {
-    position: 'absolute', left: 0, right: 0, alignItems: 'center', justifyContent: 'center',
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  logoStage: { alignItems: 'center', justifyContent: 'center' },
-  strokeWrap: { position: 'absolute', justifyContent: 'center' },
-  strokeGlow: {
-    position: 'absolute', left: 0, right: 0, backgroundColor: 'rgba(227,33,43,0.24)',
-    ...Platform.select({
-      ios: { shadowColor: RED, shadowOpacity: 0.85, shadowRadius: 9, shadowOffset: { width: 0, height: 0 } },
-      android: { elevation: 5 },
-      default: { shadowColor: RED, shadowOpacity: 0.70, shadowRadius: 8, shadowOffset: { width: 0, height: 0 } },
-    }),
+  logoStage: {
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  strokeCore: { position: 'absolute', left: 0, right: 0, backgroundColor: '#FF3546' },
-  image: { width: '100%', height: '100%' },
-  glowLayer: {
-    position: 'absolute', left: 0, top: 0, transform: [{ scale: 1.018 }],
-    ...Platform.select({
-      ios: { shadowColor: RED, shadowOpacity: 0.55, shadowRadius: 11, shadowOffset: { width: 0, height: 0 } },
-      android: { elevation: 4 },
-      default: { shadowColor: RED, shadowOpacity: 0.45, shadowRadius: 10, shadowOffset: { width: 0, height: 0 } },
-    }),
+  strokeWrap: {
+    position: 'absolute',
+    justifyContent: 'center',
+  },
+  strokeCore: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    backgroundColor: '#FF3546',
+  },
+  image: {
+    width: '100%',
+    height: '100%',
   },
   njitOverlay: {
     position: 'absolute',
@@ -312,7 +361,19 @@ const styles = StyleSheet.create({
     letterSpacing: 0.25,
     lineHeight: 13,
   },
-  taglineWrap: { marginTop: 4, alignItems: 'center', justifyContent: 'center' },
-  tagline: { color: WHITE, fontWeight: '700', textAlign: 'center' },
-  flash: { ...StyleSheet.absoluteFillObject, backgroundColor: WHITE, zIndex: 20 },
+  taglineWrap: {
+    marginTop: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tagline: {
+    color: WHITE,
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+  flash: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: WHITE,
+    zIndex: 20,
+  },
 });
