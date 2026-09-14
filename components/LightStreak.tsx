@@ -31,9 +31,9 @@ export default function LightStreak({
   directionY,
 }: Props) {
   const length = Math.max(screenWidth * lengthRatio, 64);
-  const start = Math.min(Math.max(delay, 0), 0.45);
-  const mid = Math.min(start + 0.34, 0.78);
-  const late = Math.min(start + 0.7, 0.95);
+  const start = Math.min(Math.max(delay, 0) + 0.02, 0.47);
+  const mid = Math.min(start + 0.32, 0.8);
+  const late = Math.min(start + 0.66, 0.96);
 
   const opacity = progress.interpolate({
     inputRange: [0, start, mid, late, 1],
