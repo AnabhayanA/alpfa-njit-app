@@ -17,42 +17,30 @@ import StarField from './StarField';
 
 const ALPFA_LOGO = require('../assets/images/NJITalpfa logo (2).png');
 const NAVY = '#030817';
-const DURATION = 9000;
-
-const T = {
-  starsEnd: 0.4 / 9,
-  logoStart: 0.4 / 9,
-  travelStart: 1 / 9,
-  hero: 4 / 9,
-  pushStart: 5 / 9,
-  pushPeak: 6.5 / 9,
-  sweep: 7 / 9,
-  reveal: 7.5 / 9,
-  end: 1,
-};
+const DURATION = 7600;
 
 const STREAKS = [
-  // Early hyperspace pass: starts around 1s and stays lively through 4s.
-  { startX: -0.34, startY: 0.18, angle: '16deg', lengthRatio: 0.30, thickness: 1.0, start: 0.12, peak: 0.18, end: 0.28, travelX: 1.18, travelY: 0.10, intensity: 0.72 },
-  { startX: 1.02, startY: 0.20, angle: '-17deg', lengthRatio: 0.34, thickness: 1.2, start: 0.14, peak: 0.20, end: 0.30, travelX: -1.18, travelY: 0.08, intensity: 0.82 },
-  { startX: -0.30, startY: 0.38, angle: '7deg', lengthRatio: 0.26, thickness: 1.0, start: 0.18, peak: 0.24, end: 0.34, travelX: 1.05, travelY: 0.02, intensity: 0.68 },
-  { startX: 1.04, startY: 0.43, angle: '-8deg', lengthRatio: 0.28, thickness: 1.0, start: 0.20, peak: 0.26, end: 0.36, travelX: -1.08, travelY: 0.01, intensity: 0.76 },
-  { startX: -0.32, startY: 0.68, angle: '-16deg', lengthRatio: 0.30, thickness: 1.1, start: 0.24, peak: 0.30, end: 0.40, travelX: 1.14, travelY: -0.10, intensity: 0.75 },
-  { startX: 1.01, startY: 0.70, angle: '16deg', lengthRatio: 0.32, thickness: 1.2, start: 0.26, peak: 0.32, end: 0.42, travelX: -1.14, travelY: -0.10, intensity: 0.84 },
-  { startX: 0.10, startY: -0.13, angle: '58deg', lengthRatio: 0.25, thickness: 1.0, start: 0.28, peak: 0.34, end: 0.43, travelX: 0.46, travelY: 0.86, intensity: 0.66 },
-  { startX: 0.68, startY: -0.12, angle: '122deg', lengthRatio: 0.25, thickness: 1.0, start: 0.30, peak: 0.36, end: 0.44, travelX: -0.46, travelY: 0.86, intensity: 0.66 },
+  // First outward wave during the approach.
+  { angleDeg: 202, lengthRatio: 0.24, thickness: 1.0, start: 0.16, peak: 0.205, end: 0.29, startRadius: 0.03, endRadius: 0.58, intensity: 0.62 },
+  { angleDeg: 338, lengthRatio: 0.26, thickness: 1.1, start: 0.18, peak: 0.225, end: 0.31, startRadius: 0.04, endRadius: 0.62, intensity: 0.72 },
+  { angleDeg: 178, lengthRatio: 0.22, thickness: 0.9, start: 0.20, peak: 0.245, end: 0.33, startRadius: 0.02, endRadius: 0.68, intensity: 0.58 },
+  { angleDeg: 4, lengthRatio: 0.23, thickness: 1.0, start: 0.22, peak: 0.265, end: 0.35, startRadius: 0.03, endRadius: 0.70, intensity: 0.68 },
+  { angleDeg: 142, lengthRatio: 0.23, thickness: 1.0, start: 0.24, peak: 0.285, end: 0.37, startRadius: 0.02, endRadius: 0.64, intensity: 0.62 },
+  { angleDeg: 38, lengthRatio: 0.25, thickness: 1.1, start: 0.26, peak: 0.305, end: 0.39, startRadius: 0.03, endRadius: 0.68, intensity: 0.72 },
+  { angleDeg: 226, lengthRatio: 0.22, thickness: 0.9, start: 0.28, peak: 0.325, end: 0.41, startRadius: 0.02, endRadius: 0.62, intensity: 0.58 },
+  { angleDeg: 314, lengthRatio: 0.24, thickness: 1.0, start: 0.30, peak: 0.345, end: 0.43, startRadius: 0.03, endRadius: 0.66, intensity: 0.66 },
 
-  // Final burst: begins immediately at 5s and gets much faster/intense.
-  { startX: -0.36, startY: 0.15, angle: '17deg', lengthRatio: 0.40, thickness: 1.6, start: 0.56, peak: 0.60, end: 0.70, travelX: 1.34, travelY: 0.14, intensity: 1.00 },
-  { startX: 1.04, startY: 0.16, angle: '-18deg', lengthRatio: 0.42, thickness: 1.7, start: 0.57, peak: 0.61, end: 0.70, travelX: -1.34, travelY: 0.12, intensity: 1.00 },
-  { startX: -0.38, startY: 0.48, angle: '5deg', lengthRatio: 0.38, thickness: 1.6, start: 0.59, peak: 0.63, end: 0.72, travelX: 1.34, travelY: 0.00, intensity: 1.00 },
-  { startX: 1.06, startY: 0.50, angle: '-6deg', lengthRatio: 0.38, thickness: 1.6, start: 0.60, peak: 0.64, end: 0.73, travelX: -1.34, travelY: 0.00, intensity: 1.00 },
-  { startX: -0.34, startY: 0.76, angle: '-17deg', lengthRatio: 0.40, thickness: 1.7, start: 0.61, peak: 0.65, end: 0.74, travelX: 1.34, travelY: -0.14, intensity: 1.00 },
-  { startX: 1.02, startY: 0.76, angle: '18deg', lengthRatio: 0.42, thickness: 1.7, start: 0.62, peak: 0.66, end: 0.75, travelX: -1.34, travelY: -0.14, intensity: 1.00 },
-  { startX: 0.12, startY: -0.15, angle: '60deg', lengthRatio: 0.32, thickness: 1.5, start: 0.63, peak: 0.67, end: 0.75, travelX: 0.58, travelY: 1.02, intensity: 0.95 },
-  { startX: 0.68, startY: -0.15, angle: '120deg', lengthRatio: 0.32, thickness: 1.5, start: 0.64, peak: 0.68, end: 0.76, travelX: -0.58, travelY: 1.02, intensity: 0.95 },
-  { startX: 0.12, startY: 1.02, angle: '-60deg', lengthRatio: 0.34, thickness: 1.5, start: 0.65, peak: 0.69, end: 0.77, travelX: 0.58, travelY: -1.04, intensity: 0.95 },
-  { startX: 0.68, startY: 1.02, angle: '60deg', lengthRatio: 0.34, thickness: 1.5, start: 0.66, peak: 0.70, end: 0.78, travelX: -0.58, travelY: -1.04, intensity: 0.95 },
+  // Fast starburst wave before the final camera pass.
+  { angleDeg: 188, lengthRatio: 0.34, thickness: 1.55, start: 0.48, peak: 0.515, end: 0.61, startRadius: 0.04, endRadius: 0.88, intensity: 1.00 },
+  { angleDeg: 352, lengthRatio: 0.36, thickness: 1.65, start: 0.49, peak: 0.525, end: 0.62, startRadius: 0.04, endRadius: 0.90, intensity: 1.00 },
+  { angleDeg: 155, lengthRatio: 0.31, thickness: 1.45, start: 0.50, peak: 0.535, end: 0.63, startRadius: 0.03, endRadius: 0.86, intensity: 0.92 },
+  { angleDeg: 25, lengthRatio: 0.33, thickness: 1.55, start: 0.51, peak: 0.545, end: 0.64, startRadius: 0.03, endRadius: 0.88, intensity: 0.98 },
+  { angleDeg: 132, lengthRatio: 0.30, thickness: 1.40, start: 0.52, peak: 0.555, end: 0.65, startRadius: 0.03, endRadius: 0.84, intensity: 0.90 },
+  { angleDeg: 48, lengthRatio: 0.31, thickness: 1.45, start: 0.53, peak: 0.565, end: 0.66, startRadius: 0.03, endRadius: 0.86, intensity: 0.94 },
+  { angleDeg: 225, lengthRatio: 0.33, thickness: 1.55, start: 0.54, peak: 0.575, end: 0.67, startRadius: 0.04, endRadius: 0.90, intensity: 1.00 },
+  { angleDeg: 315, lengthRatio: 0.34, thickness: 1.60, start: 0.55, peak: 0.585, end: 0.68, startRadius: 0.04, endRadius: 0.92, intensity: 1.00 },
+  { angleDeg: 270, lengthRatio: 0.30, thickness: 1.45, start: 0.56, peak: 0.595, end: 0.69, startRadius: 0.03, endRadius: 0.88, intensity: 0.92 },
+  { angleDeg: 90, lengthRatio: 0.30, thickness: 1.45, start: 0.565, peak: 0.60, end: 0.695, startRadius: 0.03, endRadius: 0.88, intensity: 0.92 },
 ] as const;
 
 type Props = {
@@ -68,8 +56,8 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
   const reducedOpacity = useRef(new Animated.Value(0)).current;
 
   const safeHeight = Math.max(1, height - insets.top - insets.bottom);
-  const heroWidth = Math.min(width * 0.52, 360);
-  const streakThickness = Math.max(2, Math.min(width * 0.0055, 3.2));
+  const heroWidth = Math.min(width * 0.54, 360);
+  const streakItems = useMemo(() => STREAKS, []);
 
   useEffect(() => {
     let mounted = true;
@@ -95,16 +83,29 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
 
     if (reducedMotion) {
       const reduced = Animated.sequence([
-        Animated.timing(reducedOpacity, { toValue: 1, duration: 350, useNativeDriver: true }),
-        Animated.delay(850),
-        Animated.timing(reducedOpacity, { toValue: 0, duration: 350, useNativeDriver: true }),
+        Animated.timing(reducedOpacity, {
+          toValue: 1,
+          duration: 300,
+          easing: Easing.out(Easing.quad),
+          useNativeDriver: true,
+        }),
+        Animated.delay(800),
+        Animated.timing(reducedOpacity, {
+          toValue: 0,
+          duration: 300,
+          easing: Easing.in(Easing.quad),
+          useNativeDriver: true,
+        }),
       ]);
 
       reduced.start(({ finished }) => {
         if (finished) onAnimationComplete?.();
       });
+
       return () => reduced.stop();
     }
+
+    timeline.setValue(0);
 
     const run = Animated.timing(timeline, {
       toValue: 1,
@@ -121,95 +122,97 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
   }, [onAnimationComplete, reducedMotion, reducedOpacity, timeline]);
 
   const shouldReduce = reducedMotion === true;
-  const streakItems = useMemo(() => STREAKS, []);
 
+  // Logo appears far away, approaches quickly, then holds cleanly before the final pass.
   const logoOpacity = timeline.interpolate({
-    inputRange: [0, T.logoStart, 0.09, T.pushPeak, 0.76, T.reveal, 1],
-    outputRange: [0, 0, 1, 1, 0.98, 0, 0],
+    inputRange: [0, 0.045, 0.085, 0.70, 0.76, 1],
+    outputRange: [0, 0, 1, 1, 0.96, 0],
     extrapolate: 'clamp',
   });
 
   const logoScale = timeline.interpolate({
-    inputRange: [0, T.logoStart, T.travelStart, T.hero, T.pushStart, T.pushPeak, T.sweep, T.reveal, 1],
-    outputRange: [0.16, 0.16, 0.24, 1, 1.02, 2.55, 2.9, 3.05, 3.05],
-    extrapolate: 'clamp',
-  });
-
-  const logoX = timeline.interpolate({
-    inputRange: [0, T.pushStart, T.pushPeak, T.sweep, T.reveal, 1],
-    outputRange: [0, 0, -width * 0.02, -width * 0.08, -width * 0.20, -width * 0.20],
+    inputRange: [0, 0.045, 0.14, 0.30, 0.42, 0.48, 0.60, 0.70, 0.76, 1],
+    outputRange: [0.14, 0.14, 0.24, 0.62, 0.94, 1.02, 1.18, 3.7, 5.4, 5.4],
     extrapolate: 'clamp',
   });
 
   const logoY = timeline.interpolate({
-    inputRange: [0, T.logoStart, T.hero, T.pushStart, T.pushPeak, T.reveal, 1],
-    outputRange: [height * 0.018, height * 0.018, 0, 0, -height * 0.01, -height * 0.025, -height * 0.025],
+    inputRange: [0, 0.08, 0.30, 0.48, 0.60, 0.70, 0.76, 1],
+    outputRange: [height * 0.018, height * 0.018, height * 0.005, 0, 0, -height * 0.02, -height * 0.035, -height * 0.035],
+    extrapolate: 'clamp',
+  });
+
+  const logoX = timeline.interpolate({
+    inputRange: [0, 0.60, 0.70, 0.76, 1],
+    outputRange: [0, 0, -width * 0.03, -width * 0.14, -width * 0.14],
     extrapolate: 'clamp',
   });
 
   const logoRotate = timeline.interpolate({
-    inputRange: [0, T.pushStart, T.pushPeak, T.sweep, T.reveal, 1],
-    outputRange: ['0deg', '0deg', '-0.6deg', '-1.8deg', '-2.2deg', '-2.2deg'],
+    inputRange: [0, 0.60, 0.70, 0.76, 1],
+    outputRange: ['0deg', '0deg', '-0.5deg', '-1.5deg', '-1.5deg'],
     extrapolate: 'clamp',
   });
 
   const taglineOpacity = timeline.interpolate({
-    inputRange: [0, 0.42, T.hero, 0.52, 0.60, 1],
+    inputRange: [0, 0.34, 0.40, 0.55, 0.61, 1],
     outputRange: [0, 0, 1, 1, 0, 0],
     extrapolate: 'clamp',
   });
 
   const taglineY = timeline.interpolate({
-    inputRange: [0, 0.42, T.hero, 0.52, 1],
+    inputRange: [0, 0.34, 0.40, 0.55, 1],
     outputRange: [10, 10, 0, 0, 0],
     extrapolate: 'clamp',
   });
 
   const glowOpacity = timeline.interpolate({
-    inputRange: [0, 0.08, T.hero, T.pushStart, T.pushPeak, T.reveal, 1],
-    outputRange: [0, 0.12, 0.34, 0.42, 0.62, 0, 0],
+    inputRange: [0, 0.08, 0.28, 0.48, 0.60, 0.72, 1],
+    outputRange: [0, 0.10, 0.24, 0.34, 0.50, 0.64, 0],
     extrapolate: 'clamp',
   });
 
+  // The star field accelerates outward with the logo instead of sliding sideways.
   const spaceScale = timeline.interpolate({
-    inputRange: [0, T.pushStart, T.pushPeak, T.sweep, T.reveal, 1],
-    outputRange: [1, 1.02, 1.13, 1.28, 1.44, 1.44],
+    inputRange: [0, 0.30, 0.48, 0.60, 0.70, 0.78, 1],
+    outputRange: [1, 1.01, 1.025, 1.08, 1.24, 1.42, 1.42],
     extrapolate: 'clamp',
   });
 
-  const starTranslateY = timeline.interpolate({
-    inputRange: [0, T.hero, T.pushStart, T.pushPeak, T.reveal, 1],
-    outputRange: [0, height * 0.008, height * 0.012, height * 0.038, height * 0.07, height * 0.07],
+  const spaceOpacity = timeline.interpolate({
+    inputRange: [0, 0.72, 0.80, 0.90, 1],
+    outputRange: [1, 1, 0.88, 0.30, 0],
     extrapolate: 'clamp',
   });
 
+  // A large diagonal red edge replaces the old side-to-side streak transition.
   const sweepOpacity = timeline.interpolate({
-    inputRange: [0, 0.72, T.sweep, 0.81, T.reveal, 1],
-    outputRange: [0, 0, 0.15, 1, 0, 0],
+    inputRange: [0, 0.675, 0.705, 0.755, 0.80, 1],
+    outputRange: [0, 0, 0.20, 1, 0, 0],
     extrapolate: 'clamp',
   });
 
   const sweepX = timeline.interpolate({
-    inputRange: [0, T.sweep, 0.81, T.reveal, 1],
-    outputRange: [width, width, -width * 0.20, -width * 1.15, -width * 1.15],
+    inputRange: [0, 0.68, 0.72, 0.79, 1],
+    outputRange: [width * 1.10, width * 1.10, width * 0.18, -width * 1.20, -width * 1.20],
+    extrapolate: 'clamp',
+  });
+
+  const sweepScale = timeline.interpolate({
+    inputRange: [0, 0.68, 0.76, 1],
+    outputRange: [0.9, 0.9, 1.35, 1.35],
     extrapolate: 'clamp',
   });
 
   const whiteoutOpacity = timeline.interpolate({
-    inputRange: [0, 0.78, 0.81, T.reveal, 0.88, 1],
-    outputRange: [0, 0, 0.82, 0.36, 0, 0],
+    inputRange: [0, 0.73, 0.775, 0.82, 0.89, 1],
+    outputRange: [0, 0, 0.12, 0.88, 0.24, 0],
     extrapolate: 'clamp',
   });
 
   const overlayOpacity = timeline.interpolate({
-    inputRange: [0, T.reveal, 0.91, 1],
-    outputRange: [1, 1, 0.72, 0],
-    extrapolate: 'clamp',
-  });
-
-  const revealOpacity = timeline.interpolate({
-    inputRange: [0, T.reveal, 0.90, 0.98, 1],
-    outputRange: [0, 0, 1, 1, 0],
+    inputRange: [0, 0.80, 0.91, 1],
+    outputRange: [1, 1, 0.56, 0],
     extrapolate: 'clamp',
   });
 
@@ -227,14 +230,7 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
 
   return (
     <Animated.View style={[styles.root, { width, height, opacity: overlayOpacity }]} pointerEvents="auto">
-      <Animated.View
-        style={[
-          styles.spaceLayer,
-          {
-            transform: [{ translateY: starTranslateY }, { scale: spaceScale }],
-          },
-        ]}
-      >
+      <Animated.View style={[styles.spaceLayer, { opacity: spaceOpacity, transform: [{ scale: spaceScale }] }]}>
         <StarField width={width} height={height} motion={timeline} reducedMotion={false} />
       </Animated.View>
 
@@ -245,16 +241,14 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
             timeline={timeline}
             screenWidth={width}
             screenHeight={height}
-            startX={streak.startX}
-            startY={streak.startY}
-            angle={streak.angle}
+            angleDeg={streak.angleDeg}
             lengthRatio={streak.lengthRatio}
-            thickness={Math.max(streakThickness * streak.thickness, 1.8)}
+            thickness={Math.max(1.8, Math.min(width * 0.0048, 3.0)) * streak.thickness}
             start={streak.start}
             peak={streak.peak}
             end={streak.end}
-            travelX={streak.travelX}
-            travelY={streak.travelY}
+            startRadius={streak.startRadius}
+            endRadius={streak.endRadius}
             intensity={streak.intensity}
           />
         ))}
@@ -275,9 +269,9 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
           style={[
             styles.radialGlow,
             {
-              width: Math.min(width * 0.74, 520),
-              height: Math.min(width * 0.74, 520),
-              borderRadius: Math.min(width * 0.37, 260),
+              width: Math.min(width * 0.74, 500),
+              height: Math.min(width * 0.74, 500),
+              borderRadius: Math.min(width * 0.37, 250),
               opacity: glowOpacity,
               transform: [{ scale: logoScale }],
             },
@@ -312,6 +306,7 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
             {
               opacity: taglineOpacity,
               transform: [{ translateY: taglineY }],
+              marginTop: Math.max(10, width * 0.02),
             },
           ]}
         >
@@ -334,34 +329,24 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
         style={[
           styles.redSweep,
           {
-            width: width * 0.42,
-            height: height * 1.55,
+            width: width * 0.72,
+            height: height * 1.45,
+            left: width * 0.42,
+            top: -height * 0.22,
             opacity: sweepOpacity,
-            transform: [{ translateX: sweepX }, { rotate: '-24deg' }],
-          },
-        ]}
-      />
-
-      <Animated.View pointerEvents="none" style={[styles.whiteout, { opacity: whiteoutOpacity }]} />
-
-      <Animated.View
-        pointerEvents="none"
-        style={[
-          styles.revealCopy,
-          {
-            paddingTop: insets.top,
-            paddingBottom: insets.bottom,
-            opacity: revealOpacity,
+            transform: [
+              { translateX: sweepX },
+              { rotate: '-28deg' },
+              { scale: sweepScale },
+            ],
           },
         ]}
       >
-        <Text style={styles.welcomeSmall}>Welcome to</Text>
-        <Text style={styles.welcomeBrand}>
-          <Text style={styles.welcomeWhite}>ALPFA </Text>
-          <Text style={styles.welcomeRed}>NJIT</Text>
-        </Text>
-        <Text style={styles.welcomeTag}>LEAD · CONNECT · BELONG</Text>
+        <View style={styles.redSweepGlow} />
+        <View style={styles.redSweepCore} />
       </Animated.View>
+
+      <Animated.View pointerEvents="none" style={[styles.whiteout, { opacity: whiteoutOpacity }]} />
     </Animated.View>
   );
 }
@@ -390,9 +375,9 @@ const styles = StyleSheet.create({
   radialGlow: {
     position: 'absolute',
     backgroundColor: Platform.select({
-      ios: 'rgba(255, 36, 68, 0.11)',
-      android: 'rgba(255, 36, 68, 0.09)',
-      default: 'rgba(255, 36, 68, 0.10)',
+      ios: 'rgba(255, 36, 68, 0.10)',
+      android: 'rgba(255, 36, 68, 0.08)',
+      default: 'rgba(255, 36, 68, 0.09)',
     }),
   },
   logoWrap: {
@@ -404,7 +389,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 5,
-    marginTop: 10,
   },
   tagline: {
     color: '#F6F8FC',
@@ -413,47 +397,22 @@ const styles = StyleSheet.create({
   },
   redSweep: {
     position: 'absolute',
-    top: '-20%',
-    left: 0,
+    zIndex: 20,
+    justifyContent: 'center',
+  },
+  redSweepGlow: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(255, 36, 68, 0.24)',
+  },
+  redSweepCore: {
+    width: '34%',
+    height: '100%',
+    alignSelf: 'center',
     backgroundColor: '#FF2444',
-    shadowColor: '#FF2444',
-    shadowOpacity: 0.45,
-    shadowRadius: 20,
-    shadowOffset: { width: 0, height: 0 },
   },
   whiteout: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: '#FFF9F7',
-    zIndex: 20,
-  },
-  revealCopy: {
-    ...StyleSheet.absoluteFillObject,
-    zIndex: 21,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  welcomeSmall: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: '500',
-    marginBottom: 6,
-  },
-  welcomeBrand: {
-    fontSize: 32,
-    fontWeight: '900',
-    letterSpacing: 0.5,
-  },
-  welcomeWhite: {
-    color: '#FFFFFF',
-  },
-  welcomeRed: {
-    color: '#E5223D',
-  },
-  welcomeTag: {
-    marginTop: 12,
-    color: '#FFFFFF',
-    fontSize: 10,
-    fontWeight: '800',
-    letterSpacing: 2.3,
+    zIndex: 25,
+    backgroundColor: '#FFF8F8',
   },
 });
