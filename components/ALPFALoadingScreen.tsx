@@ -19,56 +19,6 @@ const TOTAL_MS = 5200;
 
 type Props = { onAnimationComplete?: () => void };
 
-type StrokeProps = {
-  progress: Animated.Value;
-  width: number;
-  thickness: number;
-  left: number;
-  top: number;
-  rotate: string;
-  delay: number;
-};
-
-function DrawingStroke({ progress, width, thickness, left, top, rotate, delay }: StrokeProps) {
-  const start = delay;
-  const end = Math.min(delay + 0.22, 0.42);
-
-  const scaleX = progress.interpolate({
-    inputRange: [0, start, end, 1],
-    outputRange: [0.001, 0.001, 1, 1],
-    extrapolate: 'clamp',
-  });
-
-  const opacity = progress.interpolate({
-    inputRange: [0, start, start + 0.04, 0.48, 0.58, 1],
-    outputRange: [0, 0, 1, 1, 0, 0],
-    extrapolate: 'clamp',
-  });
-
-  return (
-    <Animated.View
-      style={[
-        styles.strokeWrap,
-        {
-          width,
-          height: thickness,
-          left,
-          top,
-          opacity,
-          transform: [{ rotate }, { scaleX }],
-        },
-      ]}
-    >
-      <View
-        style={[
-          styles.strokeCore,
-          { height: thickness, borderRadius: thickness / 2 },
-        ]}
-      />
-    </Animated.View>
-  );
-}
-
 export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
   const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
@@ -77,7 +27,6 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
 
   const safeHeight = Math.max(1, height - insets.top - insets.bottom);
   const logoSize = Math.min(width * 0.80, safeHeight * 0.45, 380);
-  const strokeThickness = Math.max(3, Math.min(logoSize * 0.015, 6));
 
   const stars = useMemo(
     () => [
@@ -147,8 +96,8 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
   });
 
   const logoOpacity = timeline.interpolate({
-    inputRange: [0, 0.28, 0.40, 0.93, 0.985, 1],
-    outputRange: [0, 0, 1, 1, 0.78, 0],
+    inputRange: [0, 0.08, 0.18, 0.93, 0.985, 1],
+    outputRange: [0, 0.65, 1, 1, 0.78, 0],
     extrapolate: 'clamp',
   });
 
@@ -218,63 +167,30 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
         <Animated.View
           style={[
             styles.logoStage,
-            { transform: [{ translateY: logoY }, { scale: logoScale }] },
+            {
+              opacity: logoOpacity,
+              transform: [{ translateY: logoY }, { scale: logoScale }],
+            },
           ]}
         >
           <View style={{ width: logoSize, height: logoSize }}>
-            {!reducedMotion && (
-              <View style={StyleSheet.absoluteFillObject}>
-                <DrawingStroke
-                  progress={timeline}
-                  width={logoSize * 0.56}
-                  thickness={strokeThickness}
-                  left={logoSize * 0.05}
-                  top={logoSize * 0.31}
-                  rotate="-57deg"
-                  delay={0.04}
-                />
-                <DrawingStroke
-                  progress={timeline}
-                  width={logoSize * 0.42}
-                  thickness={strokeThickness}
-                  left={logoSize * 0.50}
-                  top={logoSize * 0.27}
-                  rotate="62deg"
-                  delay={0.10}
-                />
-                <DrawingStroke
-                  progress={timeline}
-                  width={logoSize * 0.38}
-                  thickness={Math.max(2, strokeThickness * 0.55)}
-                  left={logoSize * 0.27}
-                  top={logoSize * 0.56}
-                  rotate="-12deg"
-                  delay={0.16}
-                />
-              </View>
-            )}
+            <Image
+              source={ALPFA_LOGO}
+              resizeMode="contain"
+              style={styles.image}
+              accessibilityIgnoresInvertColors
+            />
 
-            <Animated.View
-              style={{ width: logoSize, height: logoSize, opacity: logoOpacity }}
-            >
-              <Image
-                source={ALPFA_LOGO}
-                resizeMode="contain"
-                style={styles.image}
-                accessibilityIgnoresInvertColors
-              />
-
-              <View style={styles.njitOverlay} pointerEvents="none">
-                <Text
-                  style={[
-                    styles.njitText,
-                    { fontSize: Math.max(8, Math.min(logoSize * 0.032, 12)) },
-                  ]}
-                >
-                  NEW JERSEY INSTITUTE{`\n`}OF TECHNOLOGY
-                </Text>
-              </View>
-            </Animated.View>
+            <View style={styles.njitOverlay} pointerEvents="none">
+              <Text
+                style={[
+                  styles.njitText,
+                  { fontSize: Math.max(8, Math.min(logoSize * 0.032, 12)) },
+                ]}
+              >
+                NEW JERSEY INSTITUTE{`\n`}OF TECHNOLOGY
+              </Text>
+            </View>
           </View>
         </Animated.View>
 
@@ -332,16 +248,6 @@ const styles = StyleSheet.create({
   logoStage: {
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  strokeWrap: {
-    position: 'absolute',
-    justifyContent: 'center',
-  },
-  strokeCore: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    backgroundColor: '#FF3546',
   },
   image: {
     width: '100%',
