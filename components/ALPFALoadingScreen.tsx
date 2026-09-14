@@ -17,7 +17,7 @@ const ALPFA_LOGO = require('../assets/images/NJITalpfa logo.pdf (6).png');
 const NAVY = '#030712';
 const WHITE = '#F7F8FA';
 const RED = '#E02125';
-const TOTAL_MS = 5600;
+const TOTAL_MS = 5300;
 
 type Props = { onAnimationComplete?: () => void };
 
@@ -112,14 +112,14 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
   }, [drawProgress, onAnimationComplete, reducedMotion, timeline]);
 
   const logoScale = timeline.interpolate({
-    inputRange: [0, 0.12, 0.35, 0.48, 0.61, 0.72, 0.80, 0.88, 0.94, 0.985, 1],
-    outputRange: [1.34, 1.34, 1.18, 1.0, 0.66, 0.66, 0.82, 1.30, 2.60, 6.3, 9.2],
+    inputRange: [0, 0.12, 0.35, 0.48, 0.61, 0.72, 0.82, 0.89, 0.94, 0.975, 1],
+    outputRange: [1.34, 1.34, 1.18, 1.0, 0.66, 0.66, 0.72, 1.12, 2.55, 6.8, 10.2],
     extrapolate: 'clamp',
   });
 
   const logoY = timeline.interpolate({
-    inputRange: [0, 0.48, 0.61, 0.80, 0.94, 1],
-    outputRange: [safeHeight * 0.02, 0, safeHeight * 0.02, 0, -safeHeight * 0.015, -safeHeight * 0.06],
+    inputRange: [0, 0.48, 0.61, 0.82, 0.94, 1],
+    outputRange: [safeHeight * 0.02, 0, safeHeight * 0.02, 0, -safeHeight * 0.012, -safeHeight * 0.055],
     extrapolate: 'clamp',
   });
 
@@ -136,8 +136,8 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
   });
 
   const logoOpacity = timeline.interpolate({
-    inputRange: [0, 0.31, 0.40, 0.91, 0.985, 1],
-    outputRange: [0, 0, 1, 1, 0.76, 0],
+    inputRange: [0, 0.31, 0.40, 0.94, 0.982, 1],
+    outputRange: [0, 0, 1, 1, 0.70, 0],
     extrapolate: 'clamp',
   });
 
@@ -148,20 +148,20 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
   });
 
   const flashOpacity = timeline.interpolate({
-    inputRange: [0, 0.93, 0.975, 0.993, 1],
-    outputRange: [0, 0, 0.92, 0.28, 0],
+    inputRange: [0, 0.945, 0.978, 0.992, 1],
+    outputRange: [0, 0, 1, 0.30, 0],
     extrapolate: 'clamp',
   });
 
   const splashOpacity = timeline.interpolate({
-    inputRange: [0, 0.965, 1],
+    inputRange: [0, 0.978, 1],
     outputRange: [1, 1, 0],
     extrapolate: 'clamp',
   });
 
   const starOpacity = timeline.interpolate({
-    inputRange: [0, 0.10, 0.78, 0.94, 1],
-    outputRange: [0.05, 0.38, 0.44, 0.20, 0],
+    inputRange: [0, 0.10, 0.78, 0.93, 1],
+    outputRange: [0.05, 0.38, 0.44, 0.16, 0],
     extrapolate: 'clamp',
   });
 
