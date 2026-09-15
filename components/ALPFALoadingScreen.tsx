@@ -102,14 +102,14 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
   }, [drawProgress, onAnimationComplete, reducedMotion, timeline]);
 
   const logoScale = timeline.interpolate({
-    inputRange: [0, 0.12, 0.34, 0.50, 0.64, 0.76, 0.84, 0.91, 0.955, 0.985, 1],
-    outputRange: [1.26, 1.26, 1.14, 1.0, 0.72, 0.72, 0.88, 1.42, 3.0, 7.2, 10.4],
+    inputRange: [0, 0.12, 0.34, 0.50, 0.64, 0.76, 0.84, 1],
+    outputRange: [1.26, 1.26, 1.14, 1.0, 0.72, 0.72, 0.88, 10.4],
     extrapolate: 'clamp',
   });
 
   const logoY = timeline.interpolate({
-    inputRange: [0, 0.50, 0.64, 0.84, 0.955, 1],
-    outputRange: [safeHeight * 0.015, 0, safeHeight * 0.015, 0, -safeHeight * 0.01, -safeHeight * 0.05],
+    inputRange: [0, 0.50, 0.64, 0.84, 1],
+    outputRange: [safeHeight * 0.015, 0, safeHeight * 0.015, 0, -safeHeight * 0.05],
     extrapolate: 'clamp',
   });
 
