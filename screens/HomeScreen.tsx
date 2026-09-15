@@ -20,6 +20,7 @@ type HomeNavigation = BottomTabNavigationProp<RootTabParamList, 'Home'>;
 const LINKS = {
   website: 'https://nonnair.github.io/alpfa-njit/',
   highlander: 'https://njit.campuslabs.com/engage/organization/alpfa',
+  email: 'mailto:alpfanjit@gmail.com',
 };
 
 export default function HomeScreen() {
@@ -138,6 +139,7 @@ export default function HomeScreen() {
             <QuickLink scale={scale} label="Join" icon="person-add" color="#16845B" background="#DCF7EA" onPress={() => open(LINKS.highlander)} />
             <QuickLink scale={scale} label="Share a Photo" icon="camera" color="#7650B5" background="#ECE4FB" onPress={() => navigation.navigate('Capture')} />
             <QuickLink scale={scale} label="Website" icon="open-outline" color="#F06C43" background="#FFE8DF" onPress={() => open(LINKS.website)} />
+            <QuickLink scale={scale} label="Contact" icon="mail" color="#8D102B" background="#F4E9E8" onPress={() => open(LINKS.email)} />
           </View>
 
           <View style={styles.bottomMessage}>
