@@ -25,11 +25,15 @@ const NAV_HORIZONTAL_PADDING = 5;
 export default function BottomNav({ state, descriptors, navigation }: BottomTabBarProps) {
   const responsive = useResponsive();
   const glide = useRef(new Animated.Value(state.index)).current;
+  const navTranslateY = useRef(new Animated.Value(0)).current;
+  const navScale = useRef(new Animated.Value(1)).current;
+  const navOpacity = useRef(new Animated.Value(1)).current;
 
-  const navWidth = Math.min(Math.max(responsive.safeWidth - 8, 300), 440);
+  // Keep the five tabs visually closer together than the old full-width bar.
+  const navWidth = Math.min(Math.max(responsive.safeWidth - 28, 286), 392);
   const innerWidth = navWidth - NAV_HORIZONTAL_PADDING * 2;
   const tabWidth = innerWidth / state.routes.length;
-  const pillWidth = Math.min(50, Math.max(42, tabWidth - 14));
+  const pillWidth = Math.min(48, Math.max(40, tabWidth - 14));
 
   useEffect(() => {
     Animated.timing(glide, {
@@ -40,6 +44,33 @@ export default function BottomNav({ state, descriptors, navigation }: BottomTabB
     }).start();
   }, [glide, state.index]);
 
+  useEffect(() => {
+    const currentRoute = state.routes[state.index];
+    const routeParams = currentRoute?.params as any;
+    const scrollState = routeParams?.navScrollState;
+    const isDown = scrollState === 'down';
+
+    Animated.parallel([
+      Animated.timing(navTranslateY, {
+        toValue: isDown ? 7 : 0,
+        duration: 240,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+      Animated.timing(navScale, {
+        toValue: isDown ? 0.91 : 1,
+        duration: 240,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+      Animated.timing(navOpacity, {
+        toValue: isDown ? 0.94 : 1,
+        duration: 240,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [navOpacity, navScale, navTranslateY, state.index, state.routes]);
+
   const indicatorX = glide.interpolate({
     inputRange: state.routes.map((_, index) => index),
     outputRange: state.routes.map((_, index) => index * tabWidth + (tabWidth - pillWidth) / 2),
@@ -48,13 +79,15 @@ export default function BottomNav({ state, descriptors, navigation }: BottomTabB
 
   return (
     <View style={styles.wrapper}>
-      <View
+      <Animated.View
         style={[
           styles.navbar,
           {
             width: navWidth,
-            height: responsive.isSmallPhone ? 60 : 64,
+            height: responsive.isSmallPhone ? 58 : 61,
             paddingHorizontal: NAV_HORIZONTAL_PADDING,
+            transform: [{ translateY: navTranslateY }, { scale: navScale }],
+            opacity: navOpacity,
           },
         ]}
       >
@@ -93,28 +126,17 @@ export default function BottomNav({ state, descriptors, navigation }: BottomTabB
           };
 
           return (
-            <TouchableOpacity
-              key={route.key}
-              activeOpacity={0.78}
-              onPress={onPress}
-              style={styles.tab}
-            >
+            <TouchableOpacity key={route.key} activeOpacity={0.78} onPress={onPress} style={styles.tab}>
               <View style={styles.iconContainer}>
-                <Ionicons name={icon} size={21} color={isFocused ? '#8D102B' : '#8C8E8D'} />
+                <Ionicons name={icon} size={20} color={isFocused ? '#8D102B' : '#8C8E8D'} />
               </View>
-              <Text
-                style={[
-                  styles.label,
-                  isFocused && styles.activeLabel,
-                  { fontSize: Math.min(9, responsive.fontSizes.xs) },
-                ]}
-              >
+              <Text style={[styles.label, isFocused && styles.activeLabel, { fontSize: Math.min(8.5, responsive.fontSizes.xs) }]}>
                 {labelText}
               </Text>
             </TouchableOpacity>
           );
         })}
-      </View>
+      </Animated.View>
     </View>
   );
 }
@@ -124,7 +146,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     alignItems: 'center',
     paddingTop: 0,
-    paddingBottom: 10,
+    paddingBottom: 5,
   },
   navbar: {
     position: 'relative',
@@ -142,9 +164,9 @@ const styles = StyleSheet.create({
   glidePill: {
     position: 'absolute',
     left: NAV_HORIZONTAL_PADDING,
-    top: 7,
-    height: 31,
-    borderRadius: 13,
+    top: 6,
+    height: 29,
+    borderRadius: 12,
     backgroundColor: '#F4E9E8',
   },
   tab: {
@@ -155,16 +177,16 @@ const styles = StyleSheet.create({
     zIndex: 2,
   },
   iconContainer: {
-    width: 34,
-    height: 27,
+    width: 32,
+    height: 25,
     alignItems: 'center',
     justifyContent: 'center',
   },
   label: {
-    fontSize: 9,
+    fontSize: 8.5,
     fontWeight: '700',
     color: '#8C8E8D',
-    marginTop: 1,
+    marginTop: 0,
   },
   activeLabel: {
     color: '#8D102B',
