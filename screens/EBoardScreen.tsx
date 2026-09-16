@@ -91,6 +91,17 @@ const BOARD_MEMBERS = [
     role: "Support chapter leadership, grow membership, and help preserve the quality and family-centered culture of ALPFA NJIT.",
   },
   {
+    name: 'Andrey Diaz-Ortega',
+    position: 'Director of Community Service',
+    major: 'Computer Science',
+    classYear: 'NJIT',
+    image: require('../assets/images/Andrey-Diaz-Ortega.jpg'),
+    bio: 'Senior in CS with a research focus in AI development, Im Puerto Rican and Ecuadorian and I love hoops. I am passionate about helping others and giving back to the community.',
+    goal: 'To solidify both volunteer and professional relationships within and outside of our ALPFA chapter. My goal is to be of help in any way possible to my fellow E-board members and contribute through community service.',
+    whyAlpfa: 'I joined ALPFA to connect with driven students and professionals, expand my network, and develop the leadership, business, and technical skills that will help me grow professionally.',
+    role: 'Responsible for organizing and leading community service initiatives and volunteer opportunities.',
+  },
+  {
     name: 'Justin Aguerta',
     position: 'Director Of Membership',
     major: 'Financial Technology',
@@ -100,6 +111,17 @@ const BOARD_MEMBERS = [
     goal: 'My goal within ALPFA is to help our board and members continue growing from where we already are. I don’t want to completely change what we’re doing but instead build on what’s already working and find ways to make it even better. I’d like to bring a techy or data-driven approach to how we keep members engaged, support their development, and improve as an organization. At the end of the day, I want ALPFA to be a space where we’re constantly helping each other grow and pushing each other to become better.',
     whyAlpfa: 'I joined ALPFA to connect with driven students and professionals, expand my network, and develop the leadership, business, and technical skills that will help me grow professionally.',
     role: 'Responsible for recruiting and retaining members, as well as organizing events and activities that promote engagement and development.',
+  },
+  {
+    name: 'Nayeli Moranchel',
+    position: 'Director of Events',
+    major: 'Management Information Systems',
+    classYear: 'NJIT',
+    image: require('../assets/images/Nayeli-Morachel.jpg'),
+    bio: 'I am a senior majoring in Management Information Systems. I am Mexican and Salvadoran.',
+    goal: 'I aspire to help ALPFA NJIT grow and establish itself within the university. By organizing memorable events where students can learn and connect with professionals and students. I want to help students who may be struggling with how to prepare for a career after college and create an environment where students are not afraid to ask questions. ',
+    whyAlpfa: 'I joined ALPFA to connect with driven students and professionals, expand my network, and develop the leadership, business, and technical skills that will help me grow professionally.',
+    role: 'Responsible for planning and executing events that promote engagement and development within the organization.',
   },
   {
     name: 'Diego Guevara',
@@ -122,7 +144,10 @@ const BOARD_MEMBERS = [
     'Director of Professional Development',
     'Director of Marketing Operations',
     'Director Of Membership',
+    'Director of Community Service',
+    'Director of Events',
     'Director of Fundraising',
+    
     'Director Of IT',
     'IT Committee Member',
   ];
