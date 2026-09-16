@@ -1,0 +1,11 @@
+  {
+    name: '',
+    position: '',
+    major: '',
+    classYear: 'NJIT',
+    image: require(''),
+    bio: '',
+    goal: '',
+    whyAlpfa: '',
+    role: '',
+  },

@@ -74,10 +74,10 @@ const BOARD_MEMBERS = [
     major: 'Business Management, Marketing',
     classYear: 'NJIT',
     image: require('../assets/images/ingrid-martinez-rojas.jpg'),
-    bio: 'Ingrid Martinez-Rojas is the President of ALPFA at NJIT and a Business Management student concentrating in Marketing. A first-generation college student, she is passionate about creating opportunities for students through professional development, networking, and community. Ingrid has experience in sales and financial services and is committed to helping ALPFA members build confidence, meaningful connections, and successful careers.',
-    goal: 'My goal for ALPFA is to grow our chapter by increasing membership and getting more students actively involved. I want to build a strong, engaged community where students feel connected, supported, and excited to take advantage of the professional and personal opportunities ALPFA has to offer.',
-    whyAlpfa: 'ALPFA creates a community where students can build confidence, meaningful connections, and successful careers through professional development and networking.',
-    role: 'Lead the chapter, grow membership, and build an engaged community that helps students take advantage of ALPFA opportunities.',
+    bio: "Ingrid Martinez-Rojas is the President of ALPFA at NJIT and a Business Management student concentrating in Marketing. A first-generation college student, she is passionate about creating opportunities for students through professional development, networking, and community. Ingrid has experience in sales and financial services and is committed to helping ALPFA members build confidence, meaningful connections, and successful careers.",
+    goal: "My goal for ALPFA is to grow our chapter by increasing membership and getting more students actively involved. I want to build a strong, engaged community where students feel connected, supported, and excited to take advantage of the professional and personal opportunities ALPFA has to offer.",
+    whyAlpfa: "ALPFA creates a community where students can build confidence, meaningful connections, and successful careers through professional development and networking.",
+    role: "Lead the chapter, grow membership, and build an engaged community that helps students take advantage of ALPFA opportunities.",
   },
   {
     name: 'Andrea Camila Pardo',
@@ -85,11 +85,35 @@ const BOARD_MEMBERS = [
     major: 'Data Science, Statistics Track',
     classYear: 'NJIT',
     image: require('../assets/images/andrea-camila-pardo.jpg'),
-    bio: 'I was born and raised in Ecuador. I am a Data Science major in the Statistics track, and I am also an EOP and McNair scholar. I met ALPFA and it immediately became my family, and I have not left since then.',
-    goal: 'My goal for ALPFA is to grow our membership while maintaining the quality and family spirit that make our community special.',
-    whyAlpfa: 'ALPFA immediately became my family and continues to provide a supportive community where members can grow together.',
-    role: 'Support chapter leadership, grow membership, and help preserve the quality and family-centered culture of ALPFA NJIT.',
+    bio: "I was born and raised in Ecuador. I am a Data Science major in the Statistics track, and I am also an EOP and McNair scholar. I met ALPFA and it immediately became my family, and I have not left since then.",
+    goal: "My goal for ALPFA is to grow our membership while maintaining the quality and family spirit that make our community special.",
+    whyAlpfa: "ALPFA immediately became my family and continues to provide a supportive community where members can grow together.",
+    role: "Support chapter leadership, grow membership, and help preserve the quality and family-centered culture of ALPFA NJIT.",
   },
+  {
+    name: 'Justin Aguerta',
+    position: 'Director Of Membership',
+    major: 'Financial Technology',
+    classYear: 'NJIT',
+    image: require('../assets/images/Justin-Aguerta.jpg'),
+    bio: "I’m a senior majoring in financial technology, with minors in data analytics and IT. I’m half Honduran and half Ecuadorian, and growing up with both backgrounds has shaped how I see things and the different perspectives I bring to the table. I’m someone who really values growth, not just for myself, but for the people around me too. I enjoy helping others improve, whether that’s through mentorship, leading by example, or working alongside them and figuring things out together. As part of ALPFA’s board, I want to continue supporting my fellow board members and members while building on everything we’ve already accomplished.",
+    goal: 'My goal within ALPFA is to help our board and members continue growing from where we already are. I don’t want to completely change what we’re doing but instead build on what’s already working and find ways to make it even better. I’d like to bring a techy or data-driven approach to how we keep members engaged, support their development, and improve as an organization. At the end of the day, I want ALPFA to be a space where we’re constantly helping each other grow and pushing each other to become better.',
+    whyAlpfa: 'I joined ALPFA to connect with driven students and professionals, expand my network, and develop the leadership, business, and technical skills that will help me grow professionally.',
+    role: 'Responsible for recruiting and retaining members, as well as organizing events and activities that promote engagement and development.',
+  },
+  {
+    name: 'Diego Guevara',
+    position: 'IT Committee Member',
+    major: 'Business & Information Systems',
+    classYear: '2028',
+    image: require('../assets/images/Diego-Guevara.jpg'),
+    bio: "Diego Guevara is a junior majoring in Business & Information Systems at NJIT. He is of Ecuadorian and Chinese heritage and is passionate about technology, business, and finding ways to use both to create meaningful solutions. As a member of ALPFA’s IT Committee, he is helping support the development and launch of the organization’s official app. He also enjoys developing his leadership, technical, and professional skills while connecting with others who share similar career ambitions.",
+    goal: 'My goal within ALPFA is to help strengthen the organization’s digital presence through technology while also building meaningful relationships with other members. I want to contribute to projects such as the ALPFA app, develop my leadership and technical skills, and help create tools and opportunities that make it easier for members to connect, grow professionally, and stay involved with the organization.',
+    whyAlpfa: 'I joined ALPFA to connect with driven students and professionals, expand my network, and develop the leadership, business, and technical skills that will help me grow professionally.',
+    role: 'Helping develop and launch ALPFA NJIT’s official app while supporting the organization’s technology and digital initiatives.',
+  },
+
+
 ].sort((a, b) => {
   const order = [
     'Chapter President',
@@ -97,8 +121,10 @@ const BOARD_MEMBERS = [
     'Secretary',
     'Director of Professional Development',
     'Director of Marketing Operations',
+    'Director Of Membership',
     'Director of Fundraising',
     'Director Of IT',
+    'IT Committee Member',
   ];
   return order.indexOf(a.position) - order.indexOf(b.position);
 }).map((member, index) => ({
@@ -171,7 +197,6 @@ export default function EBoardScreen() {
           {/* Member Cards */}
           {BOARD_MEMBERS.map((member, index) => (
             <EBoardCard
-              key={member.id}
               member={member}
               animationDelay={index * 100}
             />
