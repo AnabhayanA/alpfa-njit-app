@@ -1,21 +1,8 @@
-import { useColorScheme } from 'react-native';
-import { darkPalette, lightPalette, ThemePalette } from '../constants/theme';
+import { useContext } from 'react';
+import { ThemeContext } from './ThemeContext';
 
-export interface AppTheme {
-  scheme: 'light' | 'dark';
-  isDark: boolean;
-  colors: ThemePalette;
-}
-
-// Follows the device's system-wide light/dark mode setting automatically
-export default function useTheme(): AppTheme {
-  const systemScheme = useColorScheme();
-  const scheme: 'light' | 'dark' = systemScheme === 'dark' ? 'dark' : 'light';
-  const isDark = scheme === 'dark';
-
-  return {
-    scheme,
-    isDark,
-    colors: isDark ? darkPalette : lightPalette,
-  };
+export default function useTheme() {
+  const theme = useContext(ThemeContext);
+  if (!theme) throw new Error('useTheme must be used inside ThemeProvider');
+  return theme;
 }
