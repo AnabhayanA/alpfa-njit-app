@@ -3,6 +3,7 @@ import { Animated, Easing, StyleSheet, Text, TouchableOpacity, View } from 'reac
 import { Ionicons } from '@expo/vector-icons';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import useResponsive from '../utils/responsive';
+import useTheme from '../utils/useTheme';
 
 const TAB_ICONS: Record<string, keyof typeof Ionicons.glyphMap> = {
   Home: 'home',
@@ -24,6 +25,7 @@ const NAV_HORIZONTAL_PADDING = 5;
 
 export default function BottomNav({ state, descriptors, navigation }: BottomTabBarProps) {
   const responsive = useResponsive();
+  const { isDark } = useTheme();
   const glide = useRef(new Animated.Value(state.index)).current;
   const navTranslateY = useRef(new Animated.Value(0)).current;
   const navScale = useRef(new Animated.Value(1)).current;
@@ -82,6 +84,7 @@ export default function BottomNav({ state, descriptors, navigation }: BottomTabB
       <Animated.View
         style={[
           styles.navbar,
+          isDark && styles.navbarDark,
           {
             width: navWidth,
             height: responsive.isSmallPhone ? 58 : 61,
@@ -95,6 +98,7 @@ export default function BottomNav({ state, descriptors, navigation }: BottomTabB
           pointerEvents="none"
           style={[
             styles.glidePill,
+            isDark && styles.glidePillDark,
             {
               width: pillWidth,
               transform: [{ translateX: indicatorX }],
@@ -128,9 +132,9 @@ export default function BottomNav({ state, descriptors, navigation }: BottomTabB
           return (
             <TouchableOpacity key={route.key} activeOpacity={0.78} onPress={onPress} style={styles.tab}>
               <View style={styles.iconContainer}>
-                <Ionicons name={icon} size={20} color={isFocused ? '#8D102B' : '#8C8E8D'} />
+                <Ionicons name={icon} size={20} color={isFocused ? (isDark ? '#FF4D73' : '#8D102B') : (isDark ? '#A9B2C8' : '#8C8E8D')} />
               </View>
-              <Text style={[styles.label, isFocused && styles.activeLabel, { fontSize: Math.min(8.5, responsive.fontSizes.xs) }]}>
+              <Text style={[styles.label, isDark && styles.labelDark, isFocused && styles.activeLabel, isFocused && isDark && styles.activeLabelDark, { fontSize: Math.min(8.5, responsive.fontSizes.xs) }]}>
                 {labelText}
               </Text>
             </TouchableOpacity>
@@ -161,6 +165,13 @@ const styles = StyleSheet.create({
     elevation: 8,
     overflow: 'hidden',
   },
+  navbarDark: {
+    backgroundColor: 'rgba(10,16,36,0.96)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.10)',
+    shadowColor: '#000000',
+    shadowOpacity: 0.35,
+  },
   glidePill: {
     position: 'absolute',
     left: NAV_HORIZONTAL_PADDING,
@@ -169,6 +180,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     backgroundColor: '#F4E9E8',
   },
+  glidePillDark: { backgroundColor: 'rgba(141,16,43,0.32)' },
   tab: {
     flex: 1,
     height: '100%',
@@ -188,8 +200,10 @@ const styles = StyleSheet.create({
     color: '#8C8E8D',
     marginTop: 0,
   },
+  labelDark: { color: '#A9B2C8' },
   activeLabel: {
     color: '#8D102B',
     fontWeight: '900',
   },
+  activeLabelDark: { color: '#FF4D73' },
 });
