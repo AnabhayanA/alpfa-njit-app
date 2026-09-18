@@ -9,7 +9,6 @@ import {
   View,
 } from 'react-native';
 import AnimatedALPFAMark from './AnimatedALPFAMark';
-import NJITInstituteText from './NJITInstituteText';
 
 const ALPFA_LOGO = require('../assets/images/NJITalpfa logo.pdf (6).png');
 
@@ -29,7 +28,7 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
   // Keep every splash layer inside one fixed square stage.
   // The PNG, traced mark, and NJIT text all use the same 500x500 artwork coordinate space.
   const shortSide = Math.max(1, Math.min(width, height));
-  const logoSize = Math.min(Math.max(shortSide * 0.70, 220), 350);
+  const logoSize = Math.min(Math.max(shortSide * 0.66, 210), 330);
 
   useEffect(() => {
     let mounted = true;
@@ -103,7 +102,7 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
 
   const logoScale = timeline.interpolate({
     inputRange: [0, 0.12, 0.34, 0.50, 0.64, 0.76, 0.86, 1],
-    outputRange: [1.0, 1.0, 1.0, 1.0, 0.86, 0.86, 1.0, 6.2],
+    outputRange: [1.0, 1.0, 1.0, 1.0, 0.88, 0.88, 1.0, 5.4],
     extrapolate: 'clamp',
   });
 
@@ -128,18 +127,6 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
   const logoOpacity = timeline.interpolate({
     inputRange: [0, 0.28, 0.38, 0.94, 0.982, 1],
     outputRange: [0, 0, 1, 1, 0.70, 0],
-    extrapolate: 'clamp',
-  });
-
-  const instituteOpacity = timeline.interpolate({
-    inputRange: [0, 0.34, 0.44, 0.90, 0.96, 1],
-    outputRange: [0, 0, 1, 1, 0.75, 0],
-    extrapolate: 'clamp',
-  });
-
-  const instituteX = timeline.interpolate({
-    inputRange: [0, 0.34, 0.48, 1],
-    outputRange: [16, 16, 0, 0],
     extrapolate: 'clamp',
   });
 
@@ -200,19 +187,6 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
                 style={styles.image}
                 accessibilityIgnoresInvertColors
               />
-
-              <Animated.View
-                pointerEvents="none"
-                style={[
-                  StyleSheet.absoluteFillObject,
-                  {
-                    opacity: instituteOpacity,
-                    transform: [{ translateX: instituteX }],
-                  },
-                ]}
-              >
-                <NJITInstituteText size={logoSize} />
-              </Animated.View>
             </Animated.View>
           </View>
         </Animated.View>
@@ -241,6 +215,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   logoStage: {
+    width: '100%',
+    height: '100%',
     alignItems: 'center',
     justifyContent: 'center',
   },
