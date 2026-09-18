@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Image, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { CameraType, CameraView, useCameraPermissions } from 'expo-camera';
+import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -47,6 +48,19 @@ export default function CaptureScreen() {
       };
     }, [])
   );
+
+  const pickFromLibrary = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: false,
+      quality: 0.9,
+    });
+    if (!result.canceled && result.assets[0]?.uri) {
+      setPhotoUri(result.assets[0].uri);
+      setStatus('idle');
+      setStatusMessage('');
+    }
+  };
 
   const takePhoto = async () => {
     if (!cameraReady) return;
@@ -211,9 +225,20 @@ export default function CaptureScreen() {
         <Text style={styles.hintText}>
           {cameraMessage || (dualMode ? 'Front + rear photo · shared to the ALPFA NJIT Drive' : 'Photos are shared to the ALPFA NJIT Google Drive')}
         </Text>
-        <TouchableOpacity style={styles.shutter} onPress={takePhoto} disabled={!cameraReady}>
-          <View style={styles.shutterInner} />
-        </TouchableOpacity>
+        <View style={styles.cameraActions}>
+          <TouchableOpacity
+            style={styles.galleryButton}
+            onPress={pickFromLibrary}
+            accessibilityRole="button"
+            accessibilityLabel="Choose a photo from your camera roll"
+          >
+            <Ionicons name="images-outline" size={25} color="#FFFFFF" />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.shutter} onPress={takePhoto} disabled={!cameraReady}>
+            <View style={styles.shutterInner} />
+          </TouchableOpacity>
+          <View style={styles.actionSpacer} />
+        </View>
       </View>
     </View>
   );
@@ -270,6 +295,9 @@ const createStyles = (colors: ReturnType<typeof useTheme>['colors']) =>
       backgroundColor: 'rgba(10,10,10,0.72)',
     },
     hintText: { color: 'rgba(255,255,255,0.85)', fontSize: 11, marginBottom: 16, textAlign: 'center', paddingHorizontal: 24 },
+    cameraActions: { width: '100%', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around', paddingHorizontal: 28 },
+    galleryButton: { width: 52, height: 52, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.16)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.22)' },
+    actionSpacer: { width: 52, height: 52 },
     shutter: {
       width: 74,
       height: 74,
