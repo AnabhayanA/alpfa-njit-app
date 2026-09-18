@@ -58,14 +58,14 @@ function AppContent() {
       >
         <StatusBar style={showSplash ? 'light' : colors.statusBarStyle} />
 
-        <View style={[styles.appViewport, Platform.OS === 'web' && styles.webViewport]}>
-          <View style={[styles.mainApp, { backgroundColor: colors.background }]}>
-            <MainApp />
-          </View>
-        </View>
-
-        {showSplash && (
+        {showSplash ? (
           <ALPFALoadingScreen onAnimationComplete={handleAnimationComplete} />
+        ) : (
+          <View style={[styles.appViewport, Platform.OS === 'web' && styles.webViewport]}>
+            <View style={[styles.mainApp, { backgroundColor: colors.background }]}>
+              <MainApp />
+            </View>
+          </View>
         )}
       </View>
     </SafeAreaProvider>
