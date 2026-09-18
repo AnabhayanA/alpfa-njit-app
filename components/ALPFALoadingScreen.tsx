@@ -29,7 +29,10 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
   const drawProgress = useRef(new Animated.Value(0)).current;
 
   const safeHeight = Math.max(1, height - insets.top - insets.bottom);
-  const logoSize = Math.min(width * 0.82, safeHeight * 0.48, 390);
+  const shortSide = Math.min(width, safeHeight);
+  // Size from the usable viewport rather than a phone-specific width.
+  // This keeps the artwork centered and proportionate on phones, tablets and web.
+  const logoSize = Math.min(Math.max(shortSide * 0.68, 220), 390);
 
   useEffect(() => {
     let mounted = true;
@@ -103,13 +106,13 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
 
   const logoScale = timeline.interpolate({
     inputRange: [0, 0.12, 0.34, 0.50, 0.64, 0.76, 0.84, 1],
-    outputRange: [1.26, 1.26, 1.14, 1.0, 0.72, 0.72, 0.88, 10.4],
+    outputRange: [1.16, 1.16, 1.08, 1.0, 0.78, 0.78, 0.92, 8.6],
     extrapolate: 'clamp',
   });
 
   const logoY = timeline.interpolate({
     inputRange: [0, 0.50, 0.64, 0.84, 1],
-    outputRange: [safeHeight * 0.015, 0, safeHeight * 0.015, 0, -safeHeight * 0.05],
+    outputRange: [0, 0, 0, 0, 0],
     extrapolate: 'clamp',
   });
 
@@ -164,7 +167,7 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
 
       <View
         pointerEvents="none"
-        style={[styles.safeContent, { top: insets.top, height: safeHeight }]}
+        style={[styles.safeContent, { top: insets.top, bottom: insets.bottom }]}
       >
         <Animated.View
           style={[
