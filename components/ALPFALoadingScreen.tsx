@@ -6,8 +6,8 @@ import NJITInstituteText from './NJITInstituteText';
 
 const FULL_LOGO = require('../assets/images/NJITalpfa logo.pdf (6).png');
 const NAVY = '#030712';
-const SPLASH_DURATION_MS = 3800;
-const EXIT_ANIMATION_MS = 430;
+const SPLASH_DURATION_MS = 4650;
+const EXIT_ANIMATION_MS = 560;
 
 type Props = { onAnimationComplete?: () => void };
 
@@ -19,10 +19,11 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
 
   const alpfaProgress = useRef(new Animated.Value(0)).current;
   const wordmarkOpacity = useRef(new Animated.Value(0)).current;
-  const wordmarkTranslate = useRef(new Animated.Value(-18)).current;
+  const wordmarkTranslate = useRef(new Animated.Value(-42)).current;
+  const wordmarkScaleX = useRef(new Animated.Value(0.12)).current;
   const njitOpacity = useRef(new Animated.Value(0)).current;
   const njitTranslate = useRef(new Animated.Value(8)).current;
-  const groupScale = useRef(new Animated.Value(0.96)).current;
+  const groupScale = useRef(new Animated.Value(1.12)).current;
   const exitScale = useRef(new Animated.Value(1)).current;
   const exitOpacity = useRef(new Animated.Value(1)).current;
 
@@ -30,38 +31,44 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
     Animated.sequence([
       Animated.timing(alpfaProgress, {
         toValue: 1,
-        duration: 820,
+        duration: 900,
         easing: Easing.out(Easing.cubic),
         useNativeDriver: false,
       }),
       Animated.parallel([
         Animated.timing(wordmarkOpacity, {
           toValue: 1,
-          duration: 360,
+          duration: 420,
           easing: Easing.out(Easing.cubic),
           useNativeDriver: true,
         }),
         Animated.timing(wordmarkTranslate, {
           toValue: 0,
-          duration: 360,
+          duration: 420,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: true,
+        }),
+        Animated.timing(wordmarkScaleX, {
+          toValue: 1,
+          duration: 420,
           easing: Easing.out(Easing.cubic),
           useNativeDriver: true,
         }),
         Animated.timing(njitOpacity, {
           toValue: 1,
-          duration: 480,
+          duration: 520,
           useNativeDriver: true,
         }),
         Animated.timing(njitTranslate, {
           toValue: 0,
-          duration: 480,
+          duration: 520,
           easing: Easing.out(Easing.cubic),
           useNativeDriver: true,
         }),
         Animated.spring(groupScale, {
           toValue: 1,
-          friction: 8,
-          tension: 45,
+          friction: 9,
+          tension: 38,
           useNativeDriver: true,
         }),
       ]),
@@ -70,21 +77,21 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
     const exitTimer = setTimeout(() => {
       Animated.sequence([
         Animated.timing(exitScale, {
-          toValue: 0.92,
-          duration: 80,
+          toValue: 0.86,
+          duration: 150,
           easing: Easing.out(Easing.quad),
           useNativeDriver: true,
         }),
         Animated.parallel([
           Animated.timing(exitScale, {
-            toValue: 8,
-            duration: EXIT_ANIMATION_MS - 80,
-            easing: Easing.in(Easing.cubic),
+            toValue: 9.5,
+            duration: EXIT_ANIMATION_MS - 150,
+            easing: Easing.in(Easing.exp),
             useNativeDriver: true,
           }),
           Animated.timing(exitOpacity, {
             toValue: 0,
-            duration: EXIT_ANIMATION_MS - 80,
+            duration: EXIT_ANIMATION_MS - 150,
             easing: Easing.in(Easing.quad),
             useNativeDriver: true,
           }),
@@ -95,7 +102,7 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
     }, SPLASH_DURATION_MS - EXIT_ANIMATION_MS);
 
     return () => clearTimeout(exitTimer);
-  }, [alpfaProgress, exitOpacity, exitScale, groupScale, njitOpacity, njitTranslate, onAnimationComplete, wordmarkOpacity, wordmarkTranslate]);
+  }, [alpfaProgress, exitOpacity, exitScale, groupScale, njitOpacity, njitTranslate, onAnimationComplete, wordmarkOpacity, wordmarkScaleX, wordmarkTranslate]);
 
   return (
     <Animated.View
@@ -140,7 +147,7 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
                   width: size * 0.60,
                   height: size * 0.10,
                   opacity: wordmarkOpacity,
-                  transform: [{ translateX: wordmarkTranslate }],
+                  transform: [{ translateX: wordmarkTranslate }, { scaleX: wordmarkScaleX }],
                 },
               ]}
             >
