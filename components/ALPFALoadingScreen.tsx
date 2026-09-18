@@ -26,8 +26,10 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
   const timeline = useRef(new Animated.Value(0)).current;
   const drawProgress = useRef(new Animated.Value(0)).current;
 
+  // Keep every splash layer inside one fixed square stage.
+  // The PNG, traced mark, and NJIT text all use the same 500x500 artwork coordinate space.
   const shortSide = Math.max(1, Math.min(width, height));
-  const logoSize = Math.min(Math.max(shortSide * 0.62, 190), 330);
+  const logoSize = Math.min(Math.max(shortSide * 0.70, 220), 350);
 
   useEffect(() => {
     let mounted = true;
@@ -100,14 +102,14 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
   }, [drawProgress, onAnimationComplete, reducedMotion, timeline]);
 
   const logoScale = timeline.interpolate({
-    inputRange: [0, 0.12, 0.34, 0.50, 0.64, 0.76, 0.84, 1],
-    outputRange: [1.16, 1.16, 1.08, 1.0, 0.78, 0.78, 0.92, 8.6],
+    inputRange: [0, 0.12, 0.34, 0.50, 0.64, 0.76, 0.86, 1],
+    outputRange: [1.0, 1.0, 1.0, 1.0, 0.86, 0.86, 1.0, 6.2],
     extrapolate: 'clamp',
   });
 
   const logoY = timeline.interpolate({
-    inputRange: [0, 0.50, 0.64, 0.84, 1],
-    outputRange: [0, 0, 0, 0, 0],
+    inputRange: [0, 0.86, 1],
+    outputRange: [0, 0, 0],
     extrapolate: 'clamp',
   });
 
@@ -156,7 +158,7 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
   return (
     <Animated.View
       pointerEvents="auto"
-      style={[styles.root, { width, height, opacity: splashOpacity }]}
+      style={[styles.root, { opacity: splashOpacity }]}
     >
       <View style={styles.background} />
 
@@ -170,7 +172,7 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
             { transform: [{ translateY: logoY }, { scale: logoScale }] },
           ]}
         >
-          <View style={{ width: logoSize, height: logoSize }}>
+          <View style={[styles.artwork, { width: logoSize, height: logoSize }]}>
             <Animated.View
               pointerEvents="none"
               style={[
@@ -223,8 +225,7 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
 
 const styles = StyleSheet.create({
   root: {
-    flex: 1,
-    alignSelf: 'stretch',
+    ...StyleSheet.absoluteFillObject,
     overflow: 'hidden',
     zIndex: 99999,
     elevation: 99999,
@@ -240,6 +241,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   logoStage: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  artwork: {
+    position: 'relative',
     alignItems: 'center',
     justifyContent: 'center',
   },
