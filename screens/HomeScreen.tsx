@@ -105,8 +105,10 @@ export default function HomeScreen() {
           <Text style={[styles.familia, { fontSize: 29 * scale, lineHeight: 30 * scale }]}>Familia</Text>
           <Text style={[styles.motto, { color: colors.textSecondary }]}>BUILD  •  CONNECT  •  BELONG</Text>
 
-          <TouchableOpacity style={[styles.eventCard, { minHeight: 164 * scale, marginTop: 12 * scale, padding: 14 * scale, borderRadius: 18 * scale }]} activeOpacity={0.9} onPress={() => navigation.navigate('Events')}>
+          <TouchableOpacity style={[styles.eventCard, isDark && styles.eventCardDark, { minHeight: 164 * scale, marginTop: 12 * scale, padding: 14 * scale, borderRadius: 18 * scale }]} activeOpacity={0.9} onPress={() => navigation.navigate('Events')}>
             <View pointerEvents="none" style={styles.eventDecor}>
+              <View style={styles.eventLiquidBlue} />
+              <View style={styles.eventLiquidRed} />
               <View style={styles.eventRedSlash} />
               <View style={styles.eventBurgundySlash} />
             </View>
@@ -151,8 +153,8 @@ export default function HomeScreen() {
             <QuickLink isDark={isDark} scale={scale} label="Contact" icon="mail" color="#8D102B" background="#F4E9E8" onPress={() => open(LINKS.email)} />
           </View>
 
-          <View style={styles.bottomMessage}>
-            <Text style={styles.bottomHeadline}>MORE LATINOS.{`\n`}BRIGHTER TOMORROWS.</Text>
+          <View style={[styles.bottomMessage, isDark && styles.bottomMessageDark]}>
+            <Text style={[styles.bottomHeadline, isDark && styles.bottomHeadlineDark]}>MORE LATINOS.{`\n`}BRIGHTER TOMORROWS.</Text>
             <Text style={styles.bottomSub}>ALPFA NJIT</Text>
           </View>
         </Animated.View>
@@ -198,6 +200,9 @@ const styles = StyleSheet.create({
   motto: { color: '#081C37', fontSize: 9, fontWeight: '800', letterSpacing: 1.5, marginTop: 7 },
   eventCard: { minHeight: 151, marginTop: 10, padding: 12, borderRadius: 16, backgroundColor: '#081C37', overflow: 'hidden', shadowColor: '#081C37', shadowOpacity: 0.24, shadowRadius: 10, shadowOffset: { width: 0, height: 6 } },
   eventDecor: { ...StyleSheet.absoluteFillObject, zIndex: 0 },
+  eventCardDark: { backgroundColor: 'rgba(10,20,48,0.94)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)' },
+  eventLiquidBlue: { position: 'absolute', width: 190, height: 190, borderRadius: 95, left: -70, bottom: -115, backgroundColor: 'rgba(28,119,255,0.28)' },
+  eventLiquidRed: { position: 'absolute', width: 180, height: 180, borderRadius: 90, right: -75, top: -105, backgroundColor: 'rgba(236,30,73,0.34)' },
   eventContent: { zIndex: 1 },
   eventRedSlash: { position: 'absolute', width: 150, height: 52, right: -47, top: -10, backgroundColor: '#B51C35', transform: [{ rotate: '-42deg' }] },
   eventBurgundySlash: { position: 'absolute', width: 150, height: 48, right: -58, bottom: -4, backgroundColor: '#6E1B2D', transform: [{ rotate: '-42deg' }] },
@@ -216,19 +221,21 @@ const styles = StyleSheet.create({
   eventArrow: { position: 'absolute', right: 11, bottom: 11, width: 31, height: 31, borderRadius: 16, backgroundColor: '#B51C35', alignItems: 'center', justifyContent: 'center' },
   quickHeading: { color: '#081C37', fontSize: 10, fontWeight: '900', letterSpacing: 1.8, marginTop: 14, marginBottom: 6 },
   quickGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: 7 },
-  quickCard: { width: '48.8%', minHeight: 42, borderRadius: 13, paddingHorizontal: 9, backgroundColor: '#FFFFFF', flexDirection: 'row', alignItems: 'center', gap: 7, shadowColor: '#081C37', shadowOpacity: 0.06, shadowRadius: 5, shadowOffset: { width: 0, height: 2 } },
+  quickCard: { width: '48.8%', minHeight: 42, borderRadius: 13, paddingHorizontal: 9, backgroundColor: 'rgba(255,255,255,0.78)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.88)', flexDirection: 'row', alignItems: 'center', gap: 7, shadowColor: '#081C37', shadowOpacity: 0.06, shadowRadius: 5, shadowOffset: { width: 0, height: 2 } },
   quickCardDark: { backgroundColor: 'rgba(20,28,54,0.82)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.10)', shadowOpacity: 0.18 },
   quickIcon: { width: 28, height: 28, borderRadius: 9, alignItems: 'center', justifyContent: 'center' },
   quickLabel: { color: '#081C37', fontSize: 10, fontWeight: '700', flex: 1 },
   quickLabelDark: { color: '#F7F8FC' },
-  bottomMessage: { marginTop: 30, paddingBottom: 42 },
+  bottomMessage: { marginTop: 30, marginBottom: 10, padding: 16, borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.62)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.78)' },
+  bottomMessageDark: { backgroundColor: 'rgba(17,25,52,0.74)', borderColor: 'rgba(255,255,255,0.10)' },
   bottomHeadline: { color: '#081C37', fontSize: 10, fontWeight: '900', lineHeight: 14, letterSpacing: 1.6 },
+  bottomHeadlineDark: { color: '#F7F8FC' },
   bottomSub: { color: '#9D1734', fontSize: 9, fontWeight: '800', marginTop: 7, letterSpacing: 1.2 },
   liquidOrb: { position: 'absolute', borderRadius: 999 },
-  liquidRed: { width: 270, height: 270, right: -115, top: 34, backgroundColor: 'rgba(225,32,68,0.18)', transform: [{ rotate: '-18deg' }] },
-  liquidBlue: { width: 230, height: 230, left: -120, top: 250, backgroundColor: 'rgba(31,117,255,0.13)' },
-  liquidPurple: { width: 250, height: 250, right: -135, top: 480, backgroundColor: 'rgba(126,73,255,0.12)' },
-  liquidCyan: { width: 210, height: 210, left: -120, bottom: 45, backgroundColor: 'rgba(0,194,255,0.11)' },
+  liquidRed: { width: 320, height: 320, right: -120, top: 18, backgroundColor: 'rgba(225,32,68,0.30)', transform: [{ rotate: '-18deg' }] },
+  liquidBlue: { width: 300, height: 300, left: -135, top: 235, backgroundColor: 'rgba(31,117,255,0.25)' },
+  liquidPurple: { width: 310, height: 310, right: -145, top: 455, backgroundColor: 'rgba(126,73,255,0.23)' },
+  liquidCyan: { width: 270, height: 270, left: -125, bottom: 20, backgroundColor: 'rgba(0,194,255,0.20)' },
   liquidRedDark: { backgroundColor: 'rgba(255,39,82,0.28)' },
   liquidBlueDark: { backgroundColor: 'rgba(25,108,255,0.24)' },
   liquidPurpleDark: { backgroundColor: 'rgba(142,77,255,0.22)' },
