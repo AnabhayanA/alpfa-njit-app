@@ -5,6 +5,7 @@ import {
   Easing,
   Image,
   StyleSheet,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import AnimatedALPFAMark from './AnimatedALPFAMark';
@@ -20,13 +21,13 @@ const TOTAL_MS = 5000;
 type Props = { onAnimationComplete?: () => void };
 
 export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
-  const [viewport, setViewport] = useState({ width: 0, height: 0 });
+  const { width, height } = useWindowDimensions();
   const [reducedMotion, setReducedMotion] = useState<boolean | null>(null);
   const timeline = useRef(new Animated.Value(0)).current;
   const drawProgress = useRef(new Animated.Value(0)).current;
 
-  const shortSide = Math.max(1, Math.min(viewport.width || 390, viewport.height || 844));
-  const logoSize = Math.min(Math.max(shortSide * 0.64, 190), 340);
+  const shortSide = Math.max(1, Math.min(width, height));
+  const logoSize = Math.min(Math.max(shortSide * 0.62, 190), 330);
 
   useEffect(() => {
     let mounted = true;
@@ -155,11 +156,7 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
   return (
     <Animated.View
       pointerEvents="auto"
-      onLayout={(event) => {
-        const { width, height } = event.nativeEvent.layout;
-        if (width !== viewport.width || height !== viewport.height) setViewport({ width, height });
-      }}
-      style={[styles.root, { opacity: splashOpacity }]}
+      style={[styles.root, { width, height, opacity: splashOpacity }]}
     >
       <View style={styles.background} />
 
@@ -226,8 +223,8 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
 
 const styles = StyleSheet.create({
   root: {
-    position: 'absolute',
-    ...StyleSheet.absoluteFillObject,
+    flex: 1,
+    alignSelf: 'stretch',
     overflow: 'hidden',
     zIndex: 99999,
     elevation: 99999,
