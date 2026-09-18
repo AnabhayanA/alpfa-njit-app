@@ -13,6 +13,7 @@ import EBoardScreen from './screens/EBoardScreen';
 import AboutScreen from './screens/AboutScreen';
 import CaptureScreen from './screens/CaptureScreen';
 import useTheme from './utils/useTheme';
+import { ThemeProvider } from './utils/ThemeContext';
 
 const Tab = createBottomTabNavigator();
 
@@ -39,7 +40,7 @@ function MainApp() {
   );
 }
 
-export default function App() {
+function AppContent() {
   const { colors } = useTheme();
   const { width, height } = useWindowDimensions();
   const [showSplash, setShowSplash] = useState(true);
@@ -70,6 +71,14 @@ export default function App() {
         )}
       </View>
     </SafeAreaProvider>
+  );
+}
+
+export default function App() {
+  return (
+    <ThemeProvider>
+      <AppContent />
+    </ThemeProvider>
   );
 }
 
