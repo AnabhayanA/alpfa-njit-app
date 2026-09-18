@@ -37,7 +37,9 @@ export default function BottomNav({ state, descriptors, navigation }: BottomTabB
   const navWidth = Math.min(Math.max(responsive.safeWidth - 40, 280), 374);
   const innerWidth = navWidth - NAV_HORIZONTAL_PADDING * 2;
   const tabWidth = innerWidth / state.routes.length;
-  const pillWidth = Math.min(48, Math.max(40, tabWidth - 14));
+  // The active pill occupies the same horizontal slot as each tab so its center
+  // always lands exactly behind the active icon.
+  const pillWidth = tabWidth;
 
   useEffect(() => {
     Animated.timing(glide, {
@@ -77,7 +79,7 @@ export default function BottomNav({ state, descriptors, navigation }: BottomTabB
 
   const indicatorX = glide.interpolate({
     inputRange: state.routes.map((_, index) => index),
-    outputRange: state.routes.map((_, index) => index * tabWidth + (tabWidth - pillWidth) / 2),
+    outputRange: state.routes.map((_, index) => index * tabWidth),
     extrapolate: 'clamp',
   });
 
@@ -178,9 +180,9 @@ const styles = StyleSheet.create({
   glidePill: {
     position: 'absolute',
     left: NAV_HORIZONTAL_PADDING,
-    top: 6,
-    height: 29,
-    borderRadius: 12,
+    top: 5,
+    height: 31,
+    borderRadius: 15.5,
     backgroundColor: '#F4E9E8',
   },
   glidePillDark: { backgroundColor: 'rgba(141,16,43,0.32)' },
