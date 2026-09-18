@@ -161,13 +161,13 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
   return (
     <Animated.View
       pointerEvents="auto"
-      style={[styles.root, { width, height, opacity: splashOpacity }]}
+      style={[styles.root, { opacity: splashOpacity }]}
     >
       <View style={styles.background} />
 
       <View
         pointerEvents="none"
-        style={[styles.safeContent, { top: insets.top, bottom: insets.bottom }]}
+        style={styles.safeContent}
       >
         <Animated.View
           style={[
@@ -229,8 +229,7 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
 const styles = StyleSheet.create({
   root: {
     position: 'absolute',
-    left: 0,
-    top: 0,
+    ...StyleSheet.absoluteFillObject,
     overflow: 'hidden',
     zIndex: 99999,
     elevation: 99999,
@@ -241,9 +240,7 @@ const styles = StyleSheet.create({
     backgroundColor: NAVY,
   },
   safeContent: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
+    ...StyleSheet.absoluteFillObject,
     alignItems: 'center',
     justifyContent: 'center',
   },
