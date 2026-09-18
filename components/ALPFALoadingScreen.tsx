@@ -40,7 +40,7 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
             {
               width: size,
               height: size,
-              transform: [{ translateY: -size * 0.20 }],
+              transform: [{ translateY: -size * 0.08 }],
             },
           ]}
         >
@@ -49,10 +49,10 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
             style={[
               styles.alpfaWordmarkCrop,
               {
-                left: size * 0.17,
-                top: size * 0.49,
-                width: size * 0.66,
-                height: size * 0.12,
+                left: size * 0.20,
+                top: size * 0.43,
+                width: size * 0.60,
+                height: size * 0.10,
               },
             ]}
           >
@@ -62,8 +62,8 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
               style={{
                 width: size,
                 height: size,
-                marginLeft: -size * 0.17,
-                marginTop: -size * 0.49,
+                marginLeft: -size * 0.20,
+                marginTop: -size * 0.43,
               }}
               accessibilityIgnoresInvertColors
             />
