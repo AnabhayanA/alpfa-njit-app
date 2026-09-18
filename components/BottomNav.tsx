@@ -39,7 +39,6 @@ export default function BottomNav({ state, descriptors, navigation }: BottomTabB
   const tabWidth = innerWidth / state.routes.length;
   // The active pill occupies the same horizontal slot as each tab so its center
   // always lands exactly behind the active icon.
-  const pillWidth = Math.min(54, Math.max(46, tabWidth - 8));
 
   useEffect(() => {
     Animated.timing(glide, {
@@ -77,12 +76,6 @@ export default function BottomNav({ state, descriptors, navigation }: BottomTabB
     ]).start();
   }, [navOpacity, navScale, navTranslateY, state.index, state.routes]);
 
-  const indicatorX = glide.interpolate({
-    inputRange: state.routes.map((_, index) => index),
-    outputRange: state.routes.map((_, index) => index * tabWidth + (tabWidth - pillWidth) / 2),
-    extrapolate: 'clamp',
-  });
-
   return (
     <View style={[styles.wrapper, { paddingBottom: Math.max(insets.bottom, 10) + 4 }]}>
       <Animated.View
@@ -91,7 +84,7 @@ export default function BottomNav({ state, descriptors, navigation }: BottomTabB
           isDark && styles.navbarDark,
           {
             width: navWidth,
-            height: responsive.isSmallPhone ? 58 : 61,
+            height: responsive.isSmallPhone ? 64 : 68,
             paddingHorizontal: NAV_HORIZONTAL_PADDING,
             transform: [{ translateY: navTranslateY }, { scale: navScale }],
             opacity: navOpacity,
@@ -136,7 +129,11 @@ export default function BottomNav({ state, descriptors, navigation }: BottomTabB
           return (
             <TouchableOpacity key={route.key} activeOpacity={0.78} onPress={onPress} style={styles.tab}>
               <View style={styles.iconContainer}>
-                <Ionicons name={icon} size={20} color={isFocused ? (isDark ? '#FF4D73' : '#8D102B') : (isDark ? '#A9B2C8' : '#8C8E8D')} />
+                <Ionicons
+                  name={icon}
+                  size={isFocused ? 24 : 22}
+                  color={isFocused ? (isDark ? '#FFFFFF' : '#111827') : (isDark ? '#A9B2C8' : '#8C8E8D')}
+                />
               </View>
               <Text style={[styles.label, isDark && styles.labelDark, isFocused && styles.activeLabel, isFocused && isDark && styles.activeLabelDark, { fontSize: Math.min(8.5, responsive.fontSizes.xs) }]}>
                 {labelText}
@@ -177,15 +174,6 @@ const styles = StyleSheet.create({
     shadowColor: '#000000',
     shadowOpacity: 0.35,
   },
-  glidePill: {
-    position: 'absolute',
-    left: NAV_HORIZONTAL_PADDING,
-    top: 5,
-    height: 31,
-    borderRadius: 15.5,
-    backgroundColor: 'rgba(141,16,43,0.14)',
-  },
-  glidePillDark: { backgroundColor: 'rgba(255,77,115,0.16)' },
   tab: {
     flex: 1,
     height: '100%',
@@ -194,8 +182,8 @@ const styles = StyleSheet.create({
     zIndex: 2,
   },
   iconContainer: {
-    width: 32,
-    height: 25,
+    width: 36,
+    height: 30,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -207,8 +195,8 @@ const styles = StyleSheet.create({
   },
   labelDark: { color: '#A9B2C8' },
   activeLabel: {
-    color: '#8D102B',
+    color: '#111827',
     fontWeight: '900',
   },
-  activeLabelDark: { color: '#FF4D73' },
+  activeLabelDark: { color: '#FFFFFF' },
 });
