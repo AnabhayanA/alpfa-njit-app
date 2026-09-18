@@ -45,6 +45,29 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
           ]}
         >
           <AnimatedALPFAMark progress={alpfaProgress} size={size} />
+          <View
+            style={[
+              styles.alpfaWordmarkCrop,
+              {
+                left: size * 0.17,
+                top: size * 0.49,
+                width: size * 0.66,
+                height: size * 0.12,
+              },
+            ]}
+          >
+            <Image
+              source={FULL_LOGO}
+              resizeMode="contain"
+              style={{
+                width: size,
+                height: size,
+                marginLeft: -size * 0.17,
+                marginTop: -size * 0.49,
+              }}
+              accessibilityIgnoresInvertColors
+            />
+          </View>
         </View>
         <View
           style={[
@@ -93,6 +116,10 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 0,
     top: 0,
+  },
+  alpfaWordmarkCrop: {
+    position: 'absolute',
+    overflow: 'hidden',
   },
   highlanderCrop: {
     position: 'absolute',
