@@ -18,6 +18,7 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
 
   const redDraw = useRef(new Animated.Value(0)).current;
   const logoReveal = useRef(new Animated.Value(0)).current;
+  const whiteLineDraw = useRef(new Animated.Value(0)).current;
   const logoOpacity = useRef(new Animated.Value(0)).current;
   const logoScale = useRef(new Animated.Value(1.08)).current;
   const njitOpacity = useRef(new Animated.Value(0)).current;
@@ -35,6 +36,12 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
       }),
       Animated.parallel([
         Animated.timing(logoReveal, {
+          toValue: 1,
+          duration: 620,
+          easing: Easing.inOut(Easing.cubic),
+          useNativeDriver: false,
+        }),
+        Animated.timing(whiteLineDraw, {
           toValue: 1,
           duration: 620,
           easing: Easing.inOut(Easing.cubic),
@@ -100,11 +107,17 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
       intro.stop();
       clearTimeout(exitTimer);
     };
-  }, [exitOpacity, exitScale, logoOpacity, logoReveal, logoScale, njitOpacity, njitX, onAnimationComplete, redDraw]);
+  }, [exitOpacity, exitScale, logoOpacity, logoReveal, logoScale, njitOpacity, njitX, onAnimationComplete, redDraw, whiteLineDraw]);
 
   const revealWidth = logoReveal.interpolate({
     inputRange: [0, 1],
     outputRange: [0, size],
+    extrapolate: 'clamp',
+  });
+
+  const whiteLineWidth = whiteLineDraw.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, size * 0.60],
     extrapolate: 'clamp',
   });
 
@@ -141,6 +154,31 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
             style={[StyleSheet.absoluteFillObject, { opacity: redOpacity }]}
           >
             <AnimatedALPFAMark progress={redDraw} size={size} />
+          </Animated.View>
+
+          <Animated.View
+            pointerEvents="none"
+            style={[
+              styles.whiteLineDraw,
+              {
+                left: size * 0.20,
+                top: size * 0.43,
+                width: whiteLineWidth,
+                height: size * 0.10,
+              },
+            ]}
+          >
+            <Image
+              source={FULL_LOGO}
+              resizeMode="contain"
+              style={{
+                width: size,
+                height: size,
+                marginLeft: -size * 0.20,
+                marginTop: -size * 0.43,
+              }}
+              accessibilityIgnoresInvertColors
+            />
           </Animated.View>
 
           <Animated.View
@@ -195,6 +233,11 @@ const styles = StyleSheet.create({
   },
   lockup: {
     position: 'relative',
+  },
+  whiteLineDraw: {
+    position: 'absolute',
+    overflow: 'hidden',
+    zIndex: 3,
   },
   fullLogoReveal: {
     position: 'absolute',
