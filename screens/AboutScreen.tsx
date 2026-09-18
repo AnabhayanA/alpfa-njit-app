@@ -46,7 +46,7 @@ export default function AboutScreen() {
   const navigation = useNavigation<AboutNavigationProp>();
   const insets = useSafeAreaInsets();
   const responsive = useResponsive();
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
   const styles = React.useMemo(() => createStyles(colors), [colors]);
   const scrollOffsetY = useRef(0);
   const [lastScrollDir, setLastScrollDir] = useState<'up' | 'down' | null>(null);
@@ -68,8 +68,15 @@ export default function AboutScreen() {
 
   return (
     <View style={styles.container}>
-      <StatusBar style="light" />
+      <StatusBar style={isDark ? 'light' : 'dark'} />
+      <View pointerEvents="none" style={styles.liquidLayer}>
+        <View style={[styles.liquidOrb, styles.liquidRed, isDark && styles.liquidRedDark]} />
+        <View style={[styles.liquidOrb, styles.liquidBlue, isDark && styles.liquidBlueDark]} />
+        <View style={[styles.liquidOrb, styles.liquidPurple, isDark && styles.liquidPurpleDark]} />
+        <View style={[styles.liquidOrb, styles.liquidCyan, isDark && styles.liquidCyanDark]} />
+      </View>
       <ScrollView
+        style={styles.foreground}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={[styles.content, { paddingHorizontal: responsive.horizontalPadding, paddingBottom: responsive.responsiveSpacing.xxl + 40, maxWidth: responsive.contentMaxWidth || undefined, alignSelf: 'center', width: '100%' }]}
         onScroll={handleScroll}
@@ -234,6 +241,17 @@ const createStyles = (colors: ThemePalette) => StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
+  foreground: { flex: 1, backgroundColor: 'transparent' },
+  liquidLayer: { ...StyleSheet.absoluteFillObject },
+  liquidOrb: { position: 'absolute', borderRadius: 999 },
+  liquidRed: { width: 330, height: 330, right: -150, top: 110, backgroundColor: 'rgba(225,32,68,0.28)' },
+  liquidBlue: { width: 310, height: 310, left: -155, top: 430, backgroundColor: 'rgba(31,117,255,0.24)' },
+  liquidPurple: { width: 330, height: 330, right: -160, top: 780, backgroundColor: 'rgba(126,73,255,0.22)' },
+  liquidCyan: { width: 300, height: 300, left: -150, top: 1120, backgroundColor: 'rgba(0,194,255,0.20)' },
+  liquidRedDark: { backgroundColor: 'rgba(255,39,82,0.33)' },
+  liquidBlueDark: { backgroundColor: 'rgba(25,108,255,0.30)' },
+  liquidPurpleDark: { backgroundColor: 'rgba(142,77,255,0.28)' },
+  liquidCyanDark: { backgroundColor: 'rgba(0,207,255,0.24)' },
   content: {
     paddingBottom: 40,
   },
@@ -260,7 +278,7 @@ const createStyles = (colors: ThemePalette) => StyleSheet.create({
     textAlign: 'center',
   },
   card: {
-    backgroundColor: colors.surface,
+    backgroundColor: 'rgba(255,255,255,0.72)',
     marginTop: 18,
     borderWidth: 1,
     borderColor: colors.surfaceBorder,
@@ -284,7 +302,7 @@ const createStyles = (colors: ThemePalette) => StyleSheet.create({
     marginTop: 10,
   },
   infoCard: {
-    backgroundColor: colors.surface,
+    backgroundColor: 'rgba(255,255,255,0.72)',
     borderRadius: 22,
     padding: 16,
     marginBottom: 12,
@@ -324,7 +342,7 @@ const createStyles = (colors: ThemePalette) => StyleSheet.create({
   linkButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.surface,
+    backgroundColor: 'rgba(255,255,255,0.72)',
     borderRadius: 20,
     paddingHorizontal: 14,
     paddingVertical: 14,
