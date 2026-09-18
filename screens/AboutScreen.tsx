@@ -47,7 +47,7 @@ export default function AboutScreen() {
   const insets = useSafeAreaInsets();
   const responsive = useResponsive();
   const { colors, isDark } = useTheme();
-  const styles = React.useMemo(() => createStyles(colors), [colors]);
+  const styles = React.useMemo(() => createStyles(colors, isDark), [colors, isDark]);
   const scrollOffsetY = useRef(0);
   const [lastScrollDir, setLastScrollDir] = useState<'up' | 'down' | null>(null);
 
@@ -236,7 +236,7 @@ function LinkButton({
   );
 }
 
-const createStyles = (colors: ThemePalette) => StyleSheet.create({
+const createStyles = (colors: ThemePalette, isDark: boolean) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
@@ -278,7 +278,7 @@ const createStyles = (colors: ThemePalette) => StyleSheet.create({
     textAlign: 'center',
   },
   card: {
-    backgroundColor: 'rgba(255,255,255,0.72)',
+    backgroundColor: isDark ? 'rgba(20,24,42,0.82)' : 'rgba(255,255,255,0.72)',
     marginTop: 18,
     borderWidth: 1,
     borderColor: colors.surfaceBorder,
@@ -302,7 +302,7 @@ const createStyles = (colors: ThemePalette) => StyleSheet.create({
     marginTop: 10,
   },
   infoCard: {
-    backgroundColor: 'rgba(255,255,255,0.72)',
+    backgroundColor: isDark ? 'rgba(20,24,42,0.82)' : 'rgba(255,255,255,0.72)',
     borderRadius: 22,
     padding: 16,
     marginBottom: 12,
@@ -342,7 +342,7 @@ const createStyles = (colors: ThemePalette) => StyleSheet.create({
   linkButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.72)',
+    backgroundColor: isDark ? 'rgba(20,24,42,0.82)' : 'rgba(255,255,255,0.72)',
     borderRadius: 20,
     paddingHorizontal: 14,
     paddingVertical: 14,
