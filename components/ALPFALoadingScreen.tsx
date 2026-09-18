@@ -6,8 +6,7 @@ import NJITInstituteText from './NJITInstituteText';
 
 const FULL_LOGO = require('../assets/images/NJITalpfa logo.pdf (6).png');
 const NAVY = '#030712';
-const SPLASH_DURATION_MS = 4650;
-const EXIT_ANIMATION_MS = 560;
+const TOTAL_MS = 4300;
 
 type Props = { onAnimationComplete?: () => void };
 
@@ -17,81 +16,77 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
   const size = Math.min(width * 0.92, 390);
   const visibleHeight = Math.max(1, height - insets.top - insets.bottom);
 
-  const alpfaProgress = useRef(new Animated.Value(0)).current;
-  const wordmarkOpacity = useRef(new Animated.Value(0)).current;
-  const wordmarkTranslate = useRef(new Animated.Value(-42)).current;
-  const wordmarkScaleX = useRef(new Animated.Value(0.12)).current;
+  const redDraw = useRef(new Animated.Value(0)).current;
+  const logoReveal = useRef(new Animated.Value(0)).current;
+  const logoOpacity = useRef(new Animated.Value(0)).current;
+  const logoScale = useRef(new Animated.Value(1.08)).current;
   const njitOpacity = useRef(new Animated.Value(0)).current;
-  const njitTranslate = useRef(new Animated.Value(8)).current;
-  const groupScale = useRef(new Animated.Value(1.12)).current;
+  const njitX = useRef(new Animated.Value(14)).current;
   const exitScale = useRef(new Animated.Value(1)).current;
   const exitOpacity = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    Animated.sequence([
-      Animated.timing(alpfaProgress, {
+    const intro = Animated.sequence([
+      Animated.timing(redDraw, {
         toValue: 1,
-        duration: 900,
-        easing: Easing.out(Easing.cubic),
+        duration: 820,
+        easing: Easing.inOut(Easing.cubic),
         useNativeDriver: false,
       }),
       Animated.parallel([
-        Animated.timing(wordmarkOpacity, {
+        Animated.timing(logoReveal, {
           toValue: 1,
-          duration: 420,
-          easing: Easing.out(Easing.cubic),
-          useNativeDriver: true,
+          duration: 620,
+          easing: Easing.inOut(Easing.cubic),
+          useNativeDriver: false,
         }),
-        Animated.timing(wordmarkTranslate, {
-          toValue: 0,
-          duration: 420,
-          easing: Easing.out(Easing.cubic),
-          useNativeDriver: true,
-        }),
-        Animated.timing(wordmarkScaleX, {
+        Animated.timing(logoOpacity, {
           toValue: 1,
-          duration: 420,
-          easing: Easing.out(Easing.cubic),
+          duration: 180,
           useNativeDriver: true,
         }),
-        Animated.timing(njitOpacity, {
+        Animated.timing(logoScale, {
           toValue: 1,
-          duration: 520,
-          useNativeDriver: true,
-        }),
-        Animated.timing(njitTranslate, {
-          toValue: 0,
-          duration: 520,
+          duration: 620,
           easing: Easing.out(Easing.cubic),
-          useNativeDriver: true,
-        }),
-        Animated.spring(groupScale, {
-          toValue: 1,
-          friction: 9,
-          tension: 38,
           useNativeDriver: true,
         }),
       ]),
-    ]).start();
+      Animated.parallel([
+        Animated.timing(njitOpacity, {
+          toValue: 1,
+          duration: 420,
+          useNativeDriver: true,
+        }),
+        Animated.timing(njitX, {
+          toValue: 0,
+          duration: 420,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: true,
+        }),
+      ]),
+    ]);
+
+    intro.start();
 
     const exitTimer = setTimeout(() => {
       Animated.sequence([
         Animated.timing(exitScale, {
-          toValue: 0.86,
-          duration: 150,
+          toValue: 0.88,
+          duration: 140,
           easing: Easing.out(Easing.quad),
           useNativeDriver: true,
         }),
         Animated.parallel([
           Animated.timing(exitScale, {
-            toValue: 9.5,
-            duration: EXIT_ANIMATION_MS - 150,
+            toValue: 10,
+            duration: 430,
             easing: Easing.in(Easing.exp),
             useNativeDriver: true,
           }),
           Animated.timing(exitOpacity, {
             toValue: 0,
-            duration: EXIT_ANIMATION_MS - 150,
+            duration: 430,
             easing: Easing.in(Easing.quad),
             useNativeDriver: true,
           }),
@@ -99,10 +94,25 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
       ]).start(({ finished }) => {
         if (finished) onAnimationComplete?.();
       });
-    }, SPLASH_DURATION_MS - EXIT_ANIMATION_MS);
+    }, TOTAL_MS - 570);
 
-    return () => clearTimeout(exitTimer);
-  }, [alpfaProgress, exitOpacity, exitScale, groupScale, njitOpacity, njitTranslate, onAnimationComplete, wordmarkOpacity, wordmarkScaleX, wordmarkTranslate]);
+    return () => {
+      intro.stop();
+      clearTimeout(exitTimer);
+    };
+  }, [exitOpacity, exitScale, logoOpacity, logoReveal, logoScale, njitOpacity, njitX, onAnimationComplete, redDraw]);
+
+  const revealWidth = logoReveal.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, size],
+    extrapolate: 'clamp',
+  });
+
+  const redOpacity = logoReveal.interpolate({
+    inputRange: [0, 0.72, 1],
+    outputRange: [1, 0.45, 0],
+    extrapolate: 'clamp',
+  });
 
   return (
     <Animated.View
@@ -122,85 +132,47 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
             {
               width: size,
               height: size,
-              transform: [{ scale: groupScale }],
+              transform: [{ scale: logoScale }],
             },
           ]}
         >
-          <View
+          <Animated.View
             pointerEvents="none"
-            style={[
-              styles.alpfaLayer,
-              {
-                width: size,
-                height: size,
-                transform: [{ translateY: size * 0.015 }],
-              },
-            ]}
+            style={[StyleSheet.absoluteFillObject, { opacity: redOpacity }]}
           >
-            <AnimatedALPFAMark progress={alpfaProgress} size={size} />
-            <Animated.View
-              style={[
-                styles.alpfaWordmarkCrop,
-                {
-                  left: size * 0.20,
-                  top: size * 0.43,
-                  width: size * 0.60,
-                  height: size * 0.10,
-                  opacity: wordmarkOpacity,
-                  transform: [{ translateX: wordmarkTranslate }, { scaleX: wordmarkScaleX }],
-                },
-              ]}
-            >
-              <Image
-                source={FULL_LOGO}
-                resizeMode="contain"
-                style={{
-                  width: size,
-                  height: size,
-                  marginLeft: -size * 0.20,
-                  marginTop: -size * 0.43,
-                }}
-                accessibilityIgnoresInvertColors
-              />
-            </Animated.View>
-          </View>
+            <AnimatedALPFAMark progress={redDraw} size={size} />
+          </Animated.View>
 
           <Animated.View
+            pointerEvents="none"
             style={[
-              styles.njitLayer,
+              styles.fullLogoReveal,
               {
-                opacity: njitOpacity,
-                transform: [{ translateY: njitTranslate }],
+                width: revealWidth,
+                height: size,
+                opacity: logoOpacity,
               },
             ]}
           >
-            <View
-              style={[
-                styles.highlanderCrop,
-                {
-                  left: size * 0.20,
-                  top: size * 0.56,
-                  width: size * 0.18,
-                  height: size * 0.18,
-                },
-              ]}
-            >
-              <Image
-                source={FULL_LOGO}
-                resizeMode="contain"
-                style={{
-                  width: size,
-                  height: size,
-                  marginLeft: -size * 0.20,
-                  marginTop: -size * 0.56,
-                }}
-                accessibilityIgnoresInvertColors
-              />
-            </View>
+            <Image
+              source={FULL_LOGO}
+              resizeMode="contain"
+              style={{ width: size, height: size }}
+              accessibilityIgnoresInvertColors
+            />
+          </Animated.View>
 
-            <View pointerEvents="none" style={StyleSheet.absoluteFillObject}>
-              <NJITInstituteText size={size} />
-            </View>
+          <Animated.View
+            pointerEvents="none"
+            style={[
+              StyleSheet.absoluteFillObject,
+              {
+                opacity: njitOpacity,
+                transform: [{ translateX: njitX }],
+              },
+            ]}
+          >
+            <NJITInstituteText size={size} />
           </Animated.View>
         </Animated.View>
       </View>
@@ -211,6 +183,7 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
 const styles = StyleSheet.create({
   root: {
     ...StyleSheet.absoluteFillObject,
+    overflow: 'hidden',
     backgroundColor: NAVY,
   },
   centerStage: {
@@ -223,20 +196,10 @@ const styles = StyleSheet.create({
   lockup: {
     position: 'relative',
   },
-  alpfaLayer: {
+  fullLogoReveal: {
     position: 'absolute',
     left: 0,
     top: 0,
-  },
-  alpfaWordmarkCrop: {
-    position: 'absolute',
-    overflow: 'hidden',
-  },
-  njitLayer: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  highlanderCrop: {
-    position: 'absolute',
     overflow: 'hidden',
   },
 });
