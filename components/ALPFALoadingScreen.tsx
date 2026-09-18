@@ -2,11 +2,12 @@ import React, { useEffect, useRef } from 'react';
 import { Animated, Easing, Image, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AnimatedALPFAMark from './AnimatedALPFAMark';
+import AnimatedALPFAWhiteLine from './AnimatedALPFAWhiteLine';
 import NJITInstituteText from './NJITInstituteText';
 
 const FULL_LOGO = require('../assets/images/NJITalpfa logo.pdf (6).png');
 const NAVY = '#030712';
-const TOTAL_MS = 10000;
+const TOTAL_MS = 5600;
 
 type Props = { onAnimationComplete?: () => void };
 
@@ -30,31 +31,31 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
     const intro = Animated.sequence([
       Animated.timing(redDraw, {
         toValue: 1,
-        duration: 2200,
+        duration: 1050,
         easing: Easing.inOut(Easing.cubic),
         useNativeDriver: false,
       }),
       Animated.parallel([
         Animated.timing(logoReveal, {
           toValue: 1,
-          duration: 2200,
+          duration: 900,
           easing: Easing.inOut(Easing.cubic),
           useNativeDriver: false,
         }),
         Animated.timing(whiteLineDraw, {
           toValue: 1,
-          duration: 2200,
+          duration: 900,
           easing: Easing.inOut(Easing.cubic),
           useNativeDriver: false,
         }),
         Animated.timing(logoOpacity, {
           toValue: 1,
-          duration: 900,
+          duration: 520,
           useNativeDriver: true,
         }),
         Animated.timing(logoScale, {
           toValue: 1,
-          duration: 2200,
+          duration: 900,
           easing: Easing.out(Easing.cubic),
           useNativeDriver: true,
         }),
@@ -62,12 +63,12 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
       Animated.parallel([
         Animated.timing(njitOpacity, {
           toValue: 1,
-          duration: 1500,
+          duration: 650,
           useNativeDriver: true,
         }),
         Animated.timing(njitX, {
           toValue: 0,
-          duration: 1500,
+          duration: 650,
           easing: Easing.out(Easing.cubic),
           useNativeDriver: true,
         }),
@@ -162,30 +163,9 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
             <AnimatedALPFAMark progress={redDraw} size={size} />
           </Animated.View>
 
-          <Animated.View
-            pointerEvents="none"
-            style={[
-              styles.whiteLineDraw,
-              {
-                left: size * 0.20,
-                top: size * 0.43,
-                width: whiteLineWidth,
-                height: size * 0.10,
-              },
-            ]}
-          >
-            <Image
-              source={FULL_LOGO}
-              resizeMode="contain"
-              style={{
-                width: size,
-                height: size,
-                marginLeft: -size * 0.20,
-                marginTop: -size * 0.43,
-              }}
-              accessibilityIgnoresInvertColors
-            />
-          </Animated.View>
+          <View pointerEvents="none" style={StyleSheet.absoluteFillObject}>
+            <AnimatedALPFAWhiteLine progress={whiteLineDraw} size={size} />
+          </View>
 
           <Animated.View
             pointerEvents="none"
@@ -239,11 +219,6 @@ const styles = StyleSheet.create({
   },
   lockup: {
     position: 'relative',
-  },
-  whiteLineDraw: {
-    position: 'absolute',
-    overflow: 'hidden',
-    zIndex: 3,
   },
   fullLogoReveal: {
     position: 'absolute',
