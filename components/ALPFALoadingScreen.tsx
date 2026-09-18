@@ -6,7 +6,7 @@ import NJITInstituteText from './NJITInstituteText';
 
 const FULL_LOGO = require('../assets/images/NJITalpfa logo.pdf (6).png');
 const NAVY = '#030712';
-const TOTAL_MS = 4300;
+const TOTAL_MS = 10000;
 
 type Props = { onAnimationComplete?: () => void };
 
@@ -30,31 +30,31 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
     const intro = Animated.sequence([
       Animated.timing(redDraw, {
         toValue: 1,
-        duration: 820,
+        duration: 2200,
         easing: Easing.inOut(Easing.cubic),
         useNativeDriver: false,
       }),
       Animated.parallel([
         Animated.timing(logoReveal, {
           toValue: 1,
-          duration: 620,
+          duration: 2200,
           easing: Easing.inOut(Easing.cubic),
           useNativeDriver: false,
         }),
         Animated.timing(whiteLineDraw, {
           toValue: 1,
-          duration: 620,
+          duration: 2200,
           easing: Easing.inOut(Easing.cubic),
           useNativeDriver: false,
         }),
         Animated.timing(logoOpacity, {
           toValue: 1,
-          duration: 180,
+          duration: 900,
           useNativeDriver: true,
         }),
         Animated.timing(logoScale, {
           toValue: 1,
-          duration: 620,
+          duration: 2200,
           easing: Easing.out(Easing.cubic),
           useNativeDriver: true,
         }),
@@ -62,12 +62,12 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
       Animated.parallel([
         Animated.timing(njitOpacity, {
           toValue: 1,
-          duration: 420,
+          duration: 1500,
           useNativeDriver: true,
         }),
         Animated.timing(njitX, {
           toValue: 0,
-          duration: 420,
+          duration: 1500,
           easing: Easing.out(Easing.cubic),
           useNativeDriver: true,
         }),
@@ -118,6 +118,12 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
   const whiteLineWidth = whiteLineDraw.interpolate({
     inputRange: [0, 1],
     outputRange: [0, size * 0.60],
+    extrapolate: 'clamp',
+  });
+
+  const completedLogoOpacity = logoReveal.interpolate({
+    inputRange: [0, 0.82, 1],
+    outputRange: [0, 0, 1],
     extrapolate: 'clamp',
   });
 
@@ -188,7 +194,7 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
               {
                 width: revealWidth,
                 height: size,
-                opacity: logoOpacity,
+                opacity: completedLogoOpacity,
               },
             ]}
           >
