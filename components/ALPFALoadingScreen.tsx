@@ -2,7 +2,6 @@ import React, { useEffect, useRef } from 'react';
 import { Animated, Easing, Image, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AnimatedALPFAMark from './AnimatedALPFAMark';
-import AnimatedALPFAWhiteLine from './AnimatedALPFAWhiteLine';
 import NJITInstituteText from './NJITInstituteText';
 
 const FULL_LOGO = require('../assets/images/NJITalpfa logo.pdf (6).png');
@@ -18,17 +17,16 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
   const visibleHeight = Math.max(1, height - insets.top - insets.bottom);
 
   const redDraw = useRef(new Animated.Value(0)).current;
-  const logoReveal = useRef(new Animated.Value(0)).current;
-  const whiteLineDraw = useRef(new Animated.Value(0)).current;
-  const logoOpacity = useRef(new Animated.Value(0)).current;
-  const logoScale = useRef(new Animated.Value(1.08)).current;
+  const artworkReveal = useRef(new Animated.Value(0)).current;
   const njitOpacity = useRef(new Animated.Value(0)).current;
   const njitX = useRef(new Animated.Value(14)).current;
+  const stageScale = useRef(new Animated.Value(1.12)).current;
   const exitScale = useRef(new Animated.Value(1)).current;
   const exitOpacity = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     const intro = Animated.sequence([
+      Animated.delay(350),
       Animated.timing(redDraw, {
         toValue: 1,
         duration: 1050,
@@ -36,26 +34,15 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
         useNativeDriver: false,
       }),
       Animated.parallel([
-        Animated.timing(logoReveal, {
+        Animated.timing(artworkReveal, {
           toValue: 1,
-          duration: 900,
+          duration: 1150,
           easing: Easing.inOut(Easing.cubic),
           useNativeDriver: false,
         }),
-        Animated.timing(whiteLineDraw, {
+        Animated.timing(stageScale, {
           toValue: 1,
-          duration: 900,
-          easing: Easing.inOut(Easing.cubic),
-          useNativeDriver: false,
-        }),
-        Animated.timing(logoOpacity, {
-          toValue: 1,
-          duration: 520,
-          useNativeDriver: true,
-        }),
-        Animated.timing(logoScale, {
-          toValue: 1,
-          duration: 900,
+          duration: 1150,
           easing: Easing.out(Easing.cubic),
           useNativeDriver: true,
         }),
@@ -80,8 +67,8 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
     const exitTimer = setTimeout(() => {
       Animated.sequence([
         Animated.timing(exitScale, {
-          toValue: 0.88,
-          duration: 140,
+          toValue: 0.86,
+          duration: 170,
           easing: Easing.out(Easing.quad),
           useNativeDriver: true,
         }),
@@ -102,80 +89,56 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
       ]).start(({ finished }) => {
         if (finished) onAnimationComplete?.();
       });
-    }, TOTAL_MS - 570);
+    }, TOTAL_MS - 600);
 
     return () => {
       intro.stop();
       clearTimeout(exitTimer);
     };
-  }, [exitOpacity, exitScale, logoOpacity, logoReveal, logoScale, njitOpacity, njitX, onAnimationComplete, redDraw, whiteLineDraw]);
+  }, [artworkReveal, exitOpacity, exitScale, njitOpacity, njitX, onAnimationComplete, redDraw, stageScale]);
 
-  const revealWidth = logoReveal.interpolate({
+  const revealWidth = artworkReveal.interpolate({
     inputRange: [0, 1],
     outputRange: [0, size],
     extrapolate: 'clamp',
   });
 
-  const whiteLineWidth = whiteLineDraw.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, size * 0.60],
+  const artworkOpacity = artworkReveal.interpolate({
+    inputRange: [0, 0.03, 1],
+    outputRange: [0, 1, 1],
     extrapolate: 'clamp',
   });
 
-  const completedLogoOpacity = logoReveal.interpolate({
-    inputRange: [0, 0.82, 1],
-    outputRange: [0, 0, 1],
-    extrapolate: 'clamp',
-  });
-
-  const redOpacity = logoReveal.interpolate({
-    inputRange: [0, 0.72, 1],
-    outputRange: [1, 0.45, 0],
+  const redGuideOpacity = artworkReveal.interpolate({
+    inputRange: [0, 0.65, 1],
+    outputRange: [1, 0.65, 0],
     extrapolate: 'clamp',
   });
 
   return (
     <Animated.View
       pointerEvents="auto"
-      style={[
-        styles.root,
-        {
-          opacity: exitOpacity,
-          transform: [{ scale: exitScale }],
-        },
-      ]}
+      style={[styles.root, { opacity: exitOpacity, transform: [{ scale: exitScale }] }]}
     >
       <View style={[styles.centerStage, { top: insets.top, height: visibleHeight }]}>
         <Animated.View
           style={[
             styles.lockup,
-            {
-              width: size,
-              height: size,
-              transform: [{ scale: logoScale }],
-            },
+            { width: size, height: size, transform: [{ scale: stageScale }] },
           ]}
         >
           <Animated.View
             pointerEvents="none"
-            style={[StyleSheet.absoluteFillObject, { opacity: redOpacity }]}
+            style={[StyleSheet.absoluteFillObject, { opacity: redGuideOpacity }]}
           >
             <AnimatedALPFAMark progress={redDraw} size={size} />
           </Animated.View>
 
-          <View pointerEvents="none" style={StyleSheet.absoluteFillObject}>
-            <AnimatedALPFAWhiteLine progress={whiteLineDraw} size={size} />
-          </View>
-
           <Animated.View
             pointerEvents="none"
             style={[
-              styles.fullLogoReveal,
-              {
-                width: revealWidth,
-                height: size,
-                opacity: completedLogoOpacity,
-              },
+              styles.artworkReveal,
+              { width: revealWidth, height: size, opacity: artworkOpacity },
             ]}
           >
             <Image
@@ -190,10 +153,7 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
             pointerEvents="none"
             style={[
               StyleSheet.absoluteFillObject,
-              {
-                opacity: njitOpacity,
-                transform: [{ translateX: njitX }],
-              },
+              { opacity: njitOpacity, transform: [{ translateX: njitX }] },
             ]}
           >
             <NJITInstituteText size={size} />
@@ -220,7 +180,7 @@ const styles = StyleSheet.create({
   lockup: {
     position: 'relative',
   },
-  fullLogoReveal: {
+  artworkReveal: {
     position: 'absolute',
     left: 0,
     top: 0,
