@@ -160,7 +160,7 @@ const BOARD_MEMBERS = [
 export default function EBoardScreen() {
   const navigation = useNavigation<EBoardNavigationProp>();
   const responsive = useResponsive();
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
   const styles = React.useMemo(() => createStyles(colors), [colors]);
   const fade = useRef(new Animated.Value(0)).current;
   const slide = useRef(new Animated.Value(24)).current;
@@ -191,7 +191,14 @@ export default function EBoardScreen() {
 
   return (
     <View style={styles.container}>
+      <View pointerEvents="none" style={styles.liquidLayer}>
+        <View style={[styles.liquidOrb, styles.liquidRed, isDark && styles.liquidRedDark]} />
+        <View style={[styles.liquidOrb, styles.liquidBlue, isDark && styles.liquidBlueDark]} />
+        <View style={[styles.liquidOrb, styles.liquidPurple, isDark && styles.liquidPurpleDark]} />
+        <View style={[styles.liquidOrb, styles.liquidCyan, isDark && styles.liquidCyanDark]} />
+      </View>
       <ScrollView
+        style={styles.foreground}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={[
           styles.content,
@@ -240,6 +247,17 @@ const createStyles = (colors: ThemePalette) => StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
+  foreground: { flex: 1, backgroundColor: 'transparent' },
+  liquidLayer: { ...StyleSheet.absoluteFillObject },
+  liquidOrb: { position: 'absolute', borderRadius: 999 },
+  liquidRed: { width: 320, height: 320, right: -145, top: 45, backgroundColor: 'rgba(225,32,68,0.27)' },
+  liquidBlue: { width: 310, height: 310, left: -155, top: 390, backgroundColor: 'rgba(31,117,255,0.23)' },
+  liquidPurple: { width: 330, height: 330, right: -165, top: 850, backgroundColor: 'rgba(126,73,255,0.21)' },
+  liquidCyan: { width: 300, height: 300, left: -150, top: 1320, backgroundColor: 'rgba(0,194,255,0.19)' },
+  liquidRedDark: { backgroundColor: 'rgba(255,39,82,0.32)' },
+  liquidBlueDark: { backgroundColor: 'rgba(25,108,255,0.29)' },
+  liquidPurpleDark: { backgroundColor: 'rgba(142,77,255,0.27)' },
+  liquidCyanDark: { backgroundColor: 'rgba(0,207,255,0.23)' },
   content: {
     paddingTop: 20,
     paddingBottom: 50,
