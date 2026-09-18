@@ -7,6 +7,7 @@ import NJITInstituteText from './NJITInstituteText';
 const FULL_LOGO = require('../assets/images/NJITalpfa logo.pdf (6).png');
 const NAVY = '#030712';
 const SPLASH_DURATION_MS = 5000;
+const EXIT_ANIMATION_MS = 520;
 
 type Props = { onAnimationComplete?: () => void };
 
@@ -21,6 +22,8 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
   const njitOpacity = useRef(new Animated.Value(0)).current;
   const njitTranslate = useRef(new Animated.Value(8)).current;
   const groupScale = useRef(new Animated.Value(0.96)).current;
+  const exitScale = useRef(new Animated.Value(1)).current;
+  const exitOpacity = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     Animated.sequence([
@@ -56,12 +59,47 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
       ]),
     ]).start();
 
-    const timer = setTimeout(() => onAnimationComplete?.(), SPLASH_DURATION_MS);
-    return () => clearTimeout(timer);
-  }, [alpfaProgress, groupScale, njitOpacity, njitTranslate, onAnimationComplete, wordmarkOpacity]);
+    const exitTimer = setTimeout(() => {
+      Animated.sequence([
+        Animated.timing(exitScale, {
+          toValue: 0.92,
+          duration: 110,
+          easing: Easing.out(Easing.quad),
+          useNativeDriver: true,
+        }),
+        Animated.parallel([
+          Animated.timing(exitScale, {
+            toValue: 8,
+            duration: EXIT_ANIMATION_MS - 110,
+            easing: Easing.in(Easing.cubic),
+            useNativeDriver: true,
+          }),
+          Animated.timing(exitOpacity, {
+            toValue: 0,
+            duration: EXIT_ANIMATION_MS - 110,
+            easing: Easing.in(Easing.quad),
+            useNativeDriver: true,
+          }),
+        ]),
+      ]).start(({ finished }) => {
+        if (finished) onAnimationComplete?.();
+      });
+    }, SPLASH_DURATION_MS - EXIT_ANIMATION_MS);
+
+    return () => clearTimeout(exitTimer);
+  }, [alpfaProgress, exitOpacity, exitScale, groupScale, njitOpacity, njitTranslate, onAnimationComplete, wordmarkOpacity]);
 
   return (
-    <View pointerEvents="auto" style={styles.root}>
+    <Animated.View
+      pointerEvents="auto"
+      style={[
+        styles.root,
+        {
+          opacity: exitOpacity,
+          transform: [{ scale: exitScale }],
+        },
+      ]}
+    >
       <View style={[styles.centerStage, { top: insets.top, height: visibleHeight }]}>
         <Animated.View
           style={[
@@ -150,7 +188,7 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
           </Animated.View>
         </Animated.View>
       </View>
-    </View>
+    </Animated.View>
   );
 }
 
