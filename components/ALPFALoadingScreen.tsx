@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { Image, StyleSheet, View, useWindowDimensions } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import NJITInstituteText from './NJITInstituteText';
 
 const FULL_LOGO = require('../assets/images/NJITalpfa logo.pdf (6).png');
@@ -11,8 +12,10 @@ type Props = {
 };
 
 export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
-  const { width } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
   const size = Math.min(width * 0.92, 390);
+  const visibleHeight = Math.max(1, height - insets.top - insets.bottom);
 
   useEffect(() => {
     const timer = setTimeout(() => onAnimationComplete?.(), SPLASH_DURATION_MS);
@@ -21,6 +24,12 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
 
   return (
     <View pointerEvents="auto" style={styles.root}>
+      <View
+        style={[
+          styles.centerStage,
+          { top: insets.top, height: visibleHeight },
+        ]}
+      >
       <View style={[styles.lockup, { width: size, height: size }]}>
         <View
           style={[
@@ -45,6 +54,7 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
           <NJITInstituteText size={size} />
         </View>
       </View>
+      </View>
     </View>
   );
 }
@@ -53,6 +63,11 @@ const styles = StyleSheet.create({
   root: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: NAVY,
+  },
+  centerStage: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
     alignItems: 'center',
     justifyContent: 'center',
   },
