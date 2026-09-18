@@ -14,7 +14,6 @@ const ALPFA_LOGO = require('../assets/images/NJITalpfa logo.pdf (6).png');
 
 const NAVY = '#030712';
 const WHITE = '#F7F8FA';
-const RED = '#E02125';
 const TOTAL_MS = 5000;
 
 type Props = { onAnimationComplete?: () => void };
@@ -28,7 +27,7 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
   // Keep every splash layer inside one fixed square stage.
   // The PNG, traced mark, and NJIT text all use the same 500x500 artwork coordinate space.
   const shortSide = Math.max(1, Math.min(width, height));
-  const logoSize = Math.min(Math.max(shortSide * 0.66, 210), 330);
+  const logoSize = Math.min(Math.max(shortSide * 0.60, 200), 300);
 
   useEffect(() => {
     let mounted = true;
@@ -118,12 +117,6 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
     extrapolate: 'clamp',
   });
 
-  const vectorGlowOpacity = timeline.interpolate({
-    inputRange: [0, 0.10, 0.20, 0.32, 0.40, 1],
-    outputRange: [0, 0, 0.10, 0.18, 0, 0],
-    extrapolate: 'clamp',
-  });
-
   const logoOpacity = timeline.interpolate({
     inputRange: [0, 0.28, 0.38, 0.94, 0.982, 1],
     outputRange: [0, 0, 1, 1, 0.70, 0],
@@ -160,16 +153,6 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
           ]}
         >
           <View style={[styles.artwork, { width: logoSize, height: logoSize }]}>
-            <Animated.View
-              pointerEvents="none"
-              style={[
-                StyleSheet.absoluteFillObject,
-                styles.vectorGlow,
-                { opacity: vectorGlowOpacity },
-              ]}
-            >
-              <AnimatedALPFAMark progress={drawProgress} size={logoSize} />
-            </Animated.View>
 
             <Animated.View
               pointerEvents="none"
@@ -224,12 +207,6 @@ const styles = StyleSheet.create({
     position: 'relative',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  vectorGlow: {
-    shadowColor: RED,
-    shadowOpacity: 0.4,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 0 },
   },
   image: {
     width: '100%',
