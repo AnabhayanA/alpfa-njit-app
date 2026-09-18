@@ -222,6 +222,7 @@ export default function EBoardScreen() {
           {/* Member Cards */}
           {BOARD_MEMBERS.map((member, index) => (
             <EBoardCard
+              key={member.id}
               member={member}
               animationDelay={index * 100}
             />
