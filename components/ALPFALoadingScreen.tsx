@@ -1,6 +1,7 @@
-import React, { useEffect } from 'react';
-import { Image, StyleSheet, View, useWindowDimensions } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { Animated, Image, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import AnimatedALPFAMark from './AnimatedALPFAMark';
 import NJITInstituteText from './NJITInstituteText';
 
 const FULL_LOGO = require('../assets/images/NJITalpfa logo.pdf (6).png');
@@ -16,6 +17,7 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
   const insets = useSafeAreaInsets();
   const size = Math.min(width * 0.92, 390);
   const visibleHeight = Math.max(1, height - insets.top - insets.bottom);
+  const alpfaProgress = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     const timer = setTimeout(() => onAnimationComplete?.(), SPLASH_DURATION_MS);
@@ -31,6 +33,19 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
         ]}
       >
       <View style={[styles.lockup, { width: size, height: size }]}>
+        <View
+          pointerEvents="none"
+          style={[
+            styles.alpfaLayer,
+            {
+              width: size,
+              height: size,
+              transform: [{ translateY: -size * 0.20 }],
+            },
+          ]}
+        >
+          <AnimatedALPFAMark progress={alpfaProgress} size={size} />
+        </View>
         <View
           style={[
             styles.highlanderCrop,
@@ -73,6 +88,11 @@ const styles = StyleSheet.create({
   },
   lockup: {
     position: 'relative',
+  },
+  alpfaLayer: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
   },
   highlanderCrop: {
     position: 'absolute',
