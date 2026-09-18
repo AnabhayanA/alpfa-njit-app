@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import useResponsive from '../utils/responsive';
 import useTheme from '../utils/useTheme';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const TAB_ICONS: Record<string, keyof typeof Ionicons.glyphMap> = {
   Home: 'home',
@@ -26,13 +27,14 @@ const NAV_HORIZONTAL_PADDING = 5;
 export default function BottomNav({ state, descriptors, navigation }: BottomTabBarProps) {
   const responsive = useResponsive();
   const { isDark } = useTheme();
+  const insets = useSafeAreaInsets();
   const glide = useRef(new Animated.Value(state.index)).current;
   const navTranslateY = useRef(new Animated.Value(0)).current;
   const navScale = useRef(new Animated.Value(1)).current;
   const navOpacity = useRef(new Animated.Value(1)).current;
 
   // Keep the five tabs visually closer together than the old full-width bar.
-  const navWidth = Math.min(Math.max(responsive.safeWidth - 28, 286), 392);
+  const navWidth = Math.min(Math.max(responsive.safeWidth - 40, 280), 374);
   const innerWidth = navWidth - NAV_HORIZONTAL_PADDING * 2;
   const tabWidth = innerWidth / state.routes.length;
   const pillWidth = Math.min(48, Math.max(40, tabWidth - 14));
@@ -80,7 +82,7 @@ export default function BottomNav({ state, descriptors, navigation }: BottomTabB
   });
 
   return (
-    <View style={styles.wrapper}>
+    <View style={[styles.wrapper, { paddingBottom: Math.max(insets.bottom, 10) + 4 }]}>
       <Animated.View
         style={[
           styles.navbar,
@@ -150,7 +152,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     alignItems: 'center',
     paddingTop: 0,
-    paddingBottom: 5,
+    paddingHorizontal: 20,
+    paddingBottom: 10,
   },
   navbar: {
     position: 'relative',
