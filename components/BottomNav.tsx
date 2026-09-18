@@ -28,26 +28,11 @@ export default function BottomNav({ state, descriptors, navigation }: BottomTabB
   const responsive = useResponsive();
   const { isDark } = useTheme();
   const insets = useSafeAreaInsets();
-  const glide = useRef(new Animated.Value(state.index)).current;
   const navTranslateY = useRef(new Animated.Value(0)).current;
   const navScale = useRef(new Animated.Value(1)).current;
   const navOpacity = useRef(new Animated.Value(1)).current;
 
-  // Keep the five tabs visually closer together than the old full-width bar.
   const navWidth = Math.min(Math.max(responsive.safeWidth - 40, 280), 374);
-  const innerWidth = navWidth - NAV_HORIZONTAL_PADDING * 2;
-  const tabWidth = innerWidth / state.routes.length;
-  // The active pill occupies the same horizontal slot as each tab so its center
-  // always lands exactly behind the active icon.
-
-  useEffect(() => {
-    Animated.timing(glide, {
-      toValue: state.index,
-      duration: 300,
-      easing: Easing.out(Easing.cubic),
-      useNativeDriver: true,
-    }).start();
-  }, [glide, state.index]);
 
   useEffect(() => {
     const currentRoute = state.routes[state.index];
@@ -91,18 +76,6 @@ export default function BottomNav({ state, descriptors, navigation }: BottomTabB
           },
         ]}
       >
-        <Animated.View
-          pointerEvents="none"
-          style={[
-            styles.glidePill,
-            isDark && styles.glidePillDark,
-            {
-              width: pillWidth,
-              transform: [{ translateX: indicatorX }],
-            },
-          ]}
-        />
-
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key];
           const labelText =
@@ -135,7 +108,15 @@ export default function BottomNav({ state, descriptors, navigation }: BottomTabB
                   color={isFocused ? (isDark ? '#FFFFFF' : '#111827') : (isDark ? '#A9B2C8' : '#8C8E8D')}
                 />
               </View>
-              <Text style={[styles.label, isDark && styles.labelDark, isFocused && styles.activeLabel, isFocused && isDark && styles.activeLabelDark, { fontSize: Math.min(8.5, responsive.fontSizes.xs) }]}>
+              <Text
+                style={[
+                  styles.label,
+                  isDark && styles.labelDark,
+                  isFocused && styles.activeLabel,
+                  isFocused && isDark && styles.activeLabelDark,
+                  { fontSize: Math.min(8.5, responsive.fontSizes.xs) },
+                ]}
+              >
                 {labelText}
               </Text>
             </TouchableOpacity>
