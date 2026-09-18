@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { Platform, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
@@ -42,7 +42,6 @@ function MainApp() {
 
 function AppContent() {
   const { colors } = useTheme();
-  const { width, height } = useWindowDimensions();
   const [showSplash, setShowSplash] = useState(true);
 
   const handleAnimationComplete = useCallback(() => {
@@ -54,8 +53,7 @@ function AppContent() {
       <View
         style={[
           styles.container,
-          { width, height },
-          Platform.OS === 'web' && styles.webContainer,
+                    Platform.OS === 'web' && styles.webContainer,
         ]}
       >
         <StatusBar style={showSplash ? 'light' : colors.statusBarStyle} />
