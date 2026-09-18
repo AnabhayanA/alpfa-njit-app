@@ -3,8 +3,7 @@ import {
   Animated,
   Easing,
   Linking,
-  SafeAreaView,
-  ScrollView,
+    ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -15,6 +14,7 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import EventCard from '../components/EventCard';
 import useResponsive from '../utils/responsive';
 import useTheme from '../utils/useTheme';
@@ -55,7 +55,7 @@ function formatLastUpdated(date: Date): string {
 export default function EventsScreen() {
   const navigation = useNavigation<EventsNavigationProp>();
   const responsive = useResponsive();
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
   const styles = React.useMemo(() => createStyles(colors), [colors]);
   const [events, setEvents] = useState<GroupedEvents>({});
   const [loading, setLoading] = useState(true);
@@ -164,7 +164,14 @@ export default function EventsScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      <View pointerEvents="none" style={styles.liquidLayer}>
+        <View style={[styles.liquidOrb, styles.liquidRed, isDark && styles.liquidRedDark]} />
+        <View style={[styles.liquidOrb, styles.liquidBlue, isDark && styles.liquidBlueDark]} />
+        <View style={[styles.liquidOrb, styles.liquidPurple, isDark && styles.liquidPurpleDark]} />
+        <View style={[styles.liquidOrb, styles.liquidCyan, isDark && styles.liquidCyanDark]} />
+      </View>
       <ScrollView
+        style={styles.foreground}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={[styles.content, { paddingHorizontal: responsive.horizontalPadding }]}
         refreshControl={
@@ -283,12 +290,28 @@ export default function EventsScreen() {
 
 
 const createStyles = (colors: ThemePalette) => StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
+  container: { flex: 1, backgroundColor: colors.background, overflow: 'hidden' },
+  foreground: { flex: 1, backgroundColor: 'transparent' },
   content: { paddingBottom: 35 },
+  liquidLayer: { ...StyleSheet.absoluteFillObject },
+  liquidOrb: { position: 'absolute', borderRadius: 999 },
+  liquidRed: { width: 300, height: 300, right: -130, top: 35, backgroundColor: 'rgba(225,32,68,0.28)' },
+  liquidBlue: { width: 290, height: 290, left: -145, top: 300, backgroundColor: 'rgba(31,117,255,0.23)' },
+  liquidPurple: { width: 310, height: 310, right: -155, top: 660, backgroundColor: 'rgba(126,73,255,0.20)' },
+  liquidCyan: { width: 270, height: 270, left: -145, top: 980, backgroundColor: 'rgba(0,194,255,0.19)' },
+  liquidRedDark: { backgroundColor: 'rgba(255,39,82,0.32)' },
+  liquidBlueDark: { backgroundColor: 'rgba(25,108,255,0.29)' },
+  liquidPurpleDark: { backgroundColor: 'rgba(142,77,255,0.26)' },
+  liquidCyanDark: { backgroundColor: 'rgba(0,207,255,0.23)' },
   
   // Header
   header: {
-    backgroundColor: colors.background,
+    backgroundColor: 'rgba(255,255,255,0.10)',
+    borderWidth: 1,
+    borderColor: colors.surfaceBorder,
+    borderRadius: 24,
+    marginHorizontal: 10,
+    marginTop: 8,
     paddingHorizontal: 21,
     paddingTop: 28,
     paddingBottom: 27,
