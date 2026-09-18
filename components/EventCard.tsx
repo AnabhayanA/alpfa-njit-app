@@ -6,8 +6,8 @@ import useTheme from '../utils/useTheme';
 import { cancelEventReminder, isReminderSet, scheduleEventReminder } from '../utils/eventNotifications';
 
 export default function EventCard({ event, animationDelay }: { event: CalendarEvent; animationDelay: number }) {
-  const { colors } = useTheme();
-  const styles = React.useMemo(() => createStyles(colors), [colors]);
+  const { colors, isDark } = useTheme();
+  const styles = React.useMemo(() => createStyles(colors, isDark), [colors, isDark]);
   const [expanded, setExpanded] = useState(false);
   const [reminderSet, setReminderSet] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -79,10 +79,10 @@ function Info({ icon, text, styles }: { icon: keyof typeof Ionicons.glyphMap; te
   return <View style={styles.info}><Ionicons name={icon} size={17} color="#8D102B" /><Text style={styles.infoText}>{text}</Text></View>;
 }
 
-const createStyles = (colors: ReturnType<typeof useTheme>['colors']) => StyleSheet.create({
+const createStyles = (colors: ReturnType<typeof useTheme>['colors'], isDark: boolean) => StyleSheet.create({
   card: { marginHorizontal: 18, marginBottom: 14, backgroundColor: colors.surface, borderRadius: 15, padding: 12, shadowColor: '#4B392C', shadowOpacity: 0.09, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 3 },
   top: { flexDirection: 'row', alignItems: 'center', gap: 11 },
-  date: { width: 55, height: 61, borderRadius: 10, backgroundColor: '#F2F2F0', overflow: 'hidden', alignItems: 'center' },
+  date: { width: 55, height: 61, borderRadius: 10, backgroundColor: isDark ? '#161C31' : '#F2F2F0', overflow: 'hidden', alignItems: 'center', borderWidth: isDark ? 1 : 0, borderColor: isDark ? 'rgba(255,255,255,0.10)' : 'transparent' },
   monthBar: { width: '100%', backgroundColor: '#8D102B', paddingVertical: 4, alignItems: 'center' },
   month: { color: '#FFFFFF', fontSize: 9, fontWeight: '900' },
   day: { color: colors.textPrimary, fontSize: 25, lineHeight: 38, fontWeight: '900' },
