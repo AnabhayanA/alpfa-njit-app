@@ -5,10 +5,8 @@ import {
   Easing,
   Image,
   StyleSheet,
-  useWindowDimensions,
   View,
 } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AnimatedALPFAMark from './AnimatedALPFAMark';
 import NJITInstituteText from './NJITInstituteText';
 
@@ -22,17 +20,13 @@ const TOTAL_MS = 5000;
 type Props = { onAnimationComplete?: () => void };
 
 export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
-  const { width, height } = useWindowDimensions();
-  const insets = useSafeAreaInsets();
+  const [viewport, setViewport] = useState({ width: 0, height: 0 });
   const [reducedMotion, setReducedMotion] = useState<boolean | null>(null);
   const timeline = useRef(new Animated.Value(0)).current;
   const drawProgress = useRef(new Animated.Value(0)).current;
 
-  const safeHeight = Math.max(1, height - insets.top - insets.bottom);
-  const shortSide = Math.min(width, safeHeight);
-  // Size from the usable viewport rather than a phone-specific width.
-  // This keeps the artwork centered and proportionate on phones, tablets and web.
-  const logoSize = Math.min(Math.max(shortSide * 0.68, 220), 390);
+  const shortSide = Math.max(1, Math.min(viewport.width || 390, viewport.height || 844));
+  const logoSize = Math.min(Math.max(shortSide * 0.64, 190), 340);
 
   useEffect(() => {
     let mounted = true;
@@ -161,6 +155,10 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
   return (
     <Animated.View
       pointerEvents="auto"
+      onLayout={(event) => {
+        const { width, height } = event.nativeEvent.layout;
+        if (width !== viewport.width || height !== viewport.height) setViewport({ width, height });
+      }}
       style={[styles.root, { opacity: splashOpacity }]}
     >
       <View style={styles.background} />
