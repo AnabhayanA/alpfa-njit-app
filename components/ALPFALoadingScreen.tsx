@@ -8,7 +8,6 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
-import AnimatedALPFAMark from './AnimatedALPFAMark';
 
 const ALPFA_LOGO = require('../assets/images/NJITalpfa logo.pdf (6).png');
 
@@ -22,7 +21,6 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
   const { width, height } = useWindowDimensions();
   const [reducedMotion, setReducedMotion] = useState<boolean | null>(null);
   const timeline = useRef(new Animated.Value(0)).current;
-  const drawProgress = useRef(new Animated.Value(0)).current;
 
   // Keep every splash layer inside one fixed square stage.
   // The PNG, traced mark, and NJIT text all use the same 500x500 artwork coordinate space.
@@ -51,7 +49,6 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
     if (reducedMotion === null) return;
 
     timeline.setValue(0);
-    drawProgress.setValue(reducedMotion ? 1 : 0);
 
     const animation = reducedMotion
       ? Animated.sequence([
@@ -76,28 +73,14 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
           useNativeDriver: true,
         });
 
-    const drawingAnimation = reducedMotion
-      ? null
-      : Animated.sequence([
-          Animated.delay(500),
-          Animated.timing(drawProgress, {
-            toValue: 1,
-            duration: 1250,
-            easing: Easing.inOut(Easing.cubic),
-            useNativeDriver: false,
-          }),
-        ]);
-
-    drawingAnimation?.start();
     animation.start(({ finished }) => {
       if (finished) onAnimationComplete?.();
     });
 
     return () => {
       animation.stop();
-      drawingAnimation?.stop();
     };
-  }, [drawProgress, onAnimationComplete, reducedMotion, timeline]);
+  }, [onAnimationComplete, reducedMotion, timeline]);
 
   const logoScale = timeline.interpolate({
     inputRange: [0, 0.12, 0.34, 0.50, 0.64, 0.76, 0.86, 1],
@@ -111,14 +94,8 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
     extrapolate: 'clamp',
   });
 
-  const vectorOpacity = timeline.interpolate({
-    inputRange: [0, 0.08, 0.14, 0.32, 0.40, 1],
-    outputRange: [0, 0, 1, 1, 0, 0],
-    extrapolate: 'clamp',
-  });
-
   const logoOpacity = timeline.interpolate({
-    inputRange: [0, 0.28, 0.38, 0.94, 0.982, 1],
+    inputRange: [0, 0.08, 0.16, 0.94, 0.982, 1],
     outputRange: [0, 0, 1, 1, 0.70, 0],
     extrapolate: 'clamp',
   });
@@ -153,13 +130,6 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
           ]}
         >
           <View style={[styles.artwork, { width: logoSize, height: logoSize }]}>
-
-            <Animated.View
-              pointerEvents="none"
-              style={[StyleSheet.absoluteFillObject, { opacity: vectorOpacity }]}
-            >
-              <AnimatedALPFAMark progress={drawProgress} size={logoSize} />
-            </Animated.View>
 
             <Animated.View
               style={{ width: logoSize, height: logoSize, opacity: logoOpacity }}
