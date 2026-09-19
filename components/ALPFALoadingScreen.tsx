@@ -18,7 +18,7 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
   const size =
     Platform.OS === 'web'
       ? Math.min(usableWidth * 0.92, 390)
-      : Math.min(usableWidth * 0.88, visibleHeight * 0.55, 390);
+      : Math.min(usableWidth * 0.84, visibleHeight * 0.46, 360);
 
   const redDraw = useRef(new Animated.Value(0)).current;
   const artworkReveal = useRef(new Animated.Value(0)).current;
@@ -27,55 +27,66 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
   const stageScale = useRef(new Animated.Value(1.12)).current;
   const exitScale = useRef(new Animated.Value(1)).current;
   const exitOpacity = useRef(new Animated.Value(1)).current;
-  const nativeLogoOpacity = useRef(new Animated.Value(0)).current;
-  const nativeLogoScale = useRef(new Animated.Value(0.78)).current;
+
+  // Native is intentionally simple: one real image, one native-driver timeline.
+  // This avoids SVG/JS-thread animation problems in Expo Go.
+  const nativeOpacity = useRef(new Animated.Value(0)).current;
+  const nativeScale = useRef(new Animated.Value(0.72)).current;
+  const nativeTranslateY = useRef(new Animated.Value(8)).current;
 
   useEffect(() => {
     if (Platform.OS !== 'web') {
-      const nativeIntro = Animated.sequence([
-        Animated.delay(250),
+      const animation = Animated.sequence([
+        Animated.delay(450),
         Animated.parallel([
-          Animated.timing(nativeLogoOpacity, {
+          Animated.timing(nativeOpacity, {
             toValue: 1,
-            duration: 900,
+            duration: 850,
             easing: Easing.out(Easing.cubic),
             useNativeDriver: true,
           }),
-          Animated.spring(nativeLogoScale, {
+          Animated.timing(nativeScale, {
             toValue: 1,
-            friction: 7,
-            tension: 55,
+            duration: 950,
+            easing: Easing.out(Easing.back(1.08)),
+            useNativeDriver: true,
+          }),
+          Animated.timing(nativeTranslateY, {
+            toValue: 0,
+            duration: 850,
+            easing: Easing.out(Easing.cubic),
             useNativeDriver: true,
           }),
         ]),
-        Animated.delay(2300),
-        Animated.timing(nativeLogoScale, {
+        Animated.delay(2100),
+        Animated.timing(nativeScale, {
           toValue: 0.9,
-          duration: 180,
+          duration: 220,
           easing: Easing.out(Easing.quad),
           useNativeDriver: true,
         }),
         Animated.parallel([
-          Animated.timing(nativeLogoScale, {
-            toValue: 8,
-            duration: 520,
+          Animated.timing(nativeScale, {
+            toValue: 5.5,
+            duration: 650,
             easing: Easing.in(Easing.cubic),
             useNativeDriver: true,
           }),
-          Animated.timing(nativeLogoOpacity, {
+          Animated.timing(nativeOpacity, {
             toValue: 0,
-            duration: 500,
+            duration: 600,
+            delay: 100,
             easing: Easing.in(Easing.quad),
             useNativeDriver: true,
           }),
         ]),
       ]);
 
-      nativeIntro.start(({ finished }) => {
+      animation.start(({ finished }) => {
         if (finished) onAnimationComplete?.();
       });
 
-      return () => nativeIntro.stop();
+      return () => animation.stop();
     }
 
     const intro = Animated.sequence([
@@ -148,23 +159,27 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
       intro.stop();
       clearTimeout(exitTimer);
     };
-  }, [artworkReveal, exitOpacity, exitScale, nativeLogoOpacity, nativeLogoScale, njitOpacity, njitX, onAnimationComplete, redDraw, stageScale]);
+  }, [artworkReveal, exitOpacity, exitScale, nativeOpacity, nativeScale, nativeTranslateY, njitOpacity, njitX, onAnimationComplete, redDraw, stageScale]);
 
   if (Platform.OS !== 'web') {
     return (
       <View style={styles.root} pointerEvents="auto">
         <View style={[styles.centerStage, { top: insets.top, height: visibleHeight }]}>
-          <Animated.Image
-            source={FULL_LOGO}
-            resizeMode="contain"
+          <Animated.View
             style={{
               width: size,
               height: size,
-              opacity: nativeLogoOpacity,
-              transform: [{ scale: nativeLogoScale }],
+              opacity: nativeOpacity,
+              transform: [{ translateY: nativeTranslateY }, { scale: nativeScale }],
             }}
-            accessibilityIgnoresInvertColors
-          />
+          >
+            <Image
+              source={FULL_LOGO}
+              resizeMode="contain"
+              style={styles.nativeLogo}
+              accessibilityIgnoresInvertColors
+            />
+          </Animated.View>
         </View>
       </View>
     );
@@ -249,6 +264,10 @@ const styles = StyleSheet.create({
     right: 0,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  nativeLogo: {
+    width: '100%',
+    height: '100%',
   },
   lockup: {
     position: 'relative',
