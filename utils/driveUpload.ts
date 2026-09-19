@@ -6,7 +6,7 @@ export type UploadResult = {
 };
 
 // Uploads a locally captured photo to the ALPFA NJIT Drive backend.
-export async function uploadPhotoToDrive(photoUri: string): Promise<UploadResult> {
+export async function uploadPhotoToDrive(photoUri: string, photoName: string): Promise<UploadResult> {
   if (PHOTO_UPLOAD_ENDPOINT.includes('REPLACE-WITH-YOUR-BACKEND-URL')) {
     return {
       success: false,
@@ -14,10 +14,17 @@ export async function uploadPhotoToDrive(photoUri: string): Promise<UploadResult
     };
   }
 
+  const safeName = photoName
+    .trim()
+    .replace(/[^a-zA-Z0-9 _-]/g, '')
+    .replace(/\s+/g, '-')
+    .slice(0, 60) || 'alpfa-photo';
+
   const formData = new FormData();
+  formData.append('photoName', safeName);
   formData.append('photo', {
     uri: photoUri,
-    name: `alpfa-njit-${Date.now()}.jpg`,
+    name: `${safeName}-${Date.now()}.jpg`,
     type: 'image/jpeg',
   } as unknown as Blob);
 
