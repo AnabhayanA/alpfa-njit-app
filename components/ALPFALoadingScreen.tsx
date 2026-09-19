@@ -13,8 +13,12 @@ type Props = { onAnimationComplete?: () => void };
 export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
   const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
-  const size = Math.min(width * 0.92, 390);
   const visibleHeight = Math.max(1, height - insets.top - insets.bottom);
+  const usableWidth = Math.max(1, width);
+  const size =
+    Platform.OS === 'web'
+      ? Math.min(usableWidth * 0.92, 390)
+      : Math.min(usableWidth * 0.88, visibleHeight * 0.55, 390);
 
   const redDraw = useRef(new Animated.Value(0)).current;
   const artworkReveal = useRef(new Animated.Value(0)).current;
