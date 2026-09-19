@@ -1,5 +1,5 @@
 import React from 'react';
-import { Animated } from 'react-native';
+import { Animated, Platform } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
 const AnimatedPath = Animated.createAnimatedComponent(Path);
@@ -15,6 +15,38 @@ type Props = {
 };
 
 export default function AnimatedALPFAMark({ progress, size }: Props) {
+  // react-native-svg animated path props are unreliable in Expo Go/native.
+  // Keep the traced path animation on web, and use a smooth native-safe
+  // fade/scale reveal for the same ALPFA mark in Expo Go.
+  if (Platform.OS !== 'web') {
+    const nativeOpacity = progress.interpolate({
+      inputRange: [0, 0.15, 1],
+      outputRange: [0, 0.25, 1],
+      extrapolate: 'clamp',
+    });
+
+    const nativeScale = progress.interpolate({
+      inputRange: [0, 1],
+      outputRange: [0.82, 1],
+      extrapolate: 'clamp',
+    });
+
+    return (
+      <Animated.View
+        style={{
+          width: size,
+          height: size,
+          opacity: nativeOpacity,
+          transform: [{ scale: nativeScale }],
+        }}
+      >
+        <Svg width={size} height={size} viewBox="0 0 500 500">
+          <Path d={ALPFA_RED_PATH} fill="#E02125" />
+        </Svg>
+      </Animated.View>
+    );
+  }
+
   const dashOffset = progress.interpolate({
     inputRange: [0, 0.78, 1],
     outputRange: [DASH_LENGTH, 0, 0],
