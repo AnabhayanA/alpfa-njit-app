@@ -1,3 +1,4 @@
+import { File } from 'expo-file-system';
 import { Platform } from 'react-native';
 import { PHOTO_UPLOAD_ENDPOINT, PHOTO_UPLOAD_API_KEY } from '../constants/config';
 
@@ -30,17 +31,10 @@ export async function uploadPhotoToDrive(photoUri: string, photoName: string): P
       const photoBlob = await photoResponse.blob();
       formData.append('photo', photoBlob, `${safeName}-${Date.now()}.jpg`);
     } else {
-      // React Native FormData expects its native file-part shape. Do not cast
-      // this object to Blob: newer Expo runtimes reject that as an unsupported
-      // FormDataPart before the request ever reaches the backend.
-      formData.append(
-        'photo',
-        {
-          uri: photoUri,
-          name: `${safeName}-${Date.now()}.jpg`,
-          type: 'image/jpeg',
-        } as any
-      );
+      // Expo's modern File object is a real Blob/FormDataPart. This avoids the
+      // unsupported plain { uri, name, type } object in newer native runtimes.
+      const photoFile = new File(photoUri);
+      formData.append('photo', photoFile, `${safeName}-${Date.now()}.jpg`);
     }
 
     const response = await fetch(PHOTO_UPLOAD_ENDPOINT, {
