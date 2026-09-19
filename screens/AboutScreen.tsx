@@ -83,11 +83,12 @@ export default function AboutScreen() {
         scrollEventThrottle={16}
       >
         <View style={[styles.hero, { paddingTop: insets.top + (responsive.isSmallPhone ? 20 : 24), paddingBottom: responsive.isSmallPhone ? 22 : 28, marginHorizontal: -responsive.horizontalPadding, paddingHorizontal: responsive.horizontalPadding + 20 }]}>
-          <View style={[styles.logoFrame, { width: responsive.isSmallPhone ? 96 : 116, height: responsive.isSmallPhone ? 96 : 116, borderRadius: responsive.isSmallPhone ? 22 : 28 }]}>
+          <View style={[styles.heroImageFrame, { height: responsive.isSmallPhone ? 180 : 220, borderRadius: responsive.isSmallPhone ? 20 : 26 }]}>
             <Image
-              source={require('../assets/images/ALPFANJITLOGO.png')}
-              style={styles.logo}
-              resizeMode="contain"
+              source={require('../assets/images/Alpfa-Eboard Group-pic.jpg')}
+              style={styles.heroImage}
+              resizeMode="cover"
+              accessibilityLabel="ALPFA NJIT executive board group photo"
             />
           </View>
           <Text style={[styles.title, { fontSize: responsive.isSmallPhone ? 24 : 28 }]}>ALPFA NJIT</Text>
@@ -130,6 +131,7 @@ export default function AboutScreen() {
           icon="logo-instagram"
           title="Instagram"
           subtitle="@alpfa_njit"
+          description="Follow chapter updates, event highlights, and announcements."
           onPress={() => openLink(LINKS.instagram)}
         />
         <LinkButton
@@ -137,6 +139,7 @@ export default function AboutScreen() {
           icon="logo-linkedin"
           title="LinkedIn"
           subtitle="ALPFA NJIT"
+          description="Build your professional network and see career-focused chapter news."
           onPress={() => openLink(LINKS.linkedin)}
         />
         <LinkButton
@@ -144,6 +147,7 @@ export default function AboutScreen() {
           icon="globe-outline"
           title="ALPFA NJIT Website"
           subtitle="nonnair.github.io/alpfa-njit"
+          description="Learn about the chapter, its events, leadership, and opportunities."
           onPress={() => openLink(LINKS.website)}
         />
         <LinkButton
@@ -151,6 +155,7 @@ export default function AboutScreen() {
           icon="business-outline"
           title="ALPFA National"
           subtitle="alpfa.org"
+          description="Explore national membership, programs, conventions, and career resources."
           onPress={() => openLink(LINKS.alpfa)}
         />
         <LinkButton
@@ -158,6 +163,7 @@ export default function AboutScreen() {
           icon="school-outline"
           title="Highlander Hub"
           subtitle="NJIT ALPFA organization"
+          description="Join the campus organization and find official NJIT event details."
           onPress={() => openLink(LINKS.highlander)}
         />
         <LinkButton
@@ -165,6 +171,7 @@ export default function AboutScreen() {
           icon="mail-outline"
           title="Email"
           subtitle="alpfanjit@gmail.com"
+          description="Contact the E-Board with questions, ideas, or collaboration requests."
           onPress={() => openLink(LINKS.email)}
         />
 
@@ -213,12 +220,14 @@ function LinkButton({
   icon,
   title,
   subtitle,
+  description,
   onPress,
   styles,
 }: {
   icon: keyof typeof Ionicons.glyphMap;
   title: string;
   subtitle: string;
+  description: string;
   onPress: () => void;
   styles: ReturnType<typeof createStyles>;
 }) {
@@ -230,6 +239,7 @@ function LinkButton({
       <View style={styles.linkContent}>
         <Text style={styles.linkTitle}>{title}</Text>
         <Text style={styles.linkSubtitle}>{subtitle}</Text>
+        <Text style={styles.linkDescription}>{description}</Text>
       </View>
       <Ionicons name="arrow-forward" size={18} color="#999999" />
     </TouchableOpacity>
@@ -260,11 +270,17 @@ const createStyles = (colors: ThemePalette, isDark: boolean) => StyleSheet.creat
     alignItems: 'center',
     paddingHorizontal: 20,
   },
-  logo: {
+  heroImage: {
     width: '100%',
     height: '100%',
   },
-  logoFrame: { backgroundColor: '#FFFFFF', padding: 9, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+  heroImageFrame: {
+    width: '100%',
+    maxWidth: 620,
+    backgroundColor: '#FFFFFF',
+    padding: 4,
+    overflow: 'hidden',
+  },
   title: {
     color: '#FFFFFF',
     fontSize: 28,
@@ -375,6 +391,12 @@ const createStyles = (colors: ThemePalette, isDark: boolean) => StyleSheet.creat
     color: colors.textMuted,
     fontSize: 11,
     marginTop: 3,
+  },
+  linkDescription: {
+    color: colors.textSecondary,
+    fontSize: 11,
+    lineHeight: 16,
+    marginTop: 5,
   },
   footer: {
     alignItems: 'center',
