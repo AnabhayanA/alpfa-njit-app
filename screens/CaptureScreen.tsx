@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Image, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Image, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { CameraType, CameraView, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
@@ -30,6 +30,7 @@ export default function CaptureScreen() {
   const [photoUri, setPhotoUri] = useState<string | null>(null);
   const [status, setStatus] = useState<'idle' | 'uploading' | 'done' | 'error'>('idle');
   const [statusMessage, setStatusMessage] = useState('');
+  const [photoName, setPhotoName] = useState('');
 
   useEffect(() => {
     const supported = Platform.OS === 'ios' && Boolean(AlpfaDualCameraModule?.isSupported());
@@ -45,6 +46,7 @@ export default function CaptureScreen() {
         setPhotoUri(null);
         setStatus('idle');
         setStatusMessage('');
+        setPhotoName('');
       };
     }, [])
   );
@@ -89,12 +91,19 @@ export default function CaptureScreen() {
     setPhotoUri(null);
     setStatus('idle');
     setStatusMessage('');
+    setPhotoName('');
   };
 
   const upload = async () => {
     if (!photoUri) return;
+    const cleanName = photoName.trim();
+    if (!cleanName) {
+      setStatus('error');
+      setStatusMessage('Give the photo a name before sharing it.');
+      return;
+    }
     setStatus('uploading');
-    const result = await uploadPhotoToDrive(photoUri);
+    const result = await uploadPhotoToDrive(photoUri, cleanName);
     if (result.success) {
       setStatus('done');
       setStatusMessage('Photo sent to the ALPFA NJIT Drive!');
@@ -145,6 +154,26 @@ export default function CaptureScreen() {
             </View>
           ) : (
             <>
+              <View style={styles.nameCard}>
+                <Text style={styles.nameLabel}>PHOTO NAME</Text>
+                <TextInput
+                  value={photoName}
+                  onChangeText={(value) => {
+                    setPhotoName(value);
+                    if (status === 'error') {
+                      setStatus('idle');
+                      setStatusMessage('');
+                    }
+                  }}
+                  placeholder="e.g. ALPFA Networking Night"
+                  placeholderTextColor="rgba(255,255,255,0.48)"
+                  style={styles.nameInput}
+                  maxLength={60}
+                  editable={status !== 'uploading'}
+                  returnKeyType="done"
+                />
+                <Text style={styles.nameHint}>Required before the photo can be shared.</Text>
+              </View>
               {status === 'error' && <Text style={styles.errorText}>{statusMessage}</Text>}
               <View style={styles.previewActions}>
                 <TouchableOpacity style={styles.secondaryButton} onPress={retake} disabled={status === 'uploading'}>
@@ -317,6 +346,17 @@ const createStyles = (colors: ReturnType<typeof useTheme>['colors']) =>
       paddingHorizontal: 24,
       backgroundColor: 'rgba(0,0,0,0.55)',
     },
+    nameCard: {
+      marginBottom: 14,
+      padding: 14,
+      borderRadius: 18,
+      backgroundColor: 'rgba(0,0,0,0.58)',
+      borderWidth: 1,
+      borderColor: 'rgba(255,255,255,0.18)',
+    },
+    nameLabel: { color: 'rgba(255,255,255,0.72)', fontSize: 10, fontWeight: '900', letterSpacing: 1.1, marginBottom: 7 },
+    nameInput: { color: '#FFFFFF', fontSize: 16, fontWeight: '700', paddingVertical: 8, paddingHorizontal: 0 },
+    nameHint: { color: 'rgba(255,255,255,0.55)', fontSize: 10, marginTop: 4 },
     previewActions: { flexDirection: 'row', gap: 12, justifyContent: 'center' },
     primaryButton: {
       flexDirection: 'row',
