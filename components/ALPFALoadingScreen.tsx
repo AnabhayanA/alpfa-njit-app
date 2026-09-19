@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Animated, Easing, Image, StyleSheet, View, useWindowDimensions } from 'react-native';
+import { Animated, Easing, Image, Platform, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AnimatedALPFAMark from './AnimatedALPFAMark';
 import NJITInstituteText from './NJITInstituteText';
@@ -23,8 +23,57 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
   const stageScale = useRef(new Animated.Value(1.12)).current;
   const exitScale = useRef(new Animated.Value(1)).current;
   const exitOpacity = useRef(new Animated.Value(1)).current;
+  const nativeLogoOpacity = useRef(new Animated.Value(0)).current;
+  const nativeLogoScale = useRef(new Animated.Value(0.78)).current;
 
   useEffect(() => {
+    if (Platform.OS !== 'web') {
+      const nativeIntro = Animated.sequence([
+        Animated.delay(250),
+        Animated.parallel([
+          Animated.timing(nativeLogoOpacity, {
+            toValue: 1,
+            duration: 900,
+            easing: Easing.out(Easing.cubic),
+            useNativeDriver: true,
+          }),
+          Animated.spring(nativeLogoScale, {
+            toValue: 1,
+            friction: 7,
+            tension: 55,
+            useNativeDriver: true,
+          }),
+        ]),
+        Animated.delay(2300),
+        Animated.timing(nativeLogoScale, {
+          toValue: 0.9,
+          duration: 180,
+          easing: Easing.out(Easing.quad),
+          useNativeDriver: true,
+        }),
+        Animated.parallel([
+          Animated.timing(nativeLogoScale, {
+            toValue: 8,
+            duration: 520,
+            easing: Easing.in(Easing.cubic),
+            useNativeDriver: true,
+          }),
+          Animated.timing(nativeLogoOpacity, {
+            toValue: 0,
+            duration: 500,
+            easing: Easing.in(Easing.quad),
+            useNativeDriver: true,
+          }),
+        ]),
+      ]);
+
+      nativeIntro.start(({ finished }) => {
+        if (finished) onAnimationComplete?.();
+      });
+
+      return () => nativeIntro.stop();
+    }
+
     const intro = Animated.sequence([
       Animated.delay(350),
       Animated.timing(redDraw, {
@@ -95,7 +144,27 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
       intro.stop();
       clearTimeout(exitTimer);
     };
-  }, [artworkReveal, exitOpacity, exitScale, njitOpacity, njitX, onAnimationComplete, redDraw, stageScale]);
+  }, [artworkReveal, exitOpacity, exitScale, nativeLogoOpacity, nativeLogoScale, njitOpacity, njitX, onAnimationComplete, redDraw, stageScale]);
+
+  if (Platform.OS !== 'web') {
+    return (
+      <View style={styles.root} pointerEvents="auto">
+        <View style={[styles.centerStage, { top: insets.top, height: visibleHeight }]}>
+          <Animated.Image
+            source={FULL_LOGO}
+            resizeMode="contain"
+            style={{
+              width: size,
+              height: size,
+              opacity: nativeLogoOpacity,
+              transform: [{ scale: nativeLogoScale }],
+            }}
+            accessibilityIgnoresInvertColors
+          />
+        </View>
+      </View>
+    );
+  }
 
   const revealWidth = artworkReveal.interpolate({
     inputRange: [0, 1],
