@@ -25,7 +25,7 @@ const ICAL_URL = `https://calendar.google.com/calendar/ical/${CALENDAR_ID}/publi
 // Google's calendar host doesn't send CORS headers, so a direct browser fetch
 // to ICAL_URL would fail; on native there's no CORS restriction so we can
 // fetch it directly.
-const WEB_CALENDAR_PROXY_PATH = '/api/calendar';
+const WEB_CALENDAR_PROXY_PATH = 'http://localhost:3000/api/calendar';
 
 // Candidate URLs to try in order for the current platform.
 function getCandidateUrls(): string[] {
