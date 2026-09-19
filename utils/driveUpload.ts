@@ -1,3 +1,4 @@
+import { Platform } from 'react-native';
 import { PHOTO_UPLOAD_ENDPOINT, PHOTO_UPLOAD_API_KEY } from '../constants/config';
 
 export type UploadResult = {
@@ -22,13 +23,26 @@ export async function uploadPhotoToDrive(photoUri: string, photoName: string): P
 
   const formData = new FormData();
   formData.append('photoName', safeName);
-  formData.append('photo', {
-    uri: photoUri,
-    name: `${safeName}-${Date.now()}.jpg`,
-    type: 'image/jpeg',
-  } as unknown as Blob);
 
   try {
+    if (Platform.OS === 'web') {
+      const photoResponse = await fetch(photoUri);
+      const photoBlob = await photoResponse.blob();
+      formData.append('photo', photoBlob, `${safeName}-${Date.now()}.jpg`);
+    } else {
+      // React Native FormData expects its native file-part shape. Do not cast
+      // this object to Blob: newer Expo runtimes reject that as an unsupported
+      // FormDataPart before the request ever reaches the backend.
+      formData.append(
+        'photo',
+        {
+          uri: photoUri,
+          name: `${safeName}-${Date.now()}.jpg`,
+          type: 'image/jpeg',
+        } as any
+      );
+    }
+
     const response = await fetch(PHOTO_UPLOAD_ENDPOINT, {
       method: 'POST',
       body: formData,
