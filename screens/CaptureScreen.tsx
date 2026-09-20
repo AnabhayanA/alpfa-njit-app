@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, useWindowDimensions } from 'react-native';
+import { ActivityIndicator, Image, Keyboard, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, useWindowDimensions } from 'react-native';
 import { CameraType, CameraView, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
@@ -235,7 +235,12 @@ export default function CaptureScreen() {
           <Ionicons name="close" size={22} color="#FFFFFF" />
         </TouchableOpacity>
 
-        <View style={[styles.previewFooter, { paddingBottom: insets.bottom + 24 }]}>
+        <View
+          style={[
+            styles.previewFooter,
+            { paddingBottom: nameFocused ? 12 : insets.bottom + 24 },
+          ]}
+        >
           {status === 'done' ? (
             <View style={styles.centered}>
               <Ionicons name="checkmark-circle" size={40} color="#4ADE80" />
@@ -246,7 +251,7 @@ export default function CaptureScreen() {
             </View>
           ) : (
             <>
-              <View style={styles.previewFilterPicker}>
+              {!nameFocused && <View style={styles.previewFilterPicker}>
                 <Text style={styles.previewFilterLabel}>CHOOSE A FILTER</Text>
                 <ScrollView
                   horizontal
@@ -267,7 +272,7 @@ export default function CaptureScreen() {
                     </TouchableOpacity>
                   ))}
                 </ScrollView>
-              </View>
+              </View>}
               <View style={[styles.nameCard, nameFocused && styles.nameCardFocused]}>
                 <Text style={styles.nameLabel}>PHOTO NAME</Text>
                 <TextInput
@@ -287,11 +292,15 @@ export default function CaptureScreen() {
                   maxLength={60}
                   editable={status !== 'uploading'}
                   returnKeyType="done"
+                  blurOnSubmit
+                  onSubmitEditing={Keyboard.dismiss}
                 />
-                <Text style={styles.nameHint}>Required before the photo can be shared.</Text>
+                <Text style={styles.nameHint}>
+                  {nameFocused ? 'Type the name, then tap Done.' : 'Required before the photo can be shared.'}
+                </Text>
               </View>
               {status === 'error' && <Text style={styles.errorText}>{statusMessage}</Text>}
-              <View style={styles.previewActions}>
+              {!nameFocused && <View style={styles.previewActions}>
                 <TouchableOpacity style={styles.secondaryButton} onPress={retake} disabled={status === 'uploading'}>
                   <Ionicons name="refresh" size={18} color="#FFFFFF" />
                   <Text style={styles.secondaryButtonText}>Retake</Text>
@@ -310,7 +319,7 @@ export default function CaptureScreen() {
                     </>
                   )}
                 </TouchableOpacity>
-              </View>
+              </View>}
             </>
           )}
         </View>
@@ -483,8 +492,10 @@ const createStyles = (colors: ReturnType<typeof useTheme>['colors']) =>
     },
     nameLabel: { color: 'rgba(255,255,255,0.72)', fontSize: 10, fontWeight: '900', letterSpacing: 1.1, marginBottom: 7 },
     nameCardFocused: {
-      borderColor: 'rgba(255,255,255,0.72)',
+      borderColor: '#FFFFFF',
       borderWidth: 1.5,
+      backgroundColor: 'rgba(0,0,0,0.88)',
+      marginBottom: 0,
     },
     nameInput: {
       color: '#FFFFFF',
