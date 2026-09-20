@@ -87,8 +87,25 @@ export default function CaptureScreen() {
   const [statusMessage, setStatusMessage] = useState('');
   const [photoName, setPhotoName] = useState('');
   const [nameFocused, setNameFocused] = useState(false);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [selectedFilter, setSelectedFilter] = useState('Normal');
   const cameraFilters = ['Normal', 'Warm', 'Cool', 'B&W', 'Vintage', 'ALPFA'];
+
+  useEffect(() => {
+    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+    const showSubscription = Keyboard.addListener(showEvent, (event) => {
+      setKeyboardHeight(event.endCoordinates.height);
+    });
+    const hideSubscription = Keyboard.addListener(hideEvent, () => {
+      setKeyboardHeight(0);
+    });
+
+    return () => {
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
+  }, []);
 
   useEffect(() => {
     const supported = Platform.OS === 'ios' && Boolean(AlpfaDualCameraModule?.isSupported());
@@ -225,11 +242,7 @@ export default function CaptureScreen() {
 
   if (photoUri) {
     return (
-      <KeyboardAvoidingView
-        style={styles.container}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={0}
-      >
+      <View style={styles.container}>
         <FilteredPhotoPreview uri={photoUri} filter={selectedFilter} canvasRef={filteredCanvasRef} />
         <TouchableOpacity style={[styles.closeButton, { top: insets.top + 12 }]} onPress={close}>
           <Ionicons name="close" size={22} color="#FFFFFF" />
@@ -238,7 +251,10 @@ export default function CaptureScreen() {
         <View
           style={[
             styles.previewFooter,
-            { paddingBottom: nameFocused ? 12 : insets.bottom + 24 },
+            {
+              bottom: keyboardHeight,
+              paddingBottom: nameFocused ? 12 : insets.bottom + 24,
+            },
           ]}
         >
           {status === 'done' ? (
@@ -323,7 +339,7 @@ export default function CaptureScreen() {
             </>
           )}
         </View>
-      </KeyboardAvoidingView>
+      </View>
     );
   }
 
@@ -475,7 +491,6 @@ const createStyles = (colors: ReturnType<typeof useTheme>['colors']) =>
     shutterInner: { width: 58, height: 58, borderRadius: 29, backgroundColor: '#FFFFFF', borderWidth: 2, borderColor: '#FFFFFF' },
     previewFooter: {
       position: 'absolute',
-      bottom: 0,
       left: 0,
       right: 0,
       paddingTop: 20,
