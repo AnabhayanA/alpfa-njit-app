@@ -90,7 +90,7 @@ const BOARD_MEMBERS = [
     whyAlpfa: "ALPFA immediately became my family and continues to provide a supportive community where members can grow together.",
     role: "Support chapter leadership, grow membership, and help preserve the quality and family-centered culture of ALPFA NJIT.",
   },
-    {
+  {
     name: 'Angelo Bustamante',
     position: 'Treasurer',
     major: 'Web and Information Systems',
@@ -152,13 +152,13 @@ const BOARD_MEMBERS = [
     'Chapter President',
     'Vice President',
     'Secretary',
+    'Treasurer',
     'Director of Professional Development',
     'Director of Marketing Operations',
     'Director Of Membership',
     'Director of Community Service',
     'Director of Events',
     'Director of Fundraising',
-    
     'Director Of IT',
     'IT Committee Member',
   ];
