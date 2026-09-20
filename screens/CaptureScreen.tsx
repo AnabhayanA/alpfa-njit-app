@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Image, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { CameraType, CameraView, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
@@ -32,6 +32,8 @@ export default function CaptureScreen() {
   const [statusMessage, setStatusMessage] = useState('');
   const [photoName, setPhotoName] = useState('');
   const [nameFocused, setNameFocused] = useState(false);
+  const [selectedFilter, setSelectedFilter] = useState('Normal');
+  const cameraFilters = ['Normal', 'Warm', 'Cool', 'B&W', 'Vintage', 'ALPFA'];
 
   useEffect(() => {
     const supported = Platform.OS === 'ios' && Boolean(AlpfaDualCameraModule?.isSupported());
@@ -262,6 +264,27 @@ export default function CaptureScreen() {
       )}
 
       <View style={[styles.captureBar, { paddingBottom: insets.bottom + 24 }]}>
+        {!dualMode && (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.filterRow}
+          >
+            {cameraFilters.map((filter) => (
+              <TouchableOpacity
+                key={filter}
+                style={[styles.filterChip, selectedFilter === filter && styles.filterChipSelected]}
+                onPress={() => setSelectedFilter(filter)}
+                accessibilityRole="button"
+                accessibilityState={{ selected: selectedFilter === filter }}
+              >
+                <Text style={[styles.filterText, selectedFilter === filter && styles.filterTextSelected]}>
+                  {filter}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        )}
         <Text style={styles.hintText}>
           {cameraMessage || (dualMode ? 'Front + rear photo · shared to the ALPFA NJIT Drive' : 'Photos are shared to the ALPFA NJIT Google Drive')}
         </Text>
@@ -334,6 +357,11 @@ const createStyles = (colors: ReturnType<typeof useTheme>['colors']) =>
       paddingTop: 18,
       backgroundColor: 'rgba(10,10,10,0.72)',
     },
+    filterRow: { paddingHorizontal: 18, gap: 8, paddingBottom: 14 },
+    filterChip: { paddingHorizontal: 14, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.12)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.18)' },
+    filterChipSelected: { backgroundColor: '#FFFFFF', borderColor: '#FFFFFF' },
+    filterText: { color: 'rgba(255,255,255,0.72)', fontSize: 11, fontWeight: '800' },
+    filterTextSelected: { color: '#111111' },
     hintText: { color: 'rgba(255,255,255,0.85)', fontSize: 11, marginBottom: 16, textAlign: 'center', paddingHorizontal: 24 },
     cameraActions: { width: '100%', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around', paddingHorizontal: 28 },
     galleryButton: { width: 52, height: 52, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.16)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.22)' },
