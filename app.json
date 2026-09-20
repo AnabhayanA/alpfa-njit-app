@@ -33,7 +33,8 @@
           "cameraPermission": "Allow ALPFA NJIT to access your camera to share photos to the chapter's Google Drive."
         }
       ],
-      "expo-font"
+      "expo-font",
+      "expo-asset"
     ]
   }
 }
