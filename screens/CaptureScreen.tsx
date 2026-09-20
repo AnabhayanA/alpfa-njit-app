@@ -226,9 +226,13 @@ export default function CaptureScreen() {
         <CameraView
           ref={cameraRef}
           style={StyleSheet.absoluteFill}
+          key={facing}
           facing={facing}
           mirror={facing === 'front'}
-          onCameraReady={() => setCameraReady(true)}
+          onCameraReady={() => {
+            setCameraReady(true);
+            setCameraMessage('');
+          }}
         />
       )}
       <TouchableOpacity style={[styles.closeButton, { top: insets.top + 12 }]} onPress={close}>
