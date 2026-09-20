@@ -90,6 +90,17 @@ const BOARD_MEMBERS = [
     whyAlpfa: "ALPFA immediately became my family and continues to provide a supportive community where members can grow together.",
     role: "Support chapter leadership, grow membership, and help preserve the quality and family-centered culture of ALPFA NJIT.",
   },
+    {
+    name: 'Angelo Bustamante',
+    position: 'Treasurer',
+    major: 'Web and Information Systems',
+    classYear: 'NJIT',
+    image: require('../assets/images/Angelo-Bustamante.jpg'),
+    bio: 'I am a senior studying Web and Information Systems, I am half Uruguayan and half peruvian ',
+    goal: 'To keep all finances organized and manage the budget responsibly, and help increase funding for the future ',
+    whyAlpfa: '',
+    role: "Responsible for managing the chapter's finances, budgeting, and financial planning to ensure the organization's sustainability and growth."
+  },
   {
     name: 'Andrey Diaz-Ortega',
     position: 'Director of Community Service',
