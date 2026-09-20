@@ -3,7 +3,8 @@ import { ActivityIndicator, Image, KeyboardAvoidingView, Platform, ScrollView, S
 import { CameraType, CameraView, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
-import { Canvas, ColorMatrix, Image as SkiaImage, useImage } from '@shopify/react-native-skia';
+import { Canvas, ColorMatrix, Image as SkiaImage, ImageFormat, useCanvasRef, useImage } from '@shopify/react-native-skia';
+import { File, Paths } from 'expo-file-system';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import useTheme from '../utils/useTheme';
@@ -47,7 +48,7 @@ const FILTER_MATRICES: Record<string, number[]> = {
   ],
 };
 
-function FilteredPhotoPreview({ uri, filter }: { uri: string; filter: string }) {
+function FilteredPhotoPreview({ uri, filter, canvasRef }: { uri: string; filter: string; canvasRef: ReturnType<typeof useCanvasRef> }) {
   const image = useImage(uri);
   const { width, height } = useWindowDimensions();
 
@@ -58,7 +59,7 @@ function FilteredPhotoPreview({ uri, filter }: { uri: string; filter: string }) 
   }
 
   return (
-    <Canvas style={StyleSheet.absoluteFill}>
+    <Canvas ref={canvasRef} style={StyleSheet.absoluteFill}>
       <SkiaImage image={image} x={0} y={0} width={width} height={height} fit="cover">
         <ColorMatrix matrix={matrix} />
       </SkiaImage>
@@ -73,6 +74,7 @@ export default function CaptureScreen() {
   const styles = React.useMemo(() => createStyles(colors), [colors]);
 
   const cameraRef = useRef<CameraView>(null);
+  const filteredCanvasRef = useCanvasRef();
   const dualCameraRef = useRef<AlpfaDualCameraViewRef>(null);
   const [permission, requestPermission] = useCameraPermissions();
   const [cameraReady, setCameraReady] = useState(false);
@@ -164,7 +166,32 @@ export default function CaptureScreen() {
       return;
     }
     setStatus('uploading');
-    const result = await uploadPhotoToDrive(photoUri, cleanName);
+
+    let uploadUri = photoUri;
+    if (selectedFilter !== 'Normal') {
+      try {
+        const snapshot = await filteredCanvasRef.current?.makeImageSnapshotAsync();
+        if (!snapshot) {
+          setStatus('error');
+          setStatusMessage('The filtered photo could not be prepared. Please try again.');
+          return;
+        }
+
+        const bytes = snapshot.encodeToBytes(ImageFormat.JPEG, 92);
+        const filteredFile = new File(
+          Paths.cache,
+          `alpfa-filtered-${Date.now()}.jpg`
+        );
+        filteredFile.write(bytes);
+        uploadUri = filteredFile.uri;
+      } catch {
+        setStatus('error');
+        setStatusMessage('The filtered photo could not be prepared. Please try again.');
+        return;
+      }
+    }
+
+    const result = await uploadPhotoToDrive(uploadUri, cleanName);
     if (result.success) {
       setStatus('done');
       setStatusMessage('Photo sent to the ALPFA NJIT Drive!');
@@ -203,7 +230,7 @@ export default function CaptureScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={0}
       >
-        <FilteredPhotoPreview uri={photoUri} filter={selectedFilter} />
+        <FilteredPhotoPreview uri={photoUri} filter={selectedFilter} canvasRef={filteredCanvasRef} />
         <TouchableOpacity style={[styles.closeButton, { top: insets.top + 12 }]} onPress={close}>
           <Ionicons name="close" size={22} color="#FFFFFF" />
         </TouchableOpacity>
