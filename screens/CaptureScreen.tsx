@@ -14,25 +14,53 @@ import {
   type AlpfaDualCameraViewRef,
 } from '../modules/alpfa-dual-camera';
 
-const BLACK_AND_WHITE_MATRIX = [
-  0.2126, 0.7152, 0.0722, 0, 0,
-  0.2126, 0.7152, 0.0722, 0, 0,
-  0.2126, 0.7152, 0.0722, 0, 0,
-  0, 0, 0, 1, 0,
-];
+const FILTER_MATRICES: Record<string, number[]> = {
+  Warm: [
+    1.12, 0.05, 0, 0, 0.03,
+    0.02, 1.03, 0, 0, 0.01,
+    0, 0.02, 0.88, 0, 0,
+    0, 0, 0, 1, 0,
+  ],
+  Cool: [
+    0.88, 0.02, 0.05, 0, 0,
+    0, 1.02, 0.04, 0, 0.01,
+    0.02, 0.04, 1.14, 0, 0.03,
+    0, 0, 0, 1, 0,
+  ],
+  'B&W': [
+    0.2126, 0.7152, 0.0722, 0, 0,
+    0.2126, 0.7152, 0.0722, 0, 0,
+    0.2126, 0.7152, 0.0722, 0, 0,
+    0, 0, 0, 1, 0,
+  ],
+  Vintage: [
+    0.393, 0.769, 0.189, 0, 0,
+    0.349, 0.686, 0.168, 0, 0,
+    0.272, 0.534, 0.131, 0, 0,
+    0, 0, 0, 1, 0,
+  ],
+  ALPFA: [
+    0.95, 0.08, 0.02, 0, 0.02,
+    0.01, 0.82, 0.03, 0, 0,
+    0.08, 0.02, 0.92, 0, 0.02,
+    0, 0, 0, 1, 0,
+  ],
+};
 
 function FilteredPhotoPreview({ uri, filter }: { uri: string; filter: string }) {
   const image = useImage(uri);
   const { width, height } = useWindowDimensions();
 
-  if (filter !== 'B&W' || !image) {
+  const matrix = FILTER_MATRICES[filter];
+
+  if (!matrix || !image) {
     return <Image source={{ uri }} style={StyleSheet.absoluteFill} resizeMode="cover" />;
   }
 
   return (
     <Canvas style={StyleSheet.absoluteFill}>
       <SkiaImage image={image} x={0} y={0} width={width} height={height} fit="cover">
-        <ColorMatrix matrix={BLACK_AND_WHITE_MATRIX} />
+        <ColorMatrix matrix={matrix} />
       </SkiaImage>
     </Canvas>
   );
