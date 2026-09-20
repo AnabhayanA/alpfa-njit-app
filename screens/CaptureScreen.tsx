@@ -114,6 +114,7 @@ export default function CaptureScreen() {
       quality: 0.9,
     });
     if (!result.canceled && result.assets[0]?.uri) {
+      setSelectedFilter('Normal');
       setPhotoUri(result.assets[0].uri);
       setStatus('idle');
       setStatusMessage('');
@@ -126,7 +127,10 @@ export default function CaptureScreen() {
       const photo = dualMode
         ? await dualCameraRef.current?.capture()
         : await cameraRef.current?.takePictureAsync({ quality: 0.85 });
-      if (photo?.uri) setPhotoUri(photo.uri);
+      if (photo?.uri) {
+        setSelectedFilter('Normal');
+        setPhotoUri(photo.uri);
+      }
     } catch {
       setCameraMessage('The photo could not be captured. Please try again.');
     }
@@ -144,6 +148,7 @@ export default function CaptureScreen() {
   };
 
   const retake = () => {
+    setSelectedFilter('Normal');
     setPhotoUri(null);
     setStatus('idle');
     setStatusMessage('');
@@ -214,6 +219,28 @@ export default function CaptureScreen() {
             </View>
           ) : (
             <>
+              <View style={styles.previewFilterPicker}>
+                <Text style={styles.previewFilterLabel}>CHOOSE A FILTER</Text>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.filterRow}
+                >
+                  {cameraFilters.map((filter) => (
+                    <TouchableOpacity
+                      key={filter}
+                      style={[styles.filterChip, selectedFilter === filter && styles.filterChipSelected]}
+                      onPress={() => setSelectedFilter(filter)}
+                      accessibilityRole="button"
+                      accessibilityState={{ selected: selectedFilter === filter }}
+                    >
+                      <Text style={[styles.filterText, selectedFilter === filter && styles.filterTextSelected]}>
+                        {filter}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
               <View style={[styles.nameCard, nameFocused && styles.nameCardFocused]}>
                 <Text style={styles.nameLabel}>PHOTO NAME</Text>
                 <TextInput
@@ -317,27 +344,6 @@ export default function CaptureScreen() {
       )}
 
       <View style={[styles.captureBar, { paddingBottom: insets.bottom + 24 }]}>
-        {!dualMode && (
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.filterRow}
-          >
-            {cameraFilters.map((filter) => (
-              <TouchableOpacity
-                key={filter}
-                style={[styles.filterChip, selectedFilter === filter && styles.filterChipSelected]}
-                onPress={() => setSelectedFilter(filter)}
-                accessibilityRole="button"
-                accessibilityState={{ selected: selectedFilter === filter }}
-              >
-                <Text style={[styles.filterText, selectedFilter === filter && styles.filterTextSelected]}>
-                  {filter}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        )}
         <Text style={styles.hintText}>
           {cameraMessage || (dualMode ? 'Front + rear photo · shared to the ALPFA NJIT Drive' : 'Photos are shared to the ALPFA NJIT Google Drive')}
         </Text>
@@ -410,7 +416,9 @@ const createStyles = (colors: ReturnType<typeof useTheme>['colors']) =>
       paddingTop: 18,
       backgroundColor: 'rgba(10,10,10,0.72)',
     },
-    filterRow: { paddingHorizontal: 18, gap: 8, paddingBottom: 14 },
+    previewFilterPicker: { marginBottom: 12 },
+    previewFilterLabel: { color: 'rgba(255,255,255,0.72)', fontSize: 10, fontWeight: '900', letterSpacing: 1.1, marginBottom: 8, paddingHorizontal: 2 },
+    filterRow: { gap: 8, paddingBottom: 6 },
     filterChip: { paddingHorizontal: 14, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.12)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.18)' },
     filterChipSelected: { backgroundColor: '#FFFFFF', borderColor: '#FFFFFF' },
     filterText: { color: 'rgba(255,255,255,0.72)', fontSize: 11, fontWeight: '800' },
