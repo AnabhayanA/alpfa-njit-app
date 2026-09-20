@@ -1,6 +1,5 @@
 // Calendar utility functions for parsing Google Calendar events
 
-import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export interface CalendarEvent {
@@ -18,21 +17,11 @@ export interface GroupedEvents {
   [monthKey: string]: CalendarEvent[];
 }
 
-const CALENDAR_ID = 'alpfanjit%40gmail.com';
-const ICAL_URL = `https://calendar.google.com/calendar/ical/${CALENDAR_ID}/public/basic.ics`;
-// Relative path so it always matches whatever origin/port is serving the page
-// (the dev proxy in scripts/web-proxy.mjs handles it under that same origin).
-// Google's calendar host doesn't send CORS headers, so a direct browser fetch
-// to ICAL_URL would fail; on native there's no CORS restriction so we can
-// fetch it directly.
-const WEB_CALENDAR_PROXY_PATH = 'http://localhost:3000/api/calendar';
+const CALENDAR_BACKEND_URL =
+  'https://alpfa-njit-backend.alpfanjit.workers.dev/calendar';
 
-// Candidate URLs to try in order for the current platform.
 function getCandidateUrls(): string[] {
-  if (Platform.OS === 'web') {
-    return [WEB_CALENDAR_PROXY_PATH, ICAL_URL];
-  }
-  return [ICAL_URL];
+  return [CALENDAR_BACKEND_URL];
 }
 
 // Parse iCal format events
@@ -270,7 +259,7 @@ export function groupEventsByMonth(events: CalendarEvent[]): GroupedEvents {
   return grouped;
 }
 
-// Fetch calendar events, trying each candidate URL (with retries) in order.
+// Fetch calendar events from the Cloudflare backend with retries.
 export async function fetchCalendarEvents(): Promise<CalendarEvent[]> {
   const MAX_RETRIES_PER_URL = 2;
   const TIMEOUT_MS = 10000;
@@ -286,30 +275,32 @@ export async function fetchCalendarEvents(): Promise<CalendarEvent[]> {
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
-        const response = await fetch(url, {
-          method: 'GET',
-          headers: {
-            Accept: 'text/calendar,text/plain,*/*',
-          },
-          signal: controller.signal,
-        });
+        try {
+          const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+              Accept: 'text/calendar,text/plain,*/*',
+            },
+            signal: controller.signal,
+          });
 
-        clearTimeout(timeout);
+          if (!response.ok) {
+            throw new Error(`Calendar request failed: ${response.status}`);
+          }
 
-        if (!response.ok) {
-          throw new Error(`Calendar request failed: ${response.status}`);
+          const text = await response.text();
+
+          if (!text.includes('BEGIN:VCALENDAR')) {
+            throw new Error('Invalid calendar response');
+          }
+
+          const events = parseICalData(text);
+          console.log(`Successfully loaded ${events.length} calendar events from ${url}.`);
+          await cacheEvents(events);
+          return events;
+        } finally {
+          clearTimeout(timeout);
         }
-
-        const text = await response.text();
-
-        if (!text.includes('BEGIN:VCALENDAR')) {
-          throw new Error('Invalid calendar response');
-        }
-
-        const events = parseICalData(text);
-        console.log(`Successfully loaded ${events.length} calendar events from ${url}.`);
-        await cacheEvents(events);
-        return events;
       } catch (error) {
         lastError = error;
         console.warn(`Calendar fetch from ${url} attempt ${attempt} failed:`, error);
@@ -369,4 +360,3 @@ export async function getCachedEvents(): Promise<{ events: CalendarEvent[]; save
     return null;
   }
 }
-
