@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, useWindowDimensions } from 'react-native';
 import { CameraType, CameraView, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
+import { Canvas, ColorMatrix, Image as SkiaImage, useImage } from '@shopify/react-native-skia';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import useTheme from '../utils/useTheme';
@@ -12,6 +13,30 @@ import {
   AlpfaDualCameraView,
   type AlpfaDualCameraViewRef,
 } from '../modules/alpfa-dual-camera';
+
+const BLACK_AND_WHITE_MATRIX = [
+  0.2126, 0.7152, 0.0722, 0, 0,
+  0.2126, 0.7152, 0.0722, 0, 0,
+  0.2126, 0.7152, 0.0722, 0, 0,
+  0, 0, 0, 1, 0,
+];
+
+function FilteredPhotoPreview({ uri, filter }: { uri: string; filter: string }) {
+  const image = useImage(uri);
+  const { width, height } = useWindowDimensions();
+
+  if (filter !== 'B&W' || !image) {
+    return <Image source={{ uri }} style={StyleSheet.absoluteFill} resizeMode="cover" />;
+  }
+
+  return (
+    <Canvas style={StyleSheet.absoluteFill}>
+      <SkiaImage image={image} x={0} y={0} width={width} height={height} fit="cover">
+        <ColorMatrix matrix={BLACK_AND_WHITE_MATRIX} />
+      </SkiaImage>
+    </Canvas>
+  );
+}
 
 export default function CaptureScreen() {
   const navigation = useNavigation();
@@ -145,7 +170,7 @@ export default function CaptureScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={0}
       >
-        <Image source={{ uri: photoUri }} style={StyleSheet.absoluteFill} resizeMode="cover" />
+        <FilteredPhotoPreview uri={photoUri} filter={selectedFilter} />
         <TouchableOpacity style={[styles.closeButton, { top: insets.top + 12 }]} onPress={close}>
           <Ionicons name="close" size={22} color="#FFFFFF" />
         </TouchableOpacity>
