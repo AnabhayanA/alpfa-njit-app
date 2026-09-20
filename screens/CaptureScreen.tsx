@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Image, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Image, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { CameraType, CameraView, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
@@ -31,6 +31,7 @@ export default function CaptureScreen() {
   const [status, setStatus] = useState<'idle' | 'uploading' | 'done' | 'error'>('idle');
   const [statusMessage, setStatusMessage] = useState('');
   const [photoName, setPhotoName] = useState('');
+  const [nameFocused, setNameFocused] = useState(false);
 
   useEffect(() => {
     const supported = Platform.OS === 'ios' && Boolean(AlpfaDualCameraModule?.isSupported());
@@ -137,7 +138,11 @@ export default function CaptureScreen() {
 
   if (photoUri) {
     return (
-      <View style={styles.container}>
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={0}
+      >
         <Image source={{ uri: photoUri }} style={StyleSheet.absoluteFill} resizeMode="cover" />
         <TouchableOpacity style={[styles.closeButton, { top: insets.top + 12 }]} onPress={close}>
           <Ionicons name="close" size={22} color="#FFFFFF" />
@@ -154,7 +159,7 @@ export default function CaptureScreen() {
             </View>
           ) : (
             <>
-              <View style={styles.nameCard}>
+              <View style={[styles.nameCard, nameFocused && styles.nameCardFocused]}>
                 <Text style={styles.nameLabel}>PHOTO NAME</Text>
                 <TextInput
                   value={photoName}
@@ -168,6 +173,8 @@ export default function CaptureScreen() {
                   placeholder="e.g. ALPFA Networking Night"
                   placeholderTextColor="rgba(255,255,255,0.48)"
                   style={styles.nameInput}
+                  onFocus={() => setNameFocused(true)}
+                  onBlur={() => setNameFocused(false)}
                   maxLength={60}
                   editable={status !== 'uploading'}
                   returnKeyType="done"
@@ -198,7 +205,7 @@ export default function CaptureScreen() {
             </>
           )}
         </View>
-      </View>
+      </KeyboardAvoidingView>
     );
   }
 
@@ -355,7 +362,19 @@ const createStyles = (colors: ReturnType<typeof useTheme>['colors']) =>
       borderColor: 'rgba(255,255,255,0.18)',
     },
     nameLabel: { color: 'rgba(255,255,255,0.72)', fontSize: 10, fontWeight: '900', letterSpacing: 1.1, marginBottom: 7 },
-    nameInput: { color: '#FFFFFF', fontSize: 16, fontWeight: '700', paddingVertical: 8, paddingHorizontal: 0 },
+    nameCardFocused: {
+      borderColor: 'rgba(255,255,255,0.72)',
+      borderWidth: 1.5,
+    },
+    nameInput: {
+      color: '#FFFFFF',
+      fontSize: 16,
+      fontWeight: '700',
+      paddingVertical: 10,
+      paddingHorizontal: 0,
+      borderBottomWidth: 1,
+      borderBottomColor: 'rgba(255,255,255,0.42)',
+    },
     nameHint: { color: 'rgba(255,255,255,0.55)', fontSize: 10, marginTop: 4 },
     previewActions: { flexDirection: 'row', gap: 12, justifyContent: 'center' },
     primaryButton: {
