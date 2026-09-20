@@ -20,11 +20,14 @@ const Tab = createBottomTabNavigator();
 function SwipeableScreen({ children, navigation, route }: any) {
   const routes = ['Home', 'Events', 'Capture', 'EBoard', 'About'];
   const index = routes.indexOf(route.name);
+  const swipeDisabled = route.name === 'Capture';
   const panResponder = React.useMemo(
     () =>
       PanResponder.create({
         onMoveShouldSetPanResponder: (_, gesture) =>
-          Math.abs(gesture.dx) > 18 && Math.abs(gesture.dx) > Math.abs(gesture.dy) * 1.8,
+          !swipeDisabled &&
+          Math.abs(gesture.dx) > 18 &&
+          Math.abs(gesture.dx) > Math.abs(gesture.dy) * 1.8,
         onPanResponderRelease: (_, gesture) => {
           const isSwipe = Math.abs(gesture.dx) > 70 || Math.abs(gesture.vx) > 0.55;
           if (!isSwipe) return;
@@ -32,7 +35,7 @@ function SwipeableScreen({ children, navigation, route }: any) {
           if (gesture.dx > 0 && index > 0) navigation.navigate(routes[index - 1]);
         },
       }),
-    [index, navigation]
+    [index, navigation, swipeDisabled]
   );
 
   return (
