@@ -33,6 +33,52 @@ const WEB_FILTERS: Record<string, string> = {
   ALPFA: 'contrast(1.08) saturate(1.22) hue-rotate(-8deg)',
 };
 
+async function prepareWebPhoto(uri: string, filter: string, locationLabel?: string, locationPosition?: { x: number; y: number }) {
+  const response = await fetch(uri);
+  const sourceBlob = await response.blob();
+  const objectUrl = URL.createObjectURL(sourceBlob);
+  try {
+    const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const img = document.createElement('img');
+      img.onload = () => resolve(img);
+      img.onerror = () => reject(new Error('Could not load the selected photo.'));
+      img.src = objectUrl;
+    });
+
+    const canvas = document.createElement('canvas');
+    canvas.width = image.naturalWidth || image.width;
+    canvas.height = image.naturalHeight || image.height;
+    const context = canvas.getContext('2d');
+    if (!context) throw new Error('Could not prepare the photo.');
+
+    context.filter = WEB_FILTERS[filter] || 'none';
+    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+    context.filter = 'none';
+
+    if (locationLabel && locationPosition) {
+      const scaleX = canvas.width / Math.max(window.innerWidth, 1);
+      const scaleY = canvas.height / Math.max(window.innerHeight, 1);
+      const fontSize = Math.max(19 * scaleX, 19);
+      const x = locationPosition.x * scaleX;
+      const y = (locationPosition.y + 24) * scaleY;
+      context.font = `900 ${fontSize}px sans-serif`;
+      context.textBaseline = 'alphabetic';
+      context.lineWidth = Math.max(4 * scaleX, 3);
+      context.strokeStyle = 'rgba(0,0,0,0.78)';
+      context.strokeText(locationLabel, x, y);
+      context.fillStyle = '#FFFFFF';
+      context.fillText(locationLabel, x, y);
+    }
+
+    const outputBlob = await new Promise<Blob>((resolve, reject) => {
+      canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error('Could not encode the photo.')), 'image/jpeg', 0.92);
+    });
+    return URL.createObjectURL(outputBlob);
+  } finally {
+    URL.revokeObjectURL(objectUrl);
+  }
+}
+
 const locationFont = Platform.OS === 'web' ? null : matchFont({
   fontFamily: Platform.OS === 'ios' ? 'Helvetica' : 'sans-serif',
   fontSize: 19,
@@ -207,7 +253,22 @@ export default function CaptureScreen() {
     if (!cleanName) { setStatus('error'); setStatusMessage('Give the photo a name before sharing it.'); return; }
     setStatus('uploading');
     let uploadUri = photoUri;
-    if (Platform.OS !== 'web' && (selectedFilter !== 'Normal' || photoLocation)) {
+    let webPreparedUri: string | null = null;
+    if (Platform.OS === 'web' && (selectedFilter !== 'Normal' || photoLocation)) {
+      try {
+        webPreparedUri = await prepareWebPhoto(
+          photoUri,
+          selectedFilter,
+          photoLocation?.label,
+          locationPosition
+        );
+        uploadUri = webPreparedUri;
+      } catch {
+        setStatus('error');
+        setStatusMessage('The filtered photo could not be prepared. Please try again.');
+        return;
+      }
+    } else if (Platform.OS !== 'web' && (selectedFilter !== 'Normal' || photoLocation)) {
       try {
         const snapshot = await filteredCanvasRef.current?.makeImageSnapshotAsync();
         if (!snapshot) { setStatus('error'); setStatusMessage('The photo could not be prepared. Please try again.'); return; }
@@ -218,6 +279,7 @@ export default function CaptureScreen() {
       } catch { setStatus('error'); setStatusMessage('The photo could not be prepared. Please try again.'); return; }
     }
     const result = await uploadPhotoToDrive(uploadUri, cleanName);
+    if (webPreparedUri) URL.revokeObjectURL(webPreparedUri);
     if (result.success) { setStatus('done'); setStatusMessage('Photo sent to the ALPFA NJIT Drive!'); }
     else { setStatus('error'); setStatusMessage(result.message || 'Something went wrong. Try again.'); }
   };
