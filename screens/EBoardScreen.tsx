@@ -88,7 +88,7 @@ const BOARD_MEMBERS = [
     name: 'Andrea Camila Pardo',
     position: 'Vice President',
     major: 'Data Science, Statistics Track',
-    classYear: 'Junior',
+    classYear: '2027',
     image: require('../assets/images/Andrea-Camila-Pardo.jpg'),
     linkedin: 'https://www.linkedin.com/in/andreacpardo/',
     bio: "I was born and raised in Ecuador. I am a Data Science major in the Statistics track, and I am also an EOP and McNair scholar. I met ALPFA and it immediately became my family, and I have not left since then.",
