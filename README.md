@@ -1,129 +1,261 @@
 # ALPFA NJIT App
 
-A mobile app for the **ALPFA NJIT** chapter (Association of Latino Professionals For America, NJIT chapter) built with [Expo](https://expo.dev) and React Native. The app gives members and prospective members a single place to see upcoming events, meet the E-Board, learn about the organization, and join.
+The official mobile app project for **ALPFA at New Jersey Institute of Technology**. Built with Expo, React Native, and TypeScript, the app gives chapter members one place to discover events, meet the E-Board, learn about ALPFA NJIT, and share chapter photos.
 
-## Purpose
+> **Project status:** Core features are implemented and working. The next phase is final animation, visual polish, QA, and production-build preparation.
 
-ALPFA NJIT connects students with professional development, networking, leadership, and career opportunities. This app exists to make that easier by putting the chapter's most useful information in students' pockets:
+## What the app does
 
-- **Never miss an event** — events pull live from the chapter's public Google Calendar, and members can opt in to a local reminder notification before an event starts.
-- **Know the leadership** — an interactive E-Board directory with flip-card profiles (bio, goals, role, and social links) for each officer.
-- **Learn about the chapter** — mission, how to get involved, and links to all of ALPFA NJIT's official channels.
-- **Join in one tap** — quick links to Highlander Hub, social media, and the chapter website.
-- **Look right on every device** — a responsive layout that adapts to phone/tablet sizes, and a full light/dark theme that automatically follows the device's system appearance setting.
+### Home
+A chapter-focused landing experience with quick access to ALPFA NJIT content and the main areas of the app.
 
-## Features
+### Events & Google Calendar
+- Displays upcoming ALPFA NJIT events from the chapter calendar.
+- Shows event date, time, location, and details.
+- Supports local event reminders with `expo-notifications`.
+- Calendar requests use the deployed backend so the feature works consistently across supported platforms.
 
-- 📅 **Live events feed** — parses the ALPFA NJIT public iCal/Google Calendar feed, groups events by month, and shows date/time/location/description (`utils/calendarUtils.ts`).
-- 🔔 **Event reminders** — a "Notify Me" toggle on each event card schedules a local notification ~30 minutes before the event starts, using `expo-notifications` with reminder state persisted via `@react-native-async-storage/async-storage` (`utils/eventNotifications.ts`).
-- 🧑‍🤝‍🧑 **E-Board directory** — animated 3D flip cards for each officer with headshot, position, bio, goals, and LinkedIn/Instagram/email links.
-- 🌗 **Light & dark mode** — a `useTheme()` hook (`utils/useTheme.ts`) reads the system color scheme and every screen renders from a shared light/dark color palette (`constants/theme.ts`).
-- 📱 **Responsive layout** — a `useResponsive()` hook (`utils/responsive.ts`) adapts padding, font sizes, and grid columns for small phones, phones, and tablets.
-- 🔗 **Deep links out** — one-tap links to the chapter website, Instagram, LinkedIn, Highlander Hub, and email.
-- 📸 **Photo capture to Drive** — an in-app camera (Home → "Share a Photo") lets members snap a photo and send it straight to the ALPFA NJIT Google Drive. Supported iPhones can capture the front and rear cameras together as one picture-in-picture photo.
+### E-Board
+- Directory of the current ALPFA NJIT E-Board.
+- Officer photos, positions, graduation years, bios, goals, and role information.
+- LinkedIn links for E-Board members.
+- Interactive profile/card experience.
 
-## Tech Stack
+### Capture & Share
+The Capture screen is built for sharing chapter photos directly to the ALPFA NJIT Google Drive.
 
-- [Expo](https://expo.dev) SDK 57 with a local iOS Expo module
-- React 19 / React Native 0.86
-- TypeScript
-- React Navigation (bottom tabs + a root stack for the modal camera screen)
-- `expo-camera` for the in-app photo capture screen
-- `expo-notifications` for local event reminders
-- `@react-native-async-storage/async-storage` for persisting reminder state
-- `react-native-web` for the web preview build
+Current features include:
+- Take a photo in-app or choose one from the photo library.
+- Front/rear camera switching.
+- Native iPhone dual-camera support on compatible devices/builds.
+- Photo naming before upload.
+- Filters: **Normal, Warm, Cool, B&W, Vintage, and ALPFA**.
+- Filtered images are rendered with React Native Skia before upload.
+- Optional photo location.
+- Location permission is requested only after the user chooses **Add Location**.
+- An in-app confirmation explains that the location will be attached to the photo.
+- Reverse geocoding converts coordinates into a readable city/region label instead of displaying raw coordinates.
+- The location label can be removed before sharing.
+- The location label can be dragged to a preferred position on the photo.
+- The selected location position is composited into the uploaded JPEG.
+- Photos upload to the chapter's Google Shared Drive through the deployed backend.
 
-## Project Structure
+### Navigation & UI
+- Bottom navigation: **Home, Events, Capture, EBoard, About**.
+- Swipe navigation between regular screens; Capture disables global swiping so camera/photo gestures remain usable.
+- Responsive React Native layout.
+- Shared ALPFA NJIT visual theme.
+- Loading/splash experience already exists and is scheduled for final animation polish.
 
+## Tech stack
+
+| Area | Technology |
+| --- | --- |
+| App | Expo SDK 57 |
+| UI | React 19 + React Native 0.86 |
+| Language | TypeScript |
+| Navigation | React Navigation |
+| Animation | React Native Reanimated |
+| Image rendering | React Native Skia |
+| Camera | Expo Camera |
+| Photo library | Expo Image Picker |
+| Location | Expo Location |
+| Notifications | Expo Notifications |
+| Local persistence | AsyncStorage |
+| File handling | Expo File System |
+| Backend | Cloudflare Worker |
+| Calendar | Google Calendar through backend |
+| Photo storage | Google Drive / Shared Drive |
+| Native iOS camera | Swift MultiCam module |
+
+## Architecture
+
+```text
+ALPFA NJIT App
+│
+├── Home / Events / EBoard / About
+│
+├── Google Calendar
+│   └── App → Cloudflare Worker → Calendar data
+│
+└── Capture
+    ├── Expo Camera / Photo Library
+    ├── Skia filters + location composition
+    └── App → Cloudflare Worker → Google Shared Drive
 ```
-App.tsx                  App entry: splash screen, theme, and tab navigator
-app.json                 Expo app config (icons, splash, notification plugin, etc.)
+
+Google OAuth credentials and Drive authorization are **not stored in the mobile app or this repository**. The deployed backend handles the Google integration.
+
+## Project structure
+
+```text
+App.tsx
+app.json
 components/
-  BottomNav.tsx           Custom animated bottom tab bar
-  EventCard.tsx           Flip card for a single event + reminder toggle
-  EBoardCard.tsx          Flip card for a single E-Board member
+  ALPFALoadingScreen.tsx
+  BottomNav.tsx
+  EventCard.tsx
+  EBoardCard.tsx
 constants/
-  theme.ts                Design tokens: light/dark color palettes, spacing, typography
+  config.ts
+  theme.ts
 screens/
-  HomeScreen.tsx           Landing screen with quick links and highlights
-  EventsScreen.tsx         Upcoming events grouped by month
-  EventDetailsScreen.tsx   Full event detail view
-  EBoardScreen.tsx         E-Board member directory
-  AboutScreen.tsx          Chapter mission and social links
-  JoinScreen.tsx           How to join ALPFA NJIT
-  CaptureScreen.tsx        In-app camera that uploads photos to Google Drive
+  HomeScreen.tsx
+  EventsScreen.tsx
+  EBoardScreen.tsx
+  AboutScreen.tsx
+  CaptureScreen.tsx
 modules/
-  alpfa-dual-camera/        Swift iOS MultiCam preview and composite capture
+  alpfa-dual-camera/
 utils/
-  calendarUtils.ts         Fetches and parses the public Google Calendar feed
-  eventNotifications.ts    Schedules/cancels local event reminder notifications
-  useTheme.ts              Hook that returns the active light/dark color palette
-  responsive.ts            Hook for responsive spacing/sizing across device sizes
-  driveUpload.ts           Uploads a captured photo to the photo-upload backend
+  calendarUtils.ts
+  driveUpload.ts
+  eventNotifications.ts
+  responsive.ts
+  ThemeContext.tsx
+  useTheme.ts
 scripts/
-  web-proxy.mjs            Local dev proxy so the web build can reach the calendar feed
-server/
-  index.js                 Backend that uploads received photos to Google Drive (see server/README.md)
+  web-proxy.mjs
 ```
 
-## Getting Started
+The Cloudflare Worker used by the production integrations is deployed separately and is intentionally not stored in this repository.
 
-### Prerequisites
+## Getting started
 
-- [Node.js](https://nodejs.org/) LTS
-- npm (bundled with Node)
-- [Expo Go](https://expo.dev/go) on your phone (for the fastest way to preview on a device)
+### Requirements
 
-### Install dependencies
+- Node.js LTS
+- npm
+- Expo Go for normal development/testing
+- A physical device for camera/location testing
+
+Install dependencies:
 
 ```bash
 npm install
 ```
 
-### Run the app
+Start Expo:
 
 ```bash
-npm start       # Starts the Expo dev server (scan the QR code with Expo Go)
-npm run android # Opens on a connected Android device/emulator
-npm run ios     # Opens on an iOS simulator (macOS only)
-npm run web     # Runs a local web preview with a small proxy for calendar data
+npx expo start
 ```
 
-Expo Go can run the rest of the app, but it cannot load the custom Swift dual-camera module. For dual-camera testing, install EAS CLI, sign in, and make an iPhone development build:
+If Metro needs a clean restart:
+
+```bash
+npx expo start -c
+```
+
+Other available commands:
+
+```bash
+npm run android
+npm run ios
+npm run web
+```
+
+> Windows cannot run Apple's iOS Simulator. An iPhone with Expo Go can be used for normal testing.
+
+## Expo Go vs development/production builds
+
+Most of the app can be developed and tested with **Expo Go**, including navigation, events, filters, photo uploads, and location behavior.
+
+The custom Swift dual-camera module cannot be loaded by Expo Go. Dual-camera functionality requires an iOS development or production build and a compatible physical iPhone.
+
+A development build can be created with EAS:
 
 ```bash
 npx eas-cli build --profile development --platform ios
 npx expo start --dev-client
 ```
 
-Install the resulting build on a physical iPhone. The iOS simulator has no real cameras and cannot test this feature.
+Native-module changes require a new native build; Fast Refresh cannot load new Swift code into an existing client.
 
-## Notifications
+## Photo upload flow
 
-Event reminders are **local (in-app) notifications** — no push server or backend required. The first time a user taps "Notify Me" on an event, the app requests notification permission, then schedules a one-time reminder for 30 minutes before the event start. Reminder state is stored on-device and cleared automatically if canceled.
+```text
+Take/select photo
+      ↓
+Choose filter
+      ↓
+Enter photo name
+      ↓
+Optionally Add Location
+      ↓
+User confirms location use
+      ↓
+OS permission requested if needed
+      ↓
+Readable location label added and positioned
+      ↓
+Skia creates final JPEG when composition is needed
+      ↓
+Cloudflare Worker validates request
+      ↓
+Google Drive upload
+```
 
-## Theming
+The upload backend includes request validation, image signature/type validation, a file-size limit, filename sanitization, and rate limiting. A client-side API key can provide a basic request hurdle, but it should not be treated as a secret because values shipped in a mobile app can be extracted.
 
-Colors live in `constants/theme.ts` as `lightPalette` and `darkPalette`. Brand colors (navy header, burgundy accent) stay constant in both modes since they already read well on light or dark backgrounds; only neutral backgrounds, surfaces, and text colors switch. Screens and components read the active palette via the `useTheme()` hook, so the whole app updates immediately if the user changes their system appearance.
+## Privacy & permissions
 
-## Photo Capture → Google Drive
+The app requests permissions only for features that need them:
 
-Members can capture a photo in-app (Home → "Share a Photo") and send it to a Google Drive folder connected to the ALPFA email. The app never holds Google credentials directly — it POSTs the photo to a small backend in `server/`, which uploads it to Drive using a service account. See `server/README.md` for full setup, deployment, and security hardening details (rate limiting, content-type verification, API key), then update `constants/config.ts` with your deployed backend URL.
+- **Camera** — taking chapter photos.
+- **Photo library** — selecting an existing photo.
+- **Notifications** — reminders explicitly requested by the user.
+- **Location** — requested only when the user chooses to add a location to a photo.
 
-### iPhone dual camera
+Adding a location is optional. Declining location permission does not prevent a photo from being shared. The photo uses a readable place label rather than displaying raw latitude/longitude.
 
-The app asks iOS for normal camera permission. On a physical iPhone, the Swift module checks `AVCaptureMultiCamSession.isMultiCamSupported` at runtime. Supported models open in **DUAL** mode with the rear camera full-screen and a mirrored front-camera inset. Pressing the shutter takes the latest frames from the same MultiCam session and creates one portrait JPEG, so previewing and sharing to Drive continue to use the existing flow.
+The app does not require an ALPFA member login for its current feature set.
 
-The **DUAL / SINGLE** control lets a user switch modes. On an unsupported iPhone, Android, Expo Go, or when native setup fails, the control is omitted and the existing `expo-camera` front/back experience remains available. Native module changes require a new development or production build; Fast Refresh alone cannot load new Swift code.
+## Google Drive integration
 
-## Privacy
+The mobile app does not contain Google client secrets or refresh tokens. It sends the prepared photo to the deployed Cloudflare Worker, and the Worker performs the authorized Google Drive upload.
 
-The app is intentionally low-data: there's no account/login, no analytics or trackers, and no personal information is collected. `@react-native-async-storage/async-storage` is used only to store, on-device, which events a user has set reminders for and a cached copy of the last successful calendar fetch (so the Events screen isn't blank offline) — both stay on the device and are never sent anywhere. Notification permission is only used to deliver the reminders a user explicitly opts into. Photos sent from the Capture tab go straight to ALPFA NJIT's Drive and aren't used for anything else. The upload backend's request logs may include the client's IP address (standard for any web server/host), but the app itself doesn't collect or transmit device/analytics data.
+The destination is the ALPFA NJIT Shared Drive/folder configured on the backend.
 
-## Content Source
+## Calendar integration
 
-Event data is pulled from ALPFA NJIT's public Google Calendar. E-Board member info, bios, and mission content are maintained directly in the source files under `screens/` and can be updated each semester as officers change.
+Calendar data is fetched through the deployed backend rather than relying on a browser-only calendar request. This keeps the Events experience consistent between native and web environments.
+
+## Native iPhone dual camera
+
+The project includes a local Swift module under `modules/alpfa-dual-camera/`. On supported iPhones, it uses Apple's MultiCam capabilities to provide a front + rear capture experience.
+
+When the native module is unavailable—such as in Expo Go or on an unsupported device—the app falls back to the standard single-camera experience.
+
+## Current development checklist
+
+- [x] Main navigation
+- [x] Home screen
+- [x] Google Calendar events
+- [x] Event reminders
+- [x] E-Board profiles and LinkedIn links
+- [x] About experience
+- [x] Camera and photo-library capture
+- [x] Google Drive photo uploads
+- [x] Photo naming
+- [x] Photo filters
+- [x] Optional location consent
+- [x] Draggable location label
+- [x] Location composited into uploaded photo
+- [x] Backend upload validation and rate limiting
+- [x] iPhone dual-camera module with graceful fallback
+- [ ] Final loading/splash animation polish
+- [ ] Final cross-device QA
+- [ ] Production iOS/Android build preparation
+
+## Next phase
+
+The next development session is focused on **animation and visual polish**, especially the ALPFA + NJIT Highlander opening animation. After that, the remaining work is final QA and production-build preparation.
+
+## Maintainers
+
+Built for the **ALPFA NJIT chapter**.
 
 ## License
 
-This project is maintained by and for the ALPFA NJIT chapter.
+This project is maintained by and for ALPFA NJIT.
