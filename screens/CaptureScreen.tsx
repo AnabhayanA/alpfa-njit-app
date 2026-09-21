@@ -1,10 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Image, Keyboard, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, useWindowDimensions } from 'react-native';
+import { ActivityIndicator, Alert, Image, Keyboard, PanResponder, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, useWindowDimensions } from 'react-native';
 import { CameraType, CameraView, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
 import { Ionicons } from '@expo/vector-icons';
-import { Canvas, ColorMatrix, Image as SkiaImage, ImageFormat, useCanvasRef, useImage } from '@shopify/react-native-skia';
+import { Canvas, ColorMatrix, Image as SkiaImage, ImageFormat, Text as SkiaText, matchFont, useCanvasRef, useImage } from '@shopify/react-native-skia';
 import { File, Paths } from 'expo-file-system';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -49,21 +49,60 @@ const FILTER_MATRICES: Record<string, number[]> = {
   ],
 };
 
-function FilteredPhotoPreview({ uri, filter, canvasRef }: { uri: string; filter: string; canvasRef: ReturnType<typeof useCanvasRef> }) {
+const locationFont = matchFont({
+  fontFamily: Platform.OS === 'ios' ? 'Helvetica' : 'sans-serif',
+  fontSize: 19,
+  fontWeight: 'bold',
+});
+
+function FilteredPhotoPreview({
+  uri,
+  filter,
+  canvasRef,
+  locationLabel,
+  locationPosition,
+}: {
+  uri: string;
+  filter: string;
+  canvasRef: ReturnType<typeof useCanvasRef>;
+  locationLabel?: string;
+  locationPosition: { x: number; y: number };
+}) {
   const image = useImage(uri);
   const { width, height } = useWindowDimensions();
-
   const matrix = FILTER_MATRICES[filter];
 
-  if (!matrix || !image) {
+  if (!image) {
+    return <Image source={{ uri }} style={StyleSheet.absoluteFill} resizeMode="cover" />;
+  }
+
+  if (!matrix && !locationLabel) {
     return <Image source={{ uri }} style={StyleSheet.absoluteFill} resizeMode="cover" />;
   }
 
   return (
     <Canvas ref={canvasRef} style={StyleSheet.absoluteFill}>
       <SkiaImage image={image} x={0} y={0} width={width} height={height} fit="cover">
-        <ColorMatrix matrix={matrix} />
+        {matrix && <ColorMatrix matrix={matrix} />}
       </SkiaImage>
+      {locationLabel && (
+        <>
+          <SkiaText
+            x={locationPosition.x + 1.5}
+            y={locationPosition.y + 25.5}
+            text={locationLabel}
+            font={locationFont}
+            color="rgba(0,0,0,0.78)"
+          />
+          <SkiaText
+            x={locationPosition.x}
+            y={locationPosition.y + 24}
+            text={locationLabel}
+            font={locationFont}
+            color="#FFFFFF"
+          />
+        </>
+      )}
     </Canvas>
   );
 }
@@ -73,6 +112,7 @@ export default function CaptureScreen() {
   const insets = useSafeAreaInsets();
   const { colors } = useTheme();
   const styles = React.useMemo(() => createStyles(colors), [colors]);
+  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
 
   const cameraRef = useRef<CameraView>(null);
   const filteredCanvasRef = useCanvasRef();
@@ -97,7 +137,22 @@ export default function CaptureScreen() {
   } | null>(null);
   const [locationLoading, setLocationLoading] = useState(false);
   const [locationMessage, setLocationMessage] = useState('');
+  const [locationPosition, setLocationPosition] = useState({ x: 28, y: 420 });
   const cameraFilters = ['Normal', 'Warm', 'Cool', 'B&W', 'Vintage', 'ALPFA'];
+
+  const locationPanResponder = React.useMemo(
+    () =>
+      PanResponder.create({
+        onStartShouldSetPanResponder: () => true,
+        onMoveShouldSetPanResponder: () => true,
+        onPanResponderMove: (event) => {
+          const x = Math.max(16, Math.min(event.nativeEvent.pageX - 70, screenWidth - 170));
+          const y = Math.max(insets.top + 70, Math.min(event.nativeEvent.pageY - 22, screenHeight - 300));
+          setLocationPosition({ x, y });
+        },
+      }),
+    [insets.top, screenHeight, screenWidth]
+  );
 
   useEffect(() => {
     const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
@@ -224,6 +279,7 @@ export default function CaptureScreen() {
         ? [place.city, place.region].filter(Boolean).join(', ')
         : 'Current location';
 
+      setLocationPosition({ x: 28, y: Math.max(insets.top + 100, screenHeight * 0.5) });
       setPhotoLocation({ latitude, longitude, label: label || 'Current location' });
     } catch {
       setLocationMessage('Location could not be added. You can still share the photo without it.');
@@ -248,12 +304,12 @@ export default function CaptureScreen() {
     setStatus('uploading');
 
     let uploadUri = photoUri;
-    if (selectedFilter !== 'Normal') {
+    if (selectedFilter !== 'Normal' || photoLocation) {
       try {
         const snapshot = await filteredCanvasRef.current?.makeImageSnapshotAsync();
         if (!snapshot) {
           setStatus('error');
-          setStatusMessage('The filtered photo could not be prepared. Please try again.');
+          setStatusMessage('The photo could not be prepared. Please try again.');
           return;
         }
 
@@ -266,7 +322,7 @@ export default function CaptureScreen() {
         uploadUri = filteredFile.uri;
       } catch {
         setStatus('error');
-        setStatusMessage('The filtered photo could not be prepared. Please try again.');
+        setStatusMessage('The photo could not be prepared. Please try again.');
         return;
       }
     }
@@ -306,10 +362,22 @@ export default function CaptureScreen() {
   if (photoUri) {
     return (
       <View style={styles.container}>
-        <FilteredPhotoPreview uri={photoUri} filter={selectedFilter} canvasRef={filteredCanvasRef} />
-        {photoLocation && (
-          <View style={[styles.photoLocationStamp, { bottom: nameFocused ? keyboardHeight + 170 : 330 }]} pointerEvents="none">
-            <Ionicons name="location" size={17} color="#FFFFFF" />
+        <FilteredPhotoPreview
+          uri={photoUri}
+          filter={selectedFilter}
+          canvasRef={filteredCanvasRef}
+          locationLabel={photoLocation?.label}
+          locationPosition={locationPosition}
+        />
+        {photoLocation && status !== 'done' && (
+          <View
+            style={[
+              styles.photoLocationStamp,
+              { left: locationPosition.x - 8, top: locationPosition.y - 8 },
+            ]}
+            {...locationPanResponder.panHandlers}
+          >
+            <Ionicons name="location" size={19} color="#FFFFFF" />
             <Text style={styles.photoLocationStampText}>{photoLocation.label}</Text>
           </View>
         )}
@@ -657,21 +725,23 @@ const createStyles = (colors: ReturnType<typeof useTheme>['colors']) =>
     locationMessage: { color: 'rgba(255,255,255,0.72)', fontSize: 11, textAlign: 'center', marginTop: -4, marginBottom: 10, lineHeight: 16 },
     photoLocationStamp: {
       position: 'absolute',
-      left: 20,
       zIndex: 8,
-      maxWidth: '78%',
-      minHeight: 42,
-      paddingHorizontal: 14,
-      paddingVertical: 10,
-      borderRadius: 999,
+      maxWidth: '82%',
+      minHeight: 44,
+      paddingHorizontal: 8,
+      paddingVertical: 8,
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 7,
-      backgroundColor: 'rgba(0,0,0,0.68)',
-      borderWidth: 1,
-      borderColor: 'rgba(255,255,255,0.28)',
+      gap: 6,
     },
-    photoLocationStampText: { color: '#FFFFFF', fontSize: 14, fontWeight: '900' },
+    photoLocationStampText: {
+      color: '#FFFFFF',
+      fontSize: 19,
+      fontWeight: '900',
+      textShadowColor: 'rgba(0,0,0,0.8)',
+      textShadowOffset: { width: 1.5, height: 1.5 },
+      textShadowRadius: 3,
+    },
     previewActions: { flexDirection: 'row', gap: 12, justifyContent: 'center' },
     primaryButton: {
       flexDirection: 'row',
