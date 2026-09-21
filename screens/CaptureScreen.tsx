@@ -49,11 +49,13 @@ const FILTER_MATRICES: Record<string, number[]> = {
   ],
 };
 
-const locationFont = matchFont({
-  fontFamily: Platform.OS === 'ios' ? 'Helvetica' : 'sans-serif',
-  fontSize: 19,
-  fontWeight: 'bold',
-});
+const locationFont = Platform.OS === 'web'
+  ? null
+  : matchFont({
+      fontFamily: Platform.OS === 'ios' ? 'Helvetica' : 'sans-serif',
+      fontSize: 19,
+      fontWeight: 'bold',
+    });
 
 function FilteredPhotoPreview({
   uri,
@@ -85,7 +87,7 @@ function FilteredPhotoPreview({
       <SkiaImage image={image} x={0} y={0} width={width} height={height} fit="cover">
         {matrix && <ColorMatrix matrix={matrix} />}
       </SkiaImage>
-      {locationLabel && (
+      {locationLabel && locationFont && (
         <>
           <SkiaText
             x={locationPosition.x + 1.5}
