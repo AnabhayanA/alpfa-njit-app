@@ -15,22 +15,23 @@ type Props = {
 };
 
 export default function AnimatedALPFAMark({ progress, size }: Props) {
-  // react-native-svg animated path props are unreliable in Expo Go/native.
-  // Keep the traced path animation on web, and use a smooth native-safe
-  // fade/scale reveal for the same ALPFA mark in Expo Go.
-  if (Platform.OS !== 'web') {
-    const nativeOpacity = progress.interpolate({
-      inputRange: [0, 0.15, 1],
-      outputRange: [0, 0.25, 1],
-      extrapolate: 'clamp',
-    });
+  const nativeOpacity = progress.interpolate({
+    inputRange: [0, 0.15, 1],
+    outputRange: [0, 0.25, 1],
+    extrapolate: 'clamp',
+  });
 
-    const nativeScale = progress.interpolate({
-      inputRange: [0, 1],
-      outputRange: [0.82, 1],
-      extrapolate: 'clamp',
-    });
+  const nativeScale = progress.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.82, 1],
+    extrapolate: 'clamp',
+  });
 
+  // Web currently renders this splash reliably using the same fade/scale
+  // reveal as native. The react-native-svg AnimatedPath props below can throw
+  // on web, so avoid that path there until we move the traced draw effect to a
+  // browser-safe implementation.
+  if (Platform.OS === 'web') {
     return (
       <Animated.View
         style={{
@@ -50,38 +51,23 @@ export default function AnimatedALPFAMark({ progress, size }: Props) {
     );
   }
 
-  const dashOffset = progress.interpolate({
-    inputRange: [0, 0.78, 1],
-    outputRange: [DASH_LENGTH, 0, 0],
-    extrapolate: 'clamp',
-  });
-
-  const fillOpacity = progress.interpolate({
-    inputRange: [0, 0.68, 0.88, 1],
-    outputRange: [0, 0, 0.72, 1],
-    extrapolate: 'clamp',
-  });
-
-  const strokeOpacity = progress.interpolate({
-    inputRange: [0, 0.08, 0.88, 1],
-    outputRange: [0, 1, 1, 0.22],
-    extrapolate: 'clamp',
-  });
-
+  // react-native-svg animated path props are unreliable in Expo Go/native.
+  // Keep a smooth native-safe fade/scale reveal for the same ALPFA mark.
   return (
-    <Svg width={size} height={size} viewBox="0 0 500 500">
-      <AnimatedPath
-        d={ALPFA_RED_PATH}
-        fill="#E02125"
-        fillOpacity={fillOpacity}
-        stroke="#F22B31"
-        strokeOpacity={strokeOpacity}
-        strokeWidth={3.2}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeDasharray={`${DASH_LENGTH} ${DASH_LENGTH}`}
-        strokeDashoffset={dashOffset}
-      />
-    </Svg>
+    <Animated.View
+      style={{
+        position: 'absolute',
+        left: 0,
+        top: 0,
+        width: size,
+        height: size,
+        opacity: nativeOpacity,
+        transform: [{ scale: nativeScale }],
+      }}
+    >
+      <Svg width={size} height={size} viewBox="0 0 500 500">
+        <Path d={ALPFA_RED_PATH} fill="#E02125" />
+      </Svg>
+    </Animated.View>
   );
 }
