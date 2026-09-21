@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Image, Keyboard, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, useWindowDimensions } from 'react-native';
 import { CameraType, CameraView, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
+import * as Location from 'expo-location';
 import { Ionicons } from '@expo/vector-icons';
 import { Canvas, ColorMatrix, Image as SkiaImage, ImageFormat, useCanvasRef, useImage } from '@shopify/react-native-skia';
 import { File, Paths } from 'expo-file-system';
@@ -89,6 +90,13 @@ export default function CaptureScreen() {
   const [nameFocused, setNameFocused] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [selectedFilter, setSelectedFilter] = useState('Normal');
+  const [photoLocation, setPhotoLocation] = useState<{
+    latitude: number;
+    longitude: number;
+    label: string;
+  } | null>(null);
+  const [locationLoading, setLocationLoading] = useState(false);
+  const [locationMessage, setLocationMessage] = useState('');
   const cameraFilters = ['Normal', 'Warm', 'Cool', 'B&W', 'Vintage', 'ALPFA'];
 
   useEffect(() => {
@@ -122,6 +130,8 @@ export default function CaptureScreen() {
         setStatus('idle');
         setStatusMessage('');
         setPhotoName('');
+        setPhotoLocation(null);
+        setLocationMessage('');
       };
     }, [])
   );
@@ -134,6 +144,8 @@ export default function CaptureScreen() {
     });
     if (!result.canceled && result.assets[0]?.uri) {
       setSelectedFilter('Normal');
+      setPhotoLocation(null);
+      setLocationMessage('');
       setPhotoUri(result.assets[0].uri);
       setStatus('idle');
       setStatusMessage('');
@@ -148,6 +160,8 @@ export default function CaptureScreen() {
         : await cameraRef.current?.takePictureAsync({ quality: 0.85 });
       if (photo?.uri) {
         setSelectedFilter('Normal');
+        setPhotoLocation(null);
+        setLocationMessage('');
         setPhotoUri(photo.uri);
       }
     } catch {
@@ -172,6 +186,44 @@ export default function CaptureScreen() {
     setStatus('idle');
     setStatusMessage('');
     setPhotoName('');
+    setPhotoLocation(null);
+    setLocationMessage('');
+  };
+
+  const addLocation = async () => {
+    try {
+      setLocationLoading(true);
+      setLocationMessage('');
+
+      const { status: permissionStatus } = await Location.requestForegroundPermissionsAsync();
+
+      if (permissionStatus !== 'granted') {
+        setLocationMessage('Location permission was not granted. You can still share the photo without a location.');
+        return;
+      }
+
+      const currentLocation = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Balanced,
+      });
+
+      const { latitude, longitude } = currentLocation.coords;
+      const places = await Location.reverseGeocodeAsync({ latitude, longitude });
+      const place = places[0];
+      const label = place
+        ? [place.city, place.region].filter(Boolean).join(', ')
+        : 'Current location';
+
+      setPhotoLocation({ latitude, longitude, label: label || 'Current location' });
+    } catch {
+      setLocationMessage('Location could not be added. You can still share the photo without it.');
+    } finally {
+      setLocationLoading(false);
+    }
+  };
+
+  const removeLocation = () => {
+    setPhotoLocation(null);
+    setLocationMessage('');
   };
 
   const upload = async () => {
@@ -315,6 +367,50 @@ export default function CaptureScreen() {
                   {nameFocused ? 'Type the name, then tap Done.' : 'Required before the photo can be shared.'}
                 </Text>
               </View>
+              {!nameFocused && (
+                <View style={styles.locationCard}>
+                  {photoLocation ? (
+                    <>
+                      <View style={styles.locationInfo}>
+                        <Ionicons name="location" size={18} color="#FFFFFF" />
+                        <View style={styles.locationTextWrap}>
+                          <Text style={styles.locationLabel}>LOCATION ADDED</Text>
+                          <Text style={styles.locationValue}>{photoLocation.label}</Text>
+                        </View>
+                      </View>
+                      <TouchableOpacity
+                        style={styles.removeLocationButton}
+                        onPress={removeLocation}
+                        disabled={status === 'uploading'}
+                        accessibilityRole="button"
+                        accessibilityLabel="Remove location from photo"
+                      >
+                        <Ionicons name="close" size={17} color="#FFFFFF" />
+                      </TouchableOpacity>
+                    </>
+                  ) : (
+                    <TouchableOpacity
+                      style={styles.addLocationButton}
+                      onPress={addLocation}
+                      disabled={locationLoading || status === 'uploading'}
+                      accessibilityRole="button"
+                      accessibilityLabel="Add current location to photo"
+                    >
+                      {locationLoading ? (
+                        <ActivityIndicator color="#FFFFFF" size="small" />
+                      ) : (
+                        <Ionicons name="location-outline" size={18} color="#FFFFFF" />
+                      )}
+                      <Text style={styles.addLocationText}>
+                        {locationLoading ? 'Finding location...' : 'Add Location'}
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              )}
+              {!nameFocused && Boolean(locationMessage) && (
+                <Text style={styles.locationMessage}>{locationMessage}</Text>
+              )}
               {status === 'error' && <Text style={styles.errorText}>{statusMessage}</Text>}
               {!nameFocused && <View style={styles.previewActions}>
                 <TouchableOpacity style={styles.secondaryButton} onPress={retake} disabled={status === 'uploading'}>
@@ -522,6 +618,26 @@ const createStyles = (colors: ReturnType<typeof useTheme>['colors']) =>
       borderBottomColor: 'rgba(255,255,255,0.42)',
     },
     nameHint: { color: 'rgba(255,255,255,0.55)', fontSize: 10, marginTop: 4 },
+    locationCard: {
+      minHeight: 48,
+      marginBottom: 12,
+      paddingHorizontal: 14,
+      borderRadius: 16,
+      backgroundColor: 'rgba(0,0,0,0.58)',
+      borderWidth: 1,
+      borderColor: 'rgba(255,255,255,0.18)',
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+    addLocationButton: { flex: 1, minHeight: 48, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
+    addLocationText: { color: '#FFFFFF', fontSize: 13, fontWeight: '800' },
+    locationInfo: { flex: 1, minHeight: 48, flexDirection: 'row', alignItems: 'center', gap: 10 },
+    locationTextWrap: { flex: 1 },
+    locationLabel: { color: 'rgba(255,255,255,0.55)', fontSize: 9, fontWeight: '900', letterSpacing: 0.9 },
+    locationValue: { color: '#FFFFFF', fontSize: 13, fontWeight: '800', marginTop: 2 },
+    removeLocationButton: { width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.12)' },
+    locationMessage: { color: 'rgba(255,255,255,0.72)', fontSize: 11, textAlign: 'center', marginTop: -4, marginBottom: 10, lineHeight: 16 },
     previewActions: { flexDirection: 'row', gap: 12, justifyContent: 'center' },
     primaryButton: {
       flexDirection: 'row',
