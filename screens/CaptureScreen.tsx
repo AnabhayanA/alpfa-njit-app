@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Image, Keyboard, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, useWindowDimensions } from 'react-native';
+import { ActivityIndicator, Alert, Image, Keyboard, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, useWindowDimensions } from 'react-native';
 import { CameraType, CameraView, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
@@ -190,6 +190,17 @@ export default function CaptureScreen() {
     setLocationMessage('');
   };
 
+  const confirmAndAddLocation = () => {
+    Alert.alert(
+      'Add location to this photo?',
+      'Your current city/region will be displayed on the photo and included when the photo is shared to the ALPFA NJIT Drive.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Add Location', onPress: addLocation },
+      ]
+    );
+  };
+
   const addLocation = async () => {
     try {
       setLocationLoading(true);
@@ -296,6 +307,12 @@ export default function CaptureScreen() {
     return (
       <View style={styles.container}>
         <FilteredPhotoPreview uri={photoUri} filter={selectedFilter} canvasRef={filteredCanvasRef} />
+        {photoLocation && (
+          <View style={[styles.photoLocationStamp, { bottom: nameFocused ? keyboardHeight + 170 : 330 }]} pointerEvents="none">
+            <Ionicons name="location" size={17} color="#FFFFFF" />
+            <Text style={styles.photoLocationStampText}>{photoLocation.label}</Text>
+          </View>
+        )}
         <TouchableOpacity style={[styles.closeButton, { top: insets.top + 12 }]} onPress={close}>
           <Ionicons name="close" size={22} color="#FFFFFF" />
         </TouchableOpacity>
@@ -391,7 +408,7 @@ export default function CaptureScreen() {
                   ) : (
                     <TouchableOpacity
                       style={styles.addLocationButton}
-                      onPress={addLocation}
+                      onPress={confirmAndAddLocation}
                       disabled={locationLoading || status === 'uploading'}
                       accessibilityRole="button"
                       accessibilityLabel="Add current location to photo"
@@ -638,6 +655,23 @@ const createStyles = (colors: ReturnType<typeof useTheme>['colors']) =>
     locationValue: { color: '#FFFFFF', fontSize: 13, fontWeight: '800', marginTop: 2 },
     removeLocationButton: { width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.12)' },
     locationMessage: { color: 'rgba(255,255,255,0.72)', fontSize: 11, textAlign: 'center', marginTop: -4, marginBottom: 10, lineHeight: 16 },
+    photoLocationStamp: {
+      position: 'absolute',
+      left: 20,
+      zIndex: 8,
+      maxWidth: '78%',
+      minHeight: 42,
+      paddingHorizontal: 14,
+      paddingVertical: 10,
+      borderRadius: 999,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 7,
+      backgroundColor: 'rgba(0,0,0,0.68)',
+      borderWidth: 1,
+      borderColor: 'rgba(255,255,255,0.28)',
+    },
+    photoLocationStampText: { color: '#FFFFFF', fontSize: 14, fontWeight: '900' },
     previewActions: { flexDirection: 'row', gap: 12, justifyContent: 'center' },
     primaryButton: {
       flexDirection: 'row',
