@@ -24,6 +24,15 @@ const FILTER_MATRICES: Record<string, number[]> = {
   ALPFA: [0.95, 0.08, 0.02, 0, 0.02, 0.01, 0.82, 0.03, 0, 0, 0.08, 0.02, 0.92, 0, 0.02, 0, 0, 0, 1, 0],
 };
 
+const WEB_FILTERS: Record<string, string> = {
+  Normal: 'none',
+  Warm: 'sepia(0.22) saturate(1.18) brightness(1.04)',
+  Cool: 'saturate(1.08) hue-rotate(10deg) brightness(1.02)',
+  'B&W': 'grayscale(1)',
+  Vintage: 'sepia(0.48) saturate(0.82) contrast(0.92) brightness(1.04)',
+  ALPFA: 'contrast(1.08) saturate(1.22) hue-rotate(-8deg)',
+};
+
 const locationFont = Platform.OS === 'web' ? null : matchFont({
   fontFamily: Platform.OS === 'ios' ? 'Helvetica' : 'sans-serif',
   fontSize: 19,
@@ -41,7 +50,13 @@ function FilteredPhotoPreview({ uri, filter, canvasRef, locationLabel, locationP
   const { width, height } = useWindowDimensions();
 
   if (Platform.OS === 'web') {
-    return <Image source={{ uri }} style={StyleSheet.absoluteFill} resizeMode="cover" />;
+    return (
+      <Image
+        source={{ uri }}
+        style={[StyleSheet.absoluteFill, { filter: WEB_FILTERS[filter] || 'none' } as any]}
+        resizeMode="cover"
+      />
+    );
   }
 
   const image = useImage(uri);
