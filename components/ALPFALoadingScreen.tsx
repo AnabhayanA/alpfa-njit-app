@@ -1,18 +1,16 @@
 import React, { useEffect, useRef } from 'react';
 import { Animated, Easing, StyleSheet, View, useWindowDimensions } from 'react-native';
-import Svg, { Path } from 'react-native-svg';
+import Svg, { G, Path } from 'react-native-svg';
+import NJITInstituteText from './NJITInstituteText';
 
 const NAVY = '#030712';
 
 const HIGHLANDER_BLUE = `M141.60 357.81 c-15.82 -6.88 -36.04 -10.35 -53.32 -9.13 -11.38 0.78 -23.14 2.88 -30.71 5.57 l-3.61 1.22 2.69 -2.69 c1.46 -1.51 3.47 -3.22 4.39 -3.81 0.93 -0.59 2.64 -1.76 3.81 -2.64 1.17 -0.88 4.20 -2.64 6.79 -3.91 l4.69 -2.34 -4.59 -0.29 c-2.54 -0.20 -5.52 -0.73 -6.69 -1.17 -2.05 -0.83 -2.10 -0.93 -1.22 -1.71 0.49 -0.44 2.29 -1.32 4.05 -1.90 3.86 -1.37 9.03 -4.35 10.89 -6.30 l1.37 -1.42 -3.32 -0.24 c-4.93 -0.39 -10.64 -3.17 -9.67 -4.74 0.15 -0.29 1.46 -0.54 2.88 -0.54 3.42 0 10.50 -2.05 14.21 -4.15 3.27 -1.86 6.15 -3.96 13.72 -10.11 8.50 -6.93 15.09 -9.77 24.27 -10.45 3.56 -0.24 5.18 -0.15 7.32 0.49 3.27 0.93 6.05 3.17 6.59 5.32 0.29 1.12 0.78 1.61 1.90 1.90 2.49 0.63 6.15 3.42 7.86 5.96 2.39 3.61 3.17 6.93 2.93 12.50 -0.20 4.15 -0.44 5.13 -2 8.35 -1.03 2.10 -2.98 4.98 -4.74 6.88 l-2.98 3.32 1.76 3.52 c1.76 3.66 3.32 9.81 3.08 12.11 l-0.15 1.32 -2.20 -0.93z`;
-
 const HIGHLANDER_WHITE = `M96.48 341.99 c-0.15 -0.44 -0.29 -1.51 -0.29 -2.44 l0 -1.66 3.13 0 c3.42 0 3.71 0.24 3.71 3.22 l0 1.66 -3.13 0 c-2.39 0 -3.17 -0.20 -3.42 -0.78z`;
-
 const HIGHLANDER_GRAY = [
   `M125.63 338.77 c-2.29 -1.12 -1.86 -3.32 0.63 -3.32 1.12 0 1.86 -0.34 2.34 -1.07 1.12 -1.56 0.98 -1.86 -0.93 -1.86 -1.76 0 -2.25 -0.73 -1.12 -1.86 0.68 -0.68 3.03 -0.78 4.30 -0.10 0.73 0.39 0.93 0.24 1.12 -0.78 0.24 -1.46 -0.78 -2.15 -3.27 -2.15 -1.42 0 -1.76 -0.20 -1.76 -0.98 0 -0.83 0.34 -0.98 2.20 -0.98 2.05 0 2.20 -0.10 2.20 -1.27 0 -1.12 -0.15 -1.22 -1.56 -1.07 l-1.61 0.15 -0.15 -3.56 c-0.15 -3.56 -0.15 -3.56 -1.81 -4.30 -0.93 -0.39 -2.15 -0.68 -2.69 -0.68 -1.12 0 -1.27 -0.63 -0.29 -1.42 0.83 -0.68 8.40 -2.98 9.86 -2.98 1.17 0 3.27 2.25 2.98 3.13 -0.10 0.29 -1.37 0.98 -2.83 1.51 -4.49 1.71 -3.61 4.30 1.32 3.76 1.46 -0.15 2.10 0 2.29 0.54 0.44 1.17 -0.49 4.25 -1.66 5.52 -0.78 0.83 -0.98 1.32 -0.59 1.71 0.63 0.63 0 3.71 -1.32 6.30 -0.83 1.61 -5.62 6.40 -6.35 6.30 -0.15 0 -0.73 -0.24 -1.32 -0.54z`,
   `M118.95 324.85 c0.20 -1.17 0 -1.51 -1.61 -2.34 -2.05 -1.07 -2.20 -1.46 -1.12 -2.98 0.68 -0.93 1.07 -1.03 4.49 -0.78 l3.76 0.24 -0.49 1.27 c-1.03 2.73 -2.20 4.54 -3.47 5.22 -1.76 0.93 -1.86 0.88 -1.56 -0.63z`,
 ];
-
 const HIGHLANDER_RED = [
   `M130.62 351.76 c-3.47 -1.17 -6.40 -2.15 -6.45 -2.15 -0.10 0 -0.15 -0.98 -0.15 -2.15 0 -1.86 -0.20 -2.25 -1.07 -2.54 -1.51 -0.44 -1.86 -1.07 -1.86 -3.47 l0 -2.10 2.34 0 c1.32 0 3.47 0.34 4.79 0.73 1.46 0.44 2.44 0.54 2.54 0.24 0.10 -0.29 0.93 -0.49 1.86 -0.49 1.61 0 1.66 -0.05 1.66 -2 0 -1.56 0.44 -2.64 2.25 -5.13 3.22 -4.49 4.59 -8.64 4.59 -13.96 l0 -4.30 2.15 0 c2.64 0 2.73 0.24 2.73 7.47 0 5.96 -0.78 8.94 -3.42 12.89 -2.54 3.71 -3.96 5.03 -5.47 5.03 l-1.32 0 1.61 2.83 c2.05 3.52 3.22 6.88 3.22 9.38 0 1.95 0 1.95 -1.81 1.90 -1.03 0 -4.69 -0.98 -8.20 -2.20z`,
   `M109.38 347.12 c-1.76 -0.24 -6.79 -0.49 -11.23 -0.54 l-8.06 -0.15 -0.15 -1.22 c-0.10 -0.63 -0.54 -1.42 -0.93 -1.71 -0.49 -0.34 -0.63 -1.17 -0.54 -2.44 l0.15 -1.95 3.17 -0.59 c4.49 -0.83 7.18 -0.78 7.52 0.10 0.20 0.49 -0.05 0.73 -0.68 0.73 -0.54 0 -0.98 0.15 -0.98 0.39 0.05 1.12 1.12 1.76 3.52 1.95 l2.59 0.20 -0.15 -2.25 -0.20 -2.29 5.76 0.15 c5.08 0.15 5.81 0.24 5.96 1.03 0.10 0.49 -0.15 0.83 -0.59 0.83 -1.32 0 -0.88 1.42 0.68 2.20 0.78 0.39 1.95 0.73 2.69 0.73 0.88 0 1.22 0.24 1.22 0.98 0 0.73 -0.34 0.98 -1.22 0.98 -0.68 0 -1.22 0.20 -1.22 0.44 0 1.03 0.63 2 1.27 2 0.39 0 0.68 0.24 0.68 0.49 0 0.59 -4.74 0.54 -9.28 -0.05z`,
@@ -24,32 +22,41 @@ type Props = { onAnimationComplete?: () => void };
 
 export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
   const { width } = useWindowDimensions();
-  const logoSize = Math.min(width * 0.5, 210);
+  const lockupWidth = Math.min(width * 0.76, 350);
   const opacity = useRef(new Animated.Value(0)).current;
-  const scale = useRef(new Animated.Value(0.88)).current;
+  const scale = useRef(new Animated.Value(0.94)).current;
+  const translateY = useRef(new Animated.Value(14)).current;
 
   useEffect(() => {
     const animation = Animated.sequence([
-      Animated.delay(180),
+      Animated.delay(160),
       Animated.parallel([
-        Animated.timing(opacity, { toValue: 1, duration: 550, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
-        Animated.spring(scale, { toValue: 1, damping: 14, stiffness: 110, mass: 0.8, useNativeDriver: true }),
+        Animated.timing(opacity, { toValue: 1, duration: 520, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
+        Animated.spring(scale, { toValue: 1, damping: 16, stiffness: 120, mass: 0.8, useNativeDriver: true }),
+        Animated.timing(translateY, { toValue: 0, duration: 620, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
       ]),
-      Animated.delay(2200),
+      Animated.delay(1750),
+      Animated.parallel([
+        Animated.timing(opacity, { toValue: 0, duration: 300, easing: Easing.in(Easing.quad), useNativeDriver: true }),
+        Animated.timing(scale, { toValue: 1.035, duration: 300, easing: Easing.inOut(Easing.quad), useNativeDriver: true }),
+      ]),
     ]);
     animation.start(({ finished }) => finished && onAnimationComplete?.());
     return () => animation.stop();
-  }, [onAnimationComplete, opacity, scale]);
+  }, [onAnimationComplete, opacity, scale, translateY]);
 
   return (
     <View style={styles.root}>
-      <Animated.View style={{ width: logoSize, height: logoSize, opacity, transform: [{ scale }] }}>
-        <Svg width={logoSize} height={logoSize} viewBox="45 288 112 82">
+      <Animated.View style={[styles.lockup, { width: lockupWidth, height: lockupWidth * 0.26, opacity, transform: [{ translateY }, { scale }] }]}>
+        <Svg width={lockupWidth * 0.25} height={lockupWidth * 0.26} viewBox="45 288 112 82">
           <Path d={HIGHLANDER_BLUE} fill="#022B6A" />
           {HIGHLANDER_RED.map((d, index) => <Path key={`red-${index}`} d={d} fill="#E02125" />)}
           {HIGHLANDER_GRAY.map((d, index) => <Path key={`gray-${index}`} d={d} fill="#97A0AB" />)}
           <Path d={HIGHLANDER_WHITE} fill="#FFFFFF" />
         </Svg>
+        <View style={styles.wordmark}>
+          <NJITInstituteText size={lockupWidth * 0.72} />
+        </View>
       </Animated.View>
     </View>
   );
@@ -63,5 +70,18 @@ const styles = StyleSheet.create({
     backgroundColor: NAVY,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  lockup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  wordmark: {
+    width: '75%',
+    height: '100%',
+    marginLeft: -8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
   },
 });
