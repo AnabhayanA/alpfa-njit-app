@@ -87,7 +87,7 @@ const styles = StyleSheet.create({
   alpfaStage: {
     position: 'absolute',
     left: 0,
-    top: -95,
+    top: -25,
   },
   lockup: {
     flexDirection: 'row',
