@@ -40,7 +40,7 @@ const TEXT_PATHS = [
 
 export default function NJITInstituteText({ size }: Props) {
   return (
-    <Svg width={size} height={size} viewBox="0 0 500 500">
+    <Svg width={size} height={size * (48 / 265)} viewBox="160 296 265 48" preserveAspectRatio="xMinYMid meet">
       {TEXT_PATHS.map((d, index) => (
         <Path key={index} d={d} fill="#FFFFFF" />
       ))}
