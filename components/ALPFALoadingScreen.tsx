@@ -22,7 +22,7 @@ type Props = { onAnimationComplete?: () => void };
 
 export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
   const { width } = useWindowDimensions();
-  const lockupWidth = Math.min(width * 0.76, 350);
+  const lockupWidth = Math.min(width * 0.64, 295);
   const opacity = useRef(new Animated.Value(0)).current;
   const scale = useRef(new Animated.Value(0.94)).current;
   const translateY = useRef(new Animated.Value(38)).current;
