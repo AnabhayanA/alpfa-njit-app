@@ -79,7 +79,7 @@ const styles = StyleSheet.create({
   wordmark: {
     width: '75%',
     height: '100%',
-    marginLeft: -8,
+    marginLeft: -2,
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
