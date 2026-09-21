@@ -6,10 +6,12 @@
     "orientation": "portrait",
     "icon": "./assets/images/ALPFANJITLOGO.png",
     "userInterfaceStyle": "light",
+
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "org.alpfanjit.app"
     },
+
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/ALPFANJITLOGO.png",
@@ -17,9 +19,11 @@
       },
       "predictiveBackGestureEnabled": false
     },
+
     "web": {
       "favicon": "./assets/images/ALPFANJITLOGO.png"
     },
+
     "plugins": [
       [
         "expo-notifications",
@@ -31,6 +35,12 @@
         "expo-camera",
         {
           "cameraPermission": "Allow ALPFA NJIT to access your camera to share photos to the chapter's Google Drive."
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Allow ALPFA NJIT to use your location when you choose to add a location to a photo."
         }
       ],
       "expo-font",
