@@ -52,7 +52,7 @@ const BOARD_MEMBERS = [
     name: 'Jose Trujillo',
     position: 'Director of Fundraising',
     major: 'Fintech',
-    classYear: '2027',
+    classYear: 'Junior',
     image: require('../assets/images/Jose-Trujillo.jpg'),
     linkedin: 'https://www.linkedin.com/in/jhtrujillo/',
     bio: 'I am a junior majoring in Fintech, Salvadoran, and enjoy working with others who have the same shared goals.',
@@ -105,7 +105,7 @@ const BOARD_MEMBERS = [
     linkedin: 'https://www.linkedin.com/in/angelobustamante/',
     bio: 'I am a senior studying Web and Information Systems, I am half Uruguayan and half peruvian ',
     goal: 'To keep all finances organized and manage the budget responsibly, and help increase funding for the future ',
-    whyAlpfa: '',
+    whyAlpfa: 'I joined ALPFA to connect with driven students and professionals, expand my network, and develop the leadership, business, and technical skills that will help me grow professionally.',
     role: "Responsible for managing the chapter's finances, budgeting, and financial planning to ensure the organization's sustainability and growth."
   },
   {
