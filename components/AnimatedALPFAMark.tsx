@@ -34,6 +34,9 @@ export default function AnimatedALPFAMark({ progress, size }: Props) {
     return (
       <Animated.View
         style={{
+          position: 'absolute',
+          left: 0,
+          top: 0,
           width: size,
           height: size,
           opacity: nativeOpacity,
