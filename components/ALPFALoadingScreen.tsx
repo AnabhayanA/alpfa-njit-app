@@ -65,7 +65,7 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
               {ALPFA_LETTER_PATHS.map((d, index) => <Path key={`alpfa-letter-${index}`} d={d} fill="#FFFFFF" />)}
             </Svg>
           </Animated.View>
-          <Animated.View style={[StyleSheet.absoluteFillObject, { opacity: connectorOpacity }]} pointerEvents="none">
+          <Animated.View style={[StyleSheet.absoluteFillObject, styles.connectorLayer, { opacity: connectorOpacity }]} pointerEvents="none">
             <Svg width={lockupWidth} height={lockupWidth} viewBox="0 0 500 500">
               <Path d={ALPFA_CONNECTOR_PATHS[0]} fill="#FFFFFF" />
               <Path d={ALPFA_CONNECTOR_PATHS[1]} fill="#888888" />
@@ -105,6 +105,9 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 0,
     top: 23,
+  },
+  connectorLayer: {
+    transform: [{ translateY: -72 }],
   },
   lockup: {
     flexDirection: 'row',
