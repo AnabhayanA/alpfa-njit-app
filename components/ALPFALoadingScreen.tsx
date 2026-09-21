@@ -32,50 +32,57 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
   // This avoids SVG/JS-thread animation problems in Expo Go.
   const nativeOpacity = useRef(new Animated.Value(0)).current;
   const nativeScale = useRef(new Animated.Value(0.72)).current;
-  const nativeTranslateY = useRef(new Animated.Value(8)).current;
+  const nativeTranslateY = useRef(new Animated.Value(18)).current;
+  const nativeRotate = useRef(new Animated.Value(-1)).current;
 
   useEffect(() => {
     if (Platform.OS !== 'web') {
       const animation = Animated.sequence([
-        Animated.delay(450),
+        Animated.delay(250),
         Animated.parallel([
           Animated.timing(nativeOpacity, {
             toValue: 1,
-            duration: 850,
+            duration: 650,
             easing: Easing.out(Easing.cubic),
             useNativeDriver: true,
           }),
           Animated.timing(nativeScale, {
             toValue: 1,
-            duration: 950,
-            easing: Easing.out(Easing.back(1.08)),
+            duration: 900,
+            easing: Easing.out(Easing.back(1.04)),
             useNativeDriver: true,
           }),
           Animated.timing(nativeTranslateY, {
             toValue: 0,
-            duration: 850,
+            duration: 900,
+            easing: Easing.out(Easing.cubic),
+            useNativeDriver: true,
+          }),
+          Animated.timing(nativeRotate, {
+            toValue: 0,
+            duration: 900,
             easing: Easing.out(Easing.cubic),
             useNativeDriver: true,
           }),
         ]),
-        Animated.delay(2100),
+        Animated.delay(1850),
         Animated.timing(nativeScale, {
-          toValue: 0.9,
-          duration: 220,
+          toValue: 0.96,
+          duration: 180,
           easing: Easing.out(Easing.quad),
           useNativeDriver: true,
         }),
         Animated.parallel([
           Animated.timing(nativeScale, {
-            toValue: 5.5,
-            duration: 650,
-            easing: Easing.in(Easing.cubic),
+            toValue: 1.16,
+            duration: 520,
+            easing: Easing.inOut(Easing.cubic),
             useNativeDriver: true,
           }),
           Animated.timing(nativeOpacity, {
             toValue: 0,
-            duration: 600,
-            delay: 100,
+            duration: 420,
+            delay: 80,
             easing: Easing.in(Easing.quad),
             useNativeDriver: true,
           }),
@@ -159,7 +166,7 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
       intro.stop();
       clearTimeout(exitTimer);
     };
-  }, [artworkReveal, exitOpacity, exitScale, nativeOpacity, nativeScale, nativeTranslateY, njitOpacity, njitX, onAnimationComplete, redDraw, stageScale]);
+  }, [artworkReveal, exitOpacity, exitScale, nativeOpacity, nativeScale, nativeTranslateY, nativeRotate, njitOpacity, njitX, onAnimationComplete, redDraw, stageScale]);
 
   if (Platform.OS !== 'web') {
     return (
@@ -170,7 +177,16 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
               width: size,
               height: size,
               opacity: nativeOpacity,
-              transform: [{ translateY: nativeTranslateY }, { scale: nativeScale }],
+              transform: [
+                { translateY: nativeTranslateY },
+                { scale: nativeScale },
+                {
+                  rotate: nativeRotate.interpolate({
+                    inputRange: [-1, 0],
+                    outputRange: ['-1deg', '0deg'],
+                  }),
+                },
+              ],
             }}
           >
             <Image
