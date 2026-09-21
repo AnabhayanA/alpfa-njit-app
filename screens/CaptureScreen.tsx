@@ -248,9 +248,16 @@ export default function CaptureScreen() {
   };
 
   const confirmAndAddLocation = () => {
+    const message = 'Your current city/region will be displayed on the photo and included when the photo is shared to the ALPFA NJIT Drive.';
+    if (Platform.OS === 'web') {
+      if (window.confirm('Add location to this photo?\n\n' + message)) {
+        void addLocation();
+      }
+      return;
+    }
     Alert.alert(
       'Add location to this photo?',
-      'Your current city/region will be displayed on the photo and included when the photo is shared to the ALPFA NJIT Drive.',
+      message,
       [
         { text: 'Cancel', style: 'cancel' },
         { text: 'Add Location', onPress: addLocation },
@@ -306,7 +313,7 @@ export default function CaptureScreen() {
     setStatus('uploading');
 
     let uploadUri = photoUri;
-    if (selectedFilter !== 'Normal' || photoLocation) {
+    if (Platform.OS !== 'web' && (selectedFilter !== 'Normal' || photoLocation)) {
       try {
         const snapshot = await filteredCanvasRef.current?.makeImageSnapshotAsync();
         if (!snapshot) {
