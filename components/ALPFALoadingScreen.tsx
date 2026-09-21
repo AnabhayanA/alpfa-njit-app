@@ -65,7 +65,9 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
 
 const styles = StyleSheet.create({
   root: {
-    ...StyleSheet.absoluteFillObject,
+    flex: 1,
+    width: '100%',
+    height: '100%',
     backgroundColor: NAVY,
     alignItems: 'center',
     justifyContent: 'center',
