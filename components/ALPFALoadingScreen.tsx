@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { Animated, Easing, StyleSheet, View, useWindowDimensions } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import NJITInstituteText from './NJITInstituteText';
+import AnimatedALPFAMark from './AnimatedALPFAMark';
 
 const NAVY = '#030712';
 
@@ -26,6 +27,7 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
   const opacity = useRef(new Animated.Value(0)).current;
   const scale = useRef(new Animated.Value(0.94)).current;
   const translateY = useRef(new Animated.Value(38)).current;
+  const alpfaProgress = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     const animation = Animated.sequence([
@@ -35,7 +37,9 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
         Animated.spring(scale, { toValue: 1, damping: 16, stiffness: 120, mass: 0.8, useNativeDriver: true }),
         Animated.timing(translateY, { toValue: 0, duration: 620, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
       ]),
-      Animated.delay(1750),
+      Animated.delay(300),
+      Animated.timing(alpfaProgress, { toValue: 1, duration: 850, easing: Easing.out(Easing.cubic), useNativeDriver: false }),
+      Animated.delay(1200),
       Animated.parallel([
         Animated.timing(opacity, { toValue: 0, duration: 300, easing: Easing.in(Easing.quad), useNativeDriver: true }),
         Animated.timing(scale, { toValue: 1.035, duration: 300, easing: Easing.inOut(Easing.quad), useNativeDriver: true }),
@@ -43,11 +47,14 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
     ]);
     animation.start(({ finished }) => finished && onAnimationComplete?.());
     return () => animation.stop();
-  }, [onAnimationComplete, opacity, scale, translateY]);
+  }, [alpfaProgress, onAnimationComplete, opacity, scale, translateY]);
 
   return (
     <View style={styles.root}>
       <Animated.View style={[styles.composition, { width: lockupWidth, height: lockupWidth * 0.92, opacity, transform: [{ translateY }, { scale }] }]}>
+        <View style={[styles.alpfaStage, { width: lockupWidth, height: lockupWidth }]}>
+          <AnimatedALPFAMark progress={alpfaProgress} size={lockupWidth} />
+        </View>
         <View style={[styles.lockup, { width: lockupWidth, height: lockupWidth * 0.26 }]}>
         <Svg width={lockupWidth * 0.25} height={lockupWidth * 0.26} viewBox="45 288 112 82">
           <Path d={HIGHLANDER_BLUE} fill="#022B6A" />
@@ -76,6 +83,11 @@ const styles = StyleSheet.create({
   composition: {
     alignItems: 'center',
     justifyContent: 'flex-end',
+  },
+  alpfaStage: {
+    position: 'absolute',
+    left: 0,
+    top: -95,
   },
   lockup: {
     flexDirection: 'row',
