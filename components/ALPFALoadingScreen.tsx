@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { Animated, Easing, StyleSheet, View, useWindowDimensions } from 'react-native';
-import Svg, { Path } from 'react-native-svg';
+import Svg, { Defs, Filter, GaussianBlur, Path } from 'react-native-svg';
 import NJITInstituteText from './NJITInstituteText';
 import AnimatedALPFAMark from './AnimatedALPFAMark';
 
@@ -37,6 +37,7 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
   const alpfaLettersScale = useRef(new Animated.Value(0.82)).current;
   const connectorOpacity = useRef(new Animated.Value(0)).current;
   const connectorScaleX = useRef(new Animated.Value(0.01)).current;
+  const logoGlowOpacity = useRef(new Animated.Value(0)).current;
   const impactScale = useRef(new Animated.Value(1)).current;
   const lockupOpacity = useRef(new Animated.Value(0)).current;
   const lockupScale = useRef(new Animated.Value(0.9)).current;
@@ -65,13 +66,16 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
       ]),
       Animated.parallel([
         Animated.timing(connectorOpacity, { toValue: 1, duration: 120, easing: Easing.out(Easing.quad), useNativeDriver: true }),
-        Animated.timing(connectorScaleX, { toValue: 1, duration: 620, easing: Easing.inOut(Easing.cubic), useNativeDriver: true }),
+        Animated.timing(connectorScaleX, { toValue: 1, duration: 760, easing: Easing.inOut(Easing.cubic), useNativeDriver: true }),
       ]),
+      Animated.timing(logoGlowOpacity, { toValue: 0.28, duration: 260, easing: Easing.out(Easing.quad), useNativeDriver: true }),
       Animated.sequence([
         Animated.timing(impactScale, { toValue: 1.035, duration: 110, easing: Easing.out(Easing.quad), useNativeDriver: true }),
         Animated.spring(impactScale, { toValue: 1, damping: 10, stiffness: 210, mass: 0.55, useNativeDriver: true }),
       ]),
-      Animated.delay(1050),
+      Animated.delay(900),
+      Animated.timing(logoGlowOpacity, { toValue: 0.10, duration: 360, easing: Easing.inOut(Easing.quad), useNativeDriver: true }),
+      Animated.delay(240),
       Animated.parallel([
         Animated.timing(opacity, { toValue: 0, duration: 320, easing: Easing.in(Easing.quad), useNativeDriver: true }),
         Animated.timing(scale, { toValue: 1.045, duration: 320, easing: Easing.inOut(Easing.quad), useNativeDriver: true }),
@@ -80,7 +84,7 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
     ]);
     animation.start(({ finished }) => finished && onAnimationComplete?.());
     return () => animation.stop();
-  }, [alpfaLettersOpacity, alpfaLettersScale, alpfaProgress, connectorOpacity, connectorScaleX, impactScale, lockupOpacity, lockupRotate, lockupScale, lockupTranslateY, onAnimationComplete, opacity, scale, translateY]);
+  }, [alpfaLettersOpacity, alpfaLettersScale, alpfaProgress, connectorOpacity, connectorScaleX, impactScale, logoGlowOpacity, lockupOpacity, lockupRotate, lockupScale, lockupTranslateY, onAnimationComplete, opacity, scale, translateY]);
 
   return (
     <View style={styles.root}>
@@ -98,8 +102,26 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
             ]}
           >
             <Svg width={lockupWidth} height={lockupWidth} viewBox="0 0 500 500">
+              <Defs>
+                <Filter id="connectorGlow" x="-30%" y="-60%" width="160%" height="220%">
+                  <GaussianBlur stdDeviation="4" />
+                </Filter>
+              </Defs>
+              <Path d={ALPFA_CONNECTOR_PATHS[0]} fill="#FFFFFF" opacity={0.24} filter="url(#connectorGlow)" />
+              <Path d={ALPFA_CONNECTOR_PATHS[1]} fill="#97A0AB" opacity={0.28} filter="url(#connectorGlow)" />
               <Path d={ALPFA_CONNECTOR_PATHS[0]} fill="#FFFFFF" />
               <Path d={ALPFA_CONNECTOR_PATHS[1]} fill="#888888" />
+            </Svg>
+          </Animated.View>
+          <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { opacity: logoGlowOpacity }]}>
+            <Svg width={lockupWidth} height={lockupWidth} viewBox="0 0 500 500">
+              <Defs>
+                <Filter id="finishedGlow" x="-35%" y="-35%" width="170%" height="170%">
+                  <GaussianBlur stdDeviation="9" />
+                </Filter>
+              </Defs>
+              <Path d={ALPFA_CONNECTOR_PATHS[0]} fill="#FFFFFF" filter="url(#finishedGlow)" />
+              <Path d={ALPFA_CONNECTOR_PATHS[1]} fill="#97A0AB" filter="url(#finishedGlow)" />
             </Svg>
           </Animated.View>
           <Animated.View style={[StyleSheet.absoluteFill, { opacity: alpfaLettersOpacity, transform: [{ scale: alpfaLettersScale }] }]} pointerEvents="none">
