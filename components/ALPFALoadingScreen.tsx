@@ -36,8 +36,7 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
   const alpfaLettersOpacity = useRef(new Animated.Value(0)).current;
   const alpfaLettersScale = useRef(new Animated.Value(0.82)).current;
   const connectorOpacity = useRef(new Animated.Value(0)).current;
-  const connectorScaleX = useRef(new Animated.Value(0.08)).current;
-  const connectorTranslateY = useRef(new Animated.Value(18)).current;
+  const connectorScaleX = useRef(new Animated.Value(0.01)).current;
   const impactScale = useRef(new Animated.Value(1)).current;
   const lockupOpacity = useRef(new Animated.Value(0)).current;
   const lockupScale = useRef(new Animated.Value(0.9)).current;
@@ -59,15 +58,14 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
         ]),
       ]),
       Animated.delay(180),
-      Animated.timing(alpfaProgress, { toValue: 1, duration: 900, easing: Easing.out(Easing.cubic), useNativeDriver: false }),
+      Animated.timing(alpfaProgress, { toValue: 1, duration: 1150, easing: Easing.out(Easing.cubic), useNativeDriver: false }),
       Animated.parallel([
         Animated.timing(alpfaLettersOpacity, { toValue: 1, duration: 360, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
         Animated.spring(alpfaLettersScale, { toValue: 1, damping: 14, stiffness: 150, mass: 0.7, useNativeDriver: true }),
       ]),
       Animated.parallel([
-        Animated.timing(connectorOpacity, { toValue: 1, duration: 260, easing: Easing.out(Easing.quad), useNativeDriver: true }),
-        Animated.timing(connectorScaleX, { toValue: 1, duration: 420, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
-        Animated.timing(connectorTranslateY, { toValue: 0, duration: 420, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
+        Animated.timing(connectorOpacity, { toValue: 1, duration: 120, easing: Easing.out(Easing.quad), useNativeDriver: true }),
+        Animated.timing(connectorScaleX, { toValue: 1, duration: 620, easing: Easing.inOut(Easing.cubic), useNativeDriver: true }),
       ]),
       Animated.sequence([
         Animated.timing(impactScale, { toValue: 1.035, duration: 110, easing: Easing.out(Easing.quad), useNativeDriver: true }),
@@ -82,7 +80,7 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
     ]);
     animation.start(({ finished }) => finished && onAnimationComplete?.());
     return () => animation.stop();
-  }, [alpfaLettersOpacity, alpfaLettersScale, alpfaProgress, connectorOpacity, connectorScaleX, connectorTranslateY, impactScale, lockupOpacity, lockupRotate, lockupScale, lockupTranslateY, onAnimationComplete, opacity, scale, translateY]);
+  }, [alpfaLettersOpacity, alpfaLettersScale, alpfaProgress, connectorOpacity, connectorScaleX, impactScale, lockupOpacity, lockupRotate, lockupScale, lockupTranslateY, onAnimationComplete, opacity, scale, translateY]);
 
   return (
     <View style={styles.root}>
@@ -95,7 +93,7 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
               StyleSheet.absoluteFill,
               {
                 opacity: connectorOpacity,
-                transform: [{ translateY: connectorTranslateY }, { scaleX: connectorScaleX }],
+                transform: [{ scaleX: connectorScaleX }],
               },
             ]}
           >
