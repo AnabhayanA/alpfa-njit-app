@@ -22,8 +22,20 @@ export default function AnimatedALPFAMark({ progress, size }: Props) {
   });
 
   const nativeScale = progress.interpolate({
+    inputRange: [0, 0.72, 1],
+    outputRange: [0.72, 1.035, 1],
+    extrapolate: 'clamp',
+  });
+
+  const nativeTranslateY = progress.interpolate({
     inputRange: [0, 1],
-    outputRange: [0.82, 1],
+    outputRange: [-42, 0],
+    extrapolate: 'clamp',
+  });
+
+  const nativeRotate = progress.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['-4deg', '0deg'],
     extrapolate: 'clamp',
   });
 
@@ -41,7 +53,7 @@ export default function AnimatedALPFAMark({ progress, size }: Props) {
           width: size,
           height: size,
           opacity: nativeOpacity,
-          transform: [{ scale: nativeScale }],
+          transform: [{ translateY: nativeTranslateY }, { rotate: nativeRotate }, { scale: nativeScale }],
         }}
       >
         <Svg width={size} height={size} viewBox="0 0 500 500">
@@ -62,7 +74,7 @@ export default function AnimatedALPFAMark({ progress, size }: Props) {
         width: size,
         height: size,
         opacity: nativeOpacity,
-        transform: [{ scale: nativeScale }],
+        transform: [{ translateY: nativeTranslateY }, { rotate: nativeRotate }, { scale: nativeScale }],
       }}
     >
       <Svg width={size} height={size} viewBox="0 0 500 500">
