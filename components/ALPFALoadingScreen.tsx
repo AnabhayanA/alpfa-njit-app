@@ -106,10 +106,10 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
               <Path d={ALPFA_CONNECTOR_PATHS[1]} fill="#888888" />
             </Svg>
           </Animated.View>
-          <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { opacity: logoGlowOpacity }]}>
+          <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { opacity: logoGlowOpacity, transform: [{ scale: 1.012 }] }]}>
             <Svg width={lockupWidth} height={lockupWidth} viewBox="0 0 500 500">
-<Path d={ALPFA_CONNECTOR_PATHS[0]} fill="#FFFFFF" filter="url(#finishedGlow)" />
-              <Path d={ALPFA_CONNECTOR_PATHS[1]} fill="#97A0AB" filter="url(#finishedGlow)" />
+              <Path d={ALPFA_CONNECTOR_PATHS[0]} fill="#FFFFFF" />
+              <Path d={ALPFA_CONNECTOR_PATHS[1]} fill="#97A0AB" />
             </Svg>
           </Animated.View>
           <Animated.View style={[StyleSheet.absoluteFill, { opacity: alpfaLettersOpacity, transform: [{ scale: alpfaLettersScale }] }]} pointerEvents="none">
