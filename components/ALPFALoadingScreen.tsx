@@ -31,48 +31,65 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
   const translateY = useRef(new Animated.Value(38)).current;
   const alpfaProgress = useRef(new Animated.Value(0)).current;
   const alpfaLettersOpacity = useRef(new Animated.Value(0)).current;
+  const alpfaLettersScale = useRef(new Animated.Value(0.82)).current;
   const connectorOpacity = useRef(new Animated.Value(0)).current;
+  const connectorScaleX = useRef(new Animated.Value(0.05)).current;
+  const lockupOpacity = useRef(new Animated.Value(0)).current;
+  const lockupScale = useRef(new Animated.Value(0.9)).current;
+  const lockupTranslateY = useRef(new Animated.Value(16)).current;
 
   useEffect(() => {
     const animation = Animated.sequence([
-      Animated.delay(160),
+      Animated.delay(120),
       Animated.parallel([
-        Animated.timing(opacity, { toValue: 1, duration: 520, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
-        Animated.spring(scale, { toValue: 1, damping: 16, stiffness: 120, mass: 0.8, useNativeDriver: true }),
-        Animated.timing(translateY, { toValue: 0, duration: 620, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
+        Animated.timing(opacity, { toValue: 1, duration: 220, easing: Easing.out(Easing.quad), useNativeDriver: true }),
+        Animated.spring(scale, { toValue: 1, damping: 17, stiffness: 130, mass: 0.8, useNativeDriver: true }),
+        Animated.timing(translateY, { toValue: 0, duration: 500, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
+        Animated.parallel([
+          Animated.timing(lockupOpacity, { toValue: 1, duration: 480, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
+          Animated.spring(lockupScale, { toValue: 1, damping: 16, stiffness: 135, mass: 0.75, useNativeDriver: true }),
+          Animated.timing(lockupTranslateY, { toValue: 0, duration: 520, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
+        ]),
       ]),
-      Animated.delay(300),
-      Animated.timing(alpfaProgress, { toValue: 1, duration: 850, easing: Easing.out(Easing.cubic), useNativeDriver: false }),
-      Animated.timing(alpfaLettersOpacity, { toValue: 1, duration: 380, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
-      Animated.timing(connectorOpacity, { toValue: 1, duration: 420, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
-      Animated.delay(1200),
+      Animated.delay(180),
+      Animated.timing(alpfaProgress, { toValue: 1, duration: 900, easing: Easing.out(Easing.cubic), useNativeDriver: false }),
       Animated.parallel([
-        Animated.timing(opacity, { toValue: 0, duration: 300, easing: Easing.in(Easing.quad), useNativeDriver: true }),
-        Animated.timing(scale, { toValue: 1.035, duration: 300, easing: Easing.inOut(Easing.quad), useNativeDriver: true }),
+        Animated.timing(alpfaLettersOpacity, { toValue: 1, duration: 360, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
+        Animated.spring(alpfaLettersScale, { toValue: 1, damping: 14, stiffness: 150, mass: 0.7, useNativeDriver: true }),
+      ]),
+      Animated.parallel([
+        Animated.timing(connectorOpacity, { toValue: 1, duration: 420, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
+        Animated.timing(connectorScaleX, { toValue: 1, duration: 520, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
+      ]),
+      Animated.delay(900),
+      Animated.parallel([
+        Animated.timing(opacity, { toValue: 0, duration: 320, easing: Easing.in(Easing.quad), useNativeDriver: true }),
+        Animated.timing(scale, { toValue: 1.045, duration: 320, easing: Easing.inOut(Easing.quad), useNativeDriver: true }),
+        Animated.timing(translateY, { toValue: -8, duration: 320, easing: Easing.in(Easing.quad), useNativeDriver: true }),
       ]),
     ]);
     animation.start(({ finished }) => finished && onAnimationComplete?.());
     return () => animation.stop();
-  }, [alpfaLettersOpacity, alpfaProgress, connectorOpacity, onAnimationComplete, opacity, scale, translateY]);
+  }, [alpfaLettersOpacity, alpfaLettersScale, alpfaProgress, connectorOpacity, connectorScaleX, lockupOpacity, lockupScale, lockupTranslateY, onAnimationComplete, opacity, scale, translateY]);
 
   return (
     <View style={styles.root}>
       <Animated.View style={[styles.composition, { width: lockupWidth, height: lockupWidth * 0.92, opacity, transform: [{ translateY }, { scale }] }]}>
         <View style={[styles.alpfaStage, { width: lockupWidth, height: lockupWidth }]}>
           <AnimatedALPFAMark progress={alpfaProgress} size={lockupWidth} />
-          <Animated.View style={[StyleSheet.absoluteFill, { opacity: alpfaLettersOpacity }]} pointerEvents="none">
+          <Animated.View style={[StyleSheet.absoluteFill, { opacity: alpfaLettersOpacity, transform: [{ scale: alpfaLettersScale }] }]} pointerEvents="none">
             <Svg width={lockupWidth} height={lockupWidth} viewBox="0 0 500 500">
               {ALPFA_LETTER_PATHS.map((d, index) => <Path key={`alpfa-letter-${index}`} d={d} fill="#FFFFFF" />)}
             </Svg>
           </Animated.View>
-          <Animated.View style={[StyleSheet.absoluteFill, styles.connectorLayer, { opacity: connectorOpacity }]} pointerEvents="none">
+          <Animated.View style={[StyleSheet.absoluteFill, styles.connectorLayer, { opacity: connectorOpacity, transform: [{ translateY: -72 }, { scaleX: connectorScaleX }] }]} pointerEvents="none">
             <Svg width={lockupWidth} height={lockupWidth} viewBox="0 0 500 500">
               <Path d={ALPFA_CONNECTOR_PATHS[0]} fill="#FFFFFF" />
               <Path d={ALPFA_CONNECTOR_PATHS[1]} fill="#888888" />
             </Svg>
           </Animated.View>
         </View>
-        <View style={[styles.lockup, { width: lockupWidth, height: lockupWidth * 0.26 }]}>
+        <Animated.View style={[styles.lockup, { width: lockupWidth, height: lockupWidth * 0.26, opacity: lockupOpacity, transform: [{ translateY: lockupTranslateY }, { scale: lockupScale }] }]}>
         <Svg width={lockupWidth * 0.25} height={lockupWidth * 0.26} viewBox="45 288 112 82">
           <Path d={HIGHLANDER_BLUE} fill="#022B6A" />
           {HIGHLANDER_RED.map((d, index) => <Path key={`red-${index}`} d={d} fill="#E02125" />)}
@@ -82,7 +99,7 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
         <View style={styles.wordmark}>
           <NJITInstituteText size={lockupWidth * 0.72} />
         </View>
-        </View>
+        </Animated.View>
       </Animated.View>
     </View>
   );
@@ -106,9 +123,7 @@ const styles = StyleSheet.create({
     left: 0,
     top: 23,
   },
-  connectorLayer: {
-    transform: [{ translateY: -72 }],
-  },
+  connectorLayer: {},
   lockup: {
     flexDirection: 'row',
     alignItems: 'center',
