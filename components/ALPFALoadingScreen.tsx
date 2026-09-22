@@ -71,13 +71,13 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
         Animated.timing(impactScale, { toValue: 1.035, duration: 110, easing: Easing.out(Easing.quad), useNativeDriver: true }),
         Animated.spring(impactScale, { toValue: 1, damping: 10, stiffness: 210, mass: 0.55, useNativeDriver: true }),
       ]),
-      Animated.delay(900),
-      Animated.timing(logoGlowOpacity, { toValue: 0.10, duration: 360, easing: Easing.inOut(Easing.quad), useNativeDriver: true }),
-      Animated.delay(240),
+      Animated.delay(180),
+      Animated.timing(logoGlowOpacity, { toValue: 0.10, duration: 140, easing: Easing.inOut(Easing.quad), useNativeDriver: true }),
+      Animated.delay(60),
       Animated.parallel([
-        Animated.timing(opacity, { toValue: 0, duration: 320, easing: Easing.in(Easing.quad), useNativeDriver: true }),
-        Animated.timing(scale, { toValue: 1.045, duration: 320, easing: Easing.inOut(Easing.quad), useNativeDriver: true }),
-        Animated.timing(translateY, { toValue: -8, duration: 320, easing: Easing.in(Easing.quad), useNativeDriver: true }),
+        Animated.timing(opacity, { toValue: 0, duration: 180, easing: Easing.in(Easing.quad), useNativeDriver: true }),
+        Animated.timing(scale, { toValue: 2.8, duration: 220, easing: Easing.in(Easing.cubic), useNativeDriver: true }),
+        Animated.timing(translateY, { toValue: -10, duration: 220, easing: Easing.in(Easing.cubic), useNativeDriver: true }),
       ]),
     ]);
     animation.start(({ finished }) => finished && onAnimationComplete?.());
