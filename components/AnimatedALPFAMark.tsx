@@ -1,6 +1,6 @@
 import React from 'react';
 import { Animated, StyleSheet, View } from 'react-native';
-import Svg, { Path } from 'react-native-svg';
+import Svg, { Defs, Filter, GaussianBlur, Path } from 'react-native-svg';
 
 const AnimatedPath = Animated.createAnimatedComponent(Path);
 
@@ -38,6 +38,23 @@ export default function AnimatedALPFAMark({ progress, size }: Props) {
         });
         return (
           <Svg key={index} width={size} height={size} viewBox="0 0 500 500" style={StyleSheet.absoluteFill}>
+            <Defs>
+              <Filter id={`redGlow-${index}`} x="-40%" y="-40%" width="180%" height="180%">
+                <GaussianBlur stdDeviation="7" />
+              </Filter>
+            </Defs>
+            <AnimatedPath
+              d={stroke.d}
+              fill="none"
+              stroke="#E02125"
+              strokeWidth={stroke.width + 16}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeDasharray={`${stroke.length} ${stroke.length}`}
+              strokeDashoffset={reveal}
+              opacity={opacity.interpolate({ inputRange: [0, 1], outputRange: [0, 0.24] })}
+              filter={`url(#redGlow-${index})`}
+            />
             <AnimatedPath
               d={stroke.d}
               fill="none"
@@ -45,7 +62,7 @@ export default function AnimatedALPFAMark({ progress, size }: Props) {
               strokeWidth={stroke.width}
               strokeLinecap="butt"
               strokeLinejoin="miter"
-              strokeDasharray={[stroke.length, stroke.length]}
+              strokeDasharray={`${stroke.length} ${stroke.length}`}
               strokeDashoffset={reveal}
               opacity={opacity}
             />
