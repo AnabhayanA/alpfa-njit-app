@@ -60,12 +60,12 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
       <Animated.View style={[styles.composition, { width: lockupWidth, height: lockupWidth * 0.92, opacity, transform: [{ translateY }, { scale }] }]}>
         <View style={[styles.alpfaStage, { width: lockupWidth, height: lockupWidth }]}>
           <AnimatedALPFAMark progress={alpfaProgress} size={lockupWidth} />
-          <Animated.View style={[StyleSheet.absoluteFillObject, { opacity: alpfaLettersOpacity }]} pointerEvents="none">
+          <Animated.View style={[StyleSheet.absoluteFill, { opacity: alpfaLettersOpacity }]} pointerEvents="none">
             <Svg width={lockupWidth} height={lockupWidth} viewBox="0 0 500 500">
               {ALPFA_LETTER_PATHS.map((d, index) => <Path key={`alpfa-letter-${index}`} d={d} fill="#FFFFFF" />)}
             </Svg>
           </Animated.View>
-          <Animated.View style={[StyleSheet.absoluteFillObject, styles.connectorLayer, { opacity: connectorOpacity }]} pointerEvents="none">
+          <Animated.View style={[StyleSheet.absoluteFill, styles.connectorLayer, { opacity: connectorOpacity }]} pointerEvents="none">
             <Svg width={lockupWidth} height={lockupWidth} viewBox="0 0 500 500">
               <Path d={ALPFA_CONNECTOR_PATHS[0]} fill="#FFFFFF" />
               <Path d={ALPFA_CONNECTOR_PATHS[1]} fill="#888888" />
