@@ -37,10 +37,12 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
   const alpfaLettersScale = useRef(new Animated.Value(0.82)).current;
   const connectorOpacity = useRef(new Animated.Value(0)).current;
   const connectorScaleX = useRef(new Animated.Value(0.08)).current;
+  const connectorTranslateY = useRef(new Animated.Value(18)).current;
   const impactScale = useRef(new Animated.Value(1)).current;
   const lockupOpacity = useRef(new Animated.Value(0)).current;
   const lockupScale = useRef(new Animated.Value(0.9)).current;
-  const lockupTranslateY = useRef(new Animated.Value(16)).current;
+  const lockupTranslateY = useRef(new Animated.Value(34)).current;
+  const lockupRotate = useRef(new Animated.Value(-2)).current;
 
   useEffect(() => {
     const animation = Animated.sequence([
@@ -52,7 +54,8 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
         Animated.parallel([
           Animated.timing(lockupOpacity, { toValue: 1, duration: 480, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
           Animated.spring(lockupScale, { toValue: 1, damping: 16, stiffness: 135, mass: 0.75, useNativeDriver: true }),
-          Animated.timing(lockupTranslateY, { toValue: 0, duration: 520, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
+          Animated.timing(lockupTranslateY, { toValue: 0, duration: 620, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
+          Animated.timing(lockupRotate, { toValue: 0, duration: 620, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
         ]),
       ]),
       Animated.delay(180),
@@ -64,6 +67,7 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
       Animated.parallel([
         Animated.timing(connectorOpacity, { toValue: 1, duration: 260, easing: Easing.out(Easing.quad), useNativeDriver: true }),
         Animated.timing(connectorScaleX, { toValue: 1, duration: 420, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
+        Animated.timing(connectorTranslateY, { toValue: 0, duration: 420, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
       ]),
       Animated.sequence([
         Animated.timing(impactScale, { toValue: 1.035, duration: 110, easing: Easing.out(Easing.quad), useNativeDriver: true }),
@@ -78,7 +82,7 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
     ]);
     animation.start(({ finished }) => finished && onAnimationComplete?.());
     return () => animation.stop();
-  }, [alpfaLettersOpacity, alpfaLettersScale, alpfaProgress, connectorOpacity, connectorScaleX, impactScale, lockupOpacity, lockupScale, lockupTranslateY, onAnimationComplete, opacity, scale, translateY]);
+  }, [alpfaLettersOpacity, alpfaLettersScale, alpfaProgress, connectorOpacity, connectorScaleX, connectorTranslateY, impactScale, lockupOpacity, lockupRotate, lockupScale, lockupTranslateY, onAnimationComplete, opacity, scale, translateY]);
 
   return (
     <View style={styles.root}>
@@ -91,7 +95,7 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
               StyleSheet.absoluteFill,
               {
                 opacity: connectorOpacity,
-                transform: [{ scaleX: connectorScaleX }],
+                transform: [{ translateY: connectorTranslateY }, { scaleX: connectorScaleX }],
               },
             ]}
           >
@@ -106,7 +110,7 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
             </Svg>
           </Animated.View>
         </View>
-        <Animated.View style={[styles.lockup, { width: lockupWidth, height: lockupWidth * 0.26, opacity: lockupOpacity, transform: [{ translateY: lockupTranslateY }, { scale: lockupScale }] }]}>
+        <Animated.View style={[styles.lockup, { width: lockupWidth, height: lockupWidth * 0.26, opacity: lockupOpacity, transform: [{ translateY: lockupTranslateY }, { rotate: lockupRotate.interpolate({ inputRange: [-2, 0], outputRange: ['-2deg', '0deg'] }) }, { scale: lockupScale }] }]}>
         <Svg width={lockupWidth * 0.25} height={lockupWidth * 0.26} viewBox="45 288 112 82">
           <Path d={HIGHLANDER_BLUE} fill="#022B6A" />
           {HIGHLANDER_RED.map((d, index) => <Path key={`red-${index}`} d={d} fill="#E02125" />)}
