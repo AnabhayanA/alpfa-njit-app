@@ -2,7 +2,7 @@
 
 The official mobile app project for **ALPFA at New Jersey Institute of Technology**. Built with Expo, React Native, and TypeScript, the app gives chapter members one place to discover events, meet the E-Board, learn about ALPFA NJIT, and share chapter photos.
 
-> **Project status:** Core features are implemented and working. The next phase is final animation, visual polish, QA, and production-build preparation.
+> **Project status:** Core features and the final ALPFA × NJIT opening animation are implemented. The project is now focused on cross-device QA and production-build preparation.
 
 ## What the app does
 
@@ -45,7 +45,7 @@ Current features include:
 - Swipe navigation between regular screens; Capture disables global swiping so camera/photo gestures remain usable.
 - Responsive React Native layout.
 - Shared ALPFA NJIT visual theme.
-- Loading/splash experience already exists and is scheduled for final animation polish.
+- Finished ALPFA × NJIT opening animation: the original ALPFA SVG draws into place, the connector lines reveal, the completed lockup holds briefly, then transitions into Home with a fast zoom.
 
 ## Tech stack
 
@@ -244,13 +244,19 @@ When the native module is unavailable—such as in Expo Go or on an unsupported 
 - [x] Location composited into uploaded photo
 - [x] Backend upload validation and rate limiting
 - [x] iPhone dual-camera module with graceful fallback
-- [ ] Final loading/splash animation polish
+- [x] Final ALPFA × NJIT loading/splash animation
 - [ ] Final cross-device QA
 - [ ] Production iOS/Android build preparation
 
+## Opening animation
+
+The app now includes the completed ALPFA × NJIT opening sequence. The NJIT Highlander lockup remains anchored while the original ALPFA SVG geometry is progressively revealed, followed by the original connector geometry and ALPFA lettering. The completed logo holds briefly and then uses a fast zoom transition into Home.
+
+The animation preserves the original logo geometry rather than recreating the visible mark with substitute strokes. It is implemented with React Native animation and `react-native-svg` reveal/clipping techniques that remain compatible with the web build.
+
 ## Next phase
 
-The next development session is focused on **animation and visual polish**, especially the ALPFA + NJIT Highlander opening animation. After that, the remaining work is final QA and production-build preparation.
+Animation work is complete and feature-frozen. The remaining launch work is **cross-device QA and production iOS/Android build preparation**, including final store/privacy/support requirements and testing on physical devices.
 
 ## Maintainers
 
