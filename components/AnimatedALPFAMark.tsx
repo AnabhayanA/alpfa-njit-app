@@ -40,3 +40,11 @@ export default function AnimatedALPFAMark({ progress, size }: Props) {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  stage: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+  },
+});
