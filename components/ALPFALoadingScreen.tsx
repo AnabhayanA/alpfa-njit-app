@@ -39,7 +39,6 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
   const alpfaLettersScale = useRef(new Animated.Value(0.82)).current;
   const connectorProgress = useRef(new Animated.Value(0)).current;
   const logoGlowOpacity = useRef(new Animated.Value(0)).current;
-  const impactScale = useRef(new Animated.Value(1)).current;
   const lockupOpacity = useRef(new Animated.Value(0)).current;
   const lockupScale = useRef(new Animated.Value(0.9)).current;
   const lockupTranslateY = useRef(new Animated.Value(34)).current;
@@ -67,10 +66,6 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
       ]),
       Animated.timing(connectorProgress, { toValue: 1, duration: 760, easing: Easing.inOut(Easing.cubic), useNativeDriver: false }),
       Animated.timing(logoGlowOpacity, { toValue: 0.28, duration: 260, easing: Easing.out(Easing.quad), useNativeDriver: true }),
-      Animated.sequence([
-        Animated.timing(impactScale, { toValue: 1.035, duration: 110, easing: Easing.out(Easing.quad), useNativeDriver: true }),
-        Animated.spring(impactScale, { toValue: 1, damping: 10, stiffness: 210, mass: 0.55, useNativeDriver: true }),
-      ]),
       Animated.delay(180),
       Animated.timing(logoGlowOpacity, { toValue: 0.10, duration: 140, easing: Easing.inOut(Easing.quad), useNativeDriver: true }),
       Animated.delay(60),
@@ -82,11 +77,11 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
     ]);
     animation.start(({ finished }) => finished && onAnimationComplete?.());
     return () => animation.stop();
-  }, [alpfaLettersOpacity, alpfaLettersScale, alpfaProgress, connectorProgress, impactScale, logoGlowOpacity, lockupOpacity, lockupRotate, lockupScale, lockupTranslateY, onAnimationComplete, opacity, scale, translateY]);
+  }, [alpfaLettersOpacity, alpfaLettersScale, alpfaProgress, connectorProgress, logoGlowOpacity, lockupOpacity, lockupRotate, lockupScale, lockupTranslateY, onAnimationComplete, opacity, scale, translateY]);
 
   return (
     <View style={styles.root}>
-      <Animated.View style={[styles.composition, { width: lockupWidth, height: lockupWidth * 0.92, opacity, transform: [{ translateY }, { scale }, { scale: impactScale }] }]}>
+      <Animated.View style={[styles.composition, { width: lockupWidth, height: lockupWidth * 0.92, opacity, transform: [{ translateY }, { scale }] }]}>
         <View style={[styles.alpfaStage, { width: lockupWidth, height: lockupWidth }]}>
           <AnimatedALPFAMark progress={alpfaProgress} size={lockupWidth} />
           <View pointerEvents="none" style={StyleSheet.absoluteFill}>
