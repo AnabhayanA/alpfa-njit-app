@@ -5,7 +5,6 @@ import NJITInstituteText from './NJITInstituteText';
 import AnimatedALPFAMark from './AnimatedALPFAMark';
 
 const NAVY = '#030712';
-const ALPFA_CONNECTOR_PATHS = ["M162.60 271.24 c0 -0.10 1.61 -2.73 3.61 -5.81 3.61 -5.52 3.66 -5.57 6.25 -6.35 2.88 -0.83 45.56 -12.26 59.47 -15.92 4.98 -1.32 11.08 -2.98 13.57 -3.66 2.49 -0.68 4.93 -1.22 5.42 -1.22 0.49 0 1.56 -0.34 2.39 -0.78 0.93 -0.44 2.44 -0.68 4 -0.59 2.73 0.15 5.66 -0.98 -35.40 13.67 -61.67 21.97 -59.33 21.19 -59.33 20.65z","M305.18 251.90 c-27.34 -8.84 -40.87 -13.28 -41.21 -13.67 -1.37 -1.27 2.20 -0.78 10.35 1.51 5.03 1.37 13.09 3.61 17.92 4.93 14.26 3.91 14.75 4.10 15.38 6.10 0.34 0.98 0.49 1.81 0.39 1.86 -0.05 0.10 -1.37 -0.24 -2.83 -0.73z"];
 const ALPFA_LETTER_PATHS = ["M220.65 210.11 c1.03 -2.39 2.93 -6.64 4.25 -9.52 l2.34 -5.27 2.78 0 2.83 0 4.39 9.08 c2.44 5.03 4.44 9.33 4.44 9.52 0 0.24 -1.17 0.44 -2.64 0.44 -2.39 0 -2.64 -0.10 -2.93 -1.17 -0.54 -2.25 -1.56 -2.73 -5.47 -2.73 -4.25 0 -5.22 0.39 -6.05 2.44 -0.59 1.37 -0.78 1.46 -3.17 1.46 l-2.59 0 1.81 -4.25z m11.96 -4.15 c-0.54 -1.81 -2.15 -4.79 -2.54 -4.79 -0.39 0 -2.54 4.74 -2.54 5.52 0 0.20 1.22 0.34 2.73 0.34 2.59 0 2.69 -0.05 2.34 -1.07z","M247.56 204.83 l0 -9.52 2.44 0 2.44 0 0 7.57 0 7.57 5.13 0 5.13 0 0 1.95 0 1.95 -7.57 0 -7.57 0 0 -9.52z","M269.04 204.83 l0 -9.52 5.13 0 c6.01 0 8.06 0.63 9.52 3.03 1.17 1.95 1.22 2.93 0.24 4.98 -1.03 2.10 -3.08 3.22 -6.74 3.61 l-3.03 0.34 -0.15 3.56 -0.15 3.52 -2.39 0 -2.44 0 0 -9.52z m9.67 -2.15 c0.39 -0.24 0.59 -1.03 0.49 -1.81 -0.15 -1.32 -0.29 -1.42 -2.69 -1.56 l-2.59 -0.15 0 1.95 0 2 2.10 0 c1.12 0 2.34 -0.20 2.69 -0.44z","M290.63 204.98 l0.15 -9.42 6.98 -0.15 6.93 -0.15 0 2 0 1.95 -4.69 0 -4.64 0 0.15 1.86 0.15 1.81 4.54 0.15 4.49 0.15 0 1.66 0 1.71 -2.54 0.05 c-1.42 0 -3.47 0.15 -4.54 0.34 l-1.95 0.34 0.15 2.54 c0.29 4.05 -0.05 4.54 -2.88 4.54 l-2.39 0 0.10 -9.38z","M310.11 208.89 c1.37 -3.03 3.27 -7.32 4.20 -9.52 l1.76 -4.05 2.78 0 2.78 0 4.44 9.28 c2.49 5.13 4.49 9.38 4.49 9.52 0 0.15 -1.17 0.24 -2.59 0.24 -2.59 0 -2.64 -0.05 -3.52 -1.95 l-0.88 -2 -4.44 0.15 -4.44 0.15 -0.88 1.86 c-0.88 1.76 -0.98 1.81 -3.52 1.81 l-2.64 0 2.44 -5.47z m11.57 -2.25 c-0.05 -0.20 -0.54 -1.37 -1.07 -2.69 -0.49 -1.27 -1.22 -2.29 -1.56 -2.29 -0.59 0 -2.64 3.86 -2.64 4.93 0 0.24 1.22 0.44 2.73 0.44 1.51 0 2.64 -0.15 2.54 -0.39z"];
 
 const HIGHLANDER_BLUE = `M141.60 357.81 c-15.82 -6.88 -36.04 -10.35 -53.32 -9.13 -11.38 0.78 -23.14 2.88 -30.71 5.57 l-3.61 1.22 2.69 -2.69 c1.46 -1.51 3.47 -3.22 4.39 -3.81 0.93 -0.59 2.64 -1.76 3.81 -2.64 1.17 -0.88 4.20 -2.64 6.79 -3.91 l4.69 -2.34 -4.59 -0.29 c-2.54 -0.20 -5.52 -0.73 -6.69 -1.17 -2.05 -0.83 -2.10 -0.93 -1.22 -1.71 0.49 -0.44 2.29 -1.32 4.05 -1.90 3.86 -1.37 9.03 -4.35 10.89 -6.30 l1.37 -1.42 -3.32 -0.24 c-4.93 -0.39 -10.64 -3.17 -9.67 -4.74 0.15 -0.29 1.46 -0.54 2.88 -0.54 3.42 0 10.50 -2.05 14.21 -4.15 3.27 -1.86 6.15 -3.96 13.72 -10.11 8.50 -6.93 15.09 -9.77 24.27 -10.45 3.56 -0.24 5.18 -0.15 7.32 0.49 3.27 0.93 6.05 3.17 6.59 5.32 0.29 1.12 0.78 1.61 1.90 1.90 2.49 0.63 6.15 3.42 7.86 5.96 2.39 3.61 3.17 6.93 2.93 12.50 -0.20 4.15 -0.44 5.13 -2 8.35 -1.03 2.10 -2.98 4.98 -4.74 6.88 l-2.98 3.32 1.76 3.52 c1.76 3.66 3.32 9.81 3.08 12.11 l-0.15 1.32 -2.20 -0.93z`;
@@ -32,8 +31,7 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
   const alpfaProgress = useRef(new Animated.Value(0)).current;
   const alpfaLettersOpacity = useRef(new Animated.Value(0)).current;
   const alpfaLettersScale = useRef(new Animated.Value(0.82)).current;
-  const connectorOpacity = useRef(new Animated.Value(0)).current;
-  const connectorScaleX = useRef(new Animated.Value(0.05)).current;
+  const impactScale = useRef(new Animated.Value(1)).current;
   const lockupOpacity = useRef(new Animated.Value(0)).current;
   const lockupScale = useRef(new Animated.Value(0.9)).current;
   const lockupTranslateY = useRef(new Animated.Value(16)).current;
@@ -57,11 +55,11 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
         Animated.timing(alpfaLettersOpacity, { toValue: 1, duration: 360, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
         Animated.spring(alpfaLettersScale, { toValue: 1, damping: 14, stiffness: 150, mass: 0.7, useNativeDriver: true }),
       ]),
-      Animated.parallel([
-        Animated.timing(connectorOpacity, { toValue: 1, duration: 420, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
-        Animated.timing(connectorScaleX, { toValue: 1, duration: 520, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
+      Animated.sequence([
+        Animated.timing(impactScale, { toValue: 1.035, duration: 110, easing: Easing.out(Easing.quad), useNativeDriver: true }),
+        Animated.spring(impactScale, { toValue: 1, damping: 10, stiffness: 210, mass: 0.55, useNativeDriver: true }),
       ]),
-      Animated.delay(900),
+      Animated.delay(1050),
       Animated.parallel([
         Animated.timing(opacity, { toValue: 0, duration: 320, easing: Easing.in(Easing.quad), useNativeDriver: true }),
         Animated.timing(scale, { toValue: 1.045, duration: 320, easing: Easing.inOut(Easing.quad), useNativeDriver: true }),
@@ -70,22 +68,16 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
     ]);
     animation.start(({ finished }) => finished && onAnimationComplete?.());
     return () => animation.stop();
-  }, [alpfaLettersOpacity, alpfaLettersScale, alpfaProgress, connectorOpacity, connectorScaleX, lockupOpacity, lockupScale, lockupTranslateY, onAnimationComplete, opacity, scale, translateY]);
+  }, [alpfaLettersOpacity, alpfaLettersScale, alpfaProgress, impactScale, lockupOpacity, lockupScale, lockupTranslateY, onAnimationComplete, opacity, scale, translateY]);
 
   return (
     <View style={styles.root}>
-      <Animated.View style={[styles.composition, { width: lockupWidth, height: lockupWidth * 0.92, opacity, transform: [{ translateY }, { scale }] }]}>
+      <Animated.View style={[styles.composition, { width: lockupWidth, height: lockupWidth * 0.92, opacity, transform: [{ translateY }, { scale }, { scale: impactScale }] }]}>
         <View style={[styles.alpfaStage, { width: lockupWidth, height: lockupWidth }]}>
           <AnimatedALPFAMark progress={alpfaProgress} size={lockupWidth} />
           <Animated.View style={[StyleSheet.absoluteFill, { opacity: alpfaLettersOpacity, transform: [{ scale: alpfaLettersScale }] }]} pointerEvents="none">
             <Svg width={lockupWidth} height={lockupWidth} viewBox="0 0 500 500">
               {ALPFA_LETTER_PATHS.map((d, index) => <Path key={`alpfa-letter-${index}`} d={d} fill="#FFFFFF" />)}
-            </Svg>
-          </Animated.View>
-          <Animated.View style={[StyleSheet.absoluteFill, styles.connectorLayer, { opacity: connectorOpacity, transform: [{ translateY: -72 }, { scaleX: connectorScaleX }] }]} pointerEvents="none">
-            <Svg width={lockupWidth} height={lockupWidth} viewBox="0 0 500 500">
-              <Path d={ALPFA_CONNECTOR_PATHS[0]} fill="#FFFFFF" />
-              <Path d={ALPFA_CONNECTOR_PATHS[1]} fill="#888888" />
             </Svg>
           </Animated.View>
         </View>
@@ -123,7 +115,6 @@ const styles = StyleSheet.create({
     left: 0,
     top: 23,
   },
-  connectorLayer: {},
   lockup: {
     flexDirection: 'row',
     alignItems: 'center',
