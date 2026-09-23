@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { Alert, Animated, Linking, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Animated, Linking, Platform, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { CalendarEvent, formatEventTime } from '../utils/calendarUtils';
 import useTheme from '../utils/useTheme';
@@ -25,6 +25,26 @@ export default function EventCard({ event, animationDelay }: { event: CalendarEv
   const month = event.startDate.toLocaleDateString('en-US', { month: 'short', timeZone: 'America/New_York' }).toUpperCase();
   const day = event.startDate.toLocaleDateString('en-US', { day: 'numeric', timeZone: 'America/New_York' });
   const time = formatEventTime(event.startDate, event.endDate, event.isAllDay);
+
+  const openDirections = async () => {
+    const destination = event.location.trim();
+    if (!destination) return;
+
+    const encodedDestination = encodeURIComponent(destination);
+    const webUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodedDestination}`;
+    const nativeUrl = Platform.select({
+      ios: `maps://?daddr=${encodedDestination}&dirflg=d`,
+      android: `google.navigation:q=${encodedDestination}`,
+      default: webUrl,
+    })!;
+
+    try {
+      const canOpenNative = Platform.OS !== 'web' && await Linking.canOpenURL(nativeUrl);
+      await Linking.openURL(canOpenNative ? nativeUrl : webUrl);
+    } catch {
+      Alert.alert('Directions unavailable', 'We could not open directions for this event location.');
+    }
+  };
 
   const toggleReminder = async () => {
     if (busy) return;
@@ -57,7 +77,21 @@ export default function EventCard({ event, animationDelay }: { event: CalendarEv
 
       {expanded && (
         <View style={styles.details}>
-          {event.location && <Info icon="location" text={event.location} styles={styles} />}
+          {event.location && (
+            <View>
+              <Info icon="location" text={event.location} styles={styles} />
+              <TouchableOpacity
+                style={styles.directionsButton}
+                activeOpacity={0.8}
+                onPress={openDirections}
+                accessibilityRole="button"
+                accessibilityLabel={`Get directions to ${event.location}`}
+              >
+                <Ionicons name="navigate-outline" size={15} color="#FFFFFF" />
+                <Text style={styles.directionsText}>Get Directions</Text>
+              </TouchableOpacity>
+            </View>
+          )}
           {event.description && <Info icon="information-circle-outline" text={event.description} styles={styles} />}
           {event.url && (
             <TouchableOpacity style={styles.link} onPress={() => Linking.openURL(event.url!).catch(() => undefined)}>
@@ -92,6 +126,8 @@ const createStyles = (colors: ReturnType<typeof useTheme>['colors'], isDark: boo
   details: { marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: '#EEE8DD', gap: 9 },
   info: { flexDirection: 'row', alignItems: 'flex-start', gap: 8 },
   infoText: { flex: 1, color: colors.textSecondary, fontSize: 11, lineHeight: 16 },
+  directionsButton: { alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 9, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 9, backgroundColor: '#8D102B' },
+  directionsText: { color: '#FFFFFF', fontSize: 11, fontWeight: '800' },
   link: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 3 },
   linkText: { color: '#8D102B', fontSize: 11, fontWeight: '800' },
   reminder: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 11, paddingTop: 10, borderTopWidth: 1, borderTopColor: '#EEE8DD' },
