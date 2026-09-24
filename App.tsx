@@ -51,7 +51,7 @@ const withSwipe = (Screen: React.ComponentType<any>) => (props: any) => (
 
 const SwipeHomeScreen = withSwipe(HomeScreen);
 const SwipeEventsScreen = withSwipe(EventsScreen);
-const SwipeCaptureScreen = withSwipe(CaptureScreen);
+const SwipeCaptureScreen = CaptureScreen;
 const SwipeEBoardScreen = withSwipe(EBoardScreen);
 const SwipeAboutScreen = withSwipe(AboutScreen);
 
