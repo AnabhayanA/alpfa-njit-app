@@ -27,6 +27,8 @@ const LINKS = {
   alpfa: 'https://alpfa.org/',
   highlander: 'https://njit.campuslabs.com/engage/organization/alpfa',
   email: 'mailto:alpfanjit@gmail.com',
+  privacy: 'https://nonnair.github.io/alpfa-njit/privacy/',
+  support: 'https://nonnair.github.io/alpfa-njit/support/',
 };
 
 async function openLink(url: string) {
@@ -185,6 +187,36 @@ export default function AboutScreen() {
           </Text>
         </View>
 
+        <Text
+          style={[
+            styles.sectionTitle,
+            {
+              marginHorizontal: responsive.horizontalPadding,
+              marginTop: responsive.responsiveSpacing.xl,
+            },
+          ]}
+        >
+          Legal & Support
+        </Text>
+
+        <LinkButton
+          styles={styles}
+          icon="shield-checkmark-outline"
+          title="Privacy Policy"
+          subtitle="View our full privacy policy"
+          description="Learn how ALPFA NJIT handles app permissions, photos, location, notifications, and data."
+          onPress={() => openLink(LINKS.privacy)}
+        />
+
+        <LinkButton
+          styles={styles}
+          icon="help-circle-outline"
+          title="App Support"
+          subtitle="Help & troubleshooting"
+          description="Get help with the app, permissions, photo uploads, event reminders, and other features."
+          onPress={() => openLink(LINKS.support)}
+        />
+
         <View style={styles.footer}>
           <Text style={styles.footerText}>ALPFA NJIT</Text>
           <Text style={styles.footerSubtext}>© 2026 ALPFA NJIT</Text>
@@ -252,7 +284,7 @@ const createStyles = (colors: ThemePalette, isDark: boolean) => StyleSheet.creat
     backgroundColor: colors.background,
   },
   foreground: { flex: 1, backgroundColor: 'transparent' },
-  liquidLayer: { ...StyleSheet.absoluteFillObject },
+  liquidLayer: { ...StyleSheet.absoluteFill },
   liquidOrb: { position: 'absolute', borderRadius: 999 },
   liquidRed: { width: 330, height: 330, right: -150, top: 110, backgroundColor: 'rgba(225,32,68,0.28)' },
   liquidBlue: { width: 310, height: 310, left: -155, top: 430, backgroundColor: 'rgba(31,117,255,0.24)' },

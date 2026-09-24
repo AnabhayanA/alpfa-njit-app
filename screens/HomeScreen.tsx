@@ -185,7 +185,7 @@ function QuickLink({ label, icon, color, background, onPress, scale, isDark }: {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: '#FAF8F4', overflow: 'hidden' },
-  backgroundDecor: { ...StyleSheet.absoluteFillObject, zIndex: 0 },
+  backgroundDecor: { ...StyleSheet.absoluteFill, zIndex: 0 },
   foreground: { flex: 1, zIndex: 1, backgroundColor: 'transparent' },
   content: {},
   brandRow: { flexDirection: 'row', alignItems: 'center', minHeight: 52 },
@@ -199,7 +199,7 @@ const styles = StyleSheet.create({
   familia: { color: '#9D1734', fontSize: 29, lineHeight: 30, fontWeight: '900' },
   motto: { color: '#081C37', fontSize: 9, fontWeight: '800', letterSpacing: 1.5, marginTop: 7 },
   eventCard: { minHeight: 151, marginTop: 10, padding: 12, borderRadius: 16, backgroundColor: '#081C37', overflow: 'hidden', shadowColor: '#081C37', shadowOpacity: 0.24, shadowRadius: 10, shadowOffset: { width: 0, height: 6 } },
-  eventDecor: { ...StyleSheet.absoluteFillObject, zIndex: 0 },
+  eventDecor: { ...StyleSheet.absoluteFill, zIndex: 0 },
   eventCardDark: { backgroundColor: 'rgba(10,20,48,0.94)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)' },
   eventLiquidBlue: { position: 'absolute', width: 190, height: 190, borderRadius: 95, left: -70, bottom: -115, backgroundColor: 'rgba(28,119,255,0.28)' },
   eventLiquidRed: { position: 'absolute', width: 180, height: 180, borderRadius: 90, right: -75, top: -105, backgroundColor: 'rgba(236,30,73,0.34)' },

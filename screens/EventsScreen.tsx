@@ -293,7 +293,7 @@ const createStyles = (colors: ThemePalette) => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background, overflow: 'hidden' },
   foreground: { flex: 1, backgroundColor: 'transparent' },
   content: { paddingBottom: 35 },
-  liquidLayer: { ...StyleSheet.absoluteFillObject },
+  liquidLayer: { ...StyleSheet.absoluteFill },
   liquidOrb: { position: 'absolute', borderRadius: 999 },
   liquidRed: { width: 300, height: 300, right: -130, top: 35, backgroundColor: 'rgba(225,32,68,0.28)' },
   liquidBlue: { width: 290, height: 290, left: -145, top: 300, backgroundColor: 'rgba(31,117,255,0.23)' },
