@@ -2,7 +2,7 @@
 
 The official mobile app project for **ALPFA at New Jersey Institute of Technology**. Built with Expo, React Native, and TypeScript, the app gives chapter members one place to discover events, meet the E-Board, learn about ALPFA NJIT, and share chapter photos.
 
-> **Project status:** Core features and the final ALPFA × NJIT opening animation are implemented. The project is now focused on cross-device QA and production-build preparation.
+> **Project status:** **~85% complete toward the first public App Store release.** Core app features are implemented and working. The remaining work is mainly physical-device QA, Apple Developer/App Store setup, production builds, TestFlight, and final store submission.
 
 ## What the app does
 
@@ -27,10 +27,13 @@ The Capture screen is built for sharing chapter photos directly to the ALPFA NJI
 Current features include:
 - Take a photo in-app or choose one from the photo library.
 - Front/rear camera switching.
+- Double-tap the live camera preview to switch between front and rear cameras.
+- Camera zoom controls for supported native and web cameras.
 - Native iPhone dual-camera support on compatible devices/builds.
 - Photo naming before upload.
 - Filters: **Normal, Warm, Cool, B&W, Vintage, and ALPFA**.
-- Filtered images are rendered with React Native Skia before upload.
+- Filtered images are rendered with React Native Skia on native builds.
+- Web uploads bake the selected filter into the JPEG pixels before the file is sent to Drive.
 - Optional photo location.
 - Location permission is requested only after the user chooses **Add Location**.
 - An in-app confirmation explains that the location will be attached to the photo.
@@ -227,26 +230,53 @@ The project includes a local Swift module under `modules/alpfa-dual-camera/`. On
 
 When the native module is unavailable—such as in Expo Go or on an unsupported device—the app falls back to the standard single-camera experience.
 
-## Current development checklist
+## Launch progress — ~85%
+
+This percentage is a practical project estimate, not an automated measurement. It treats a **public iOS App Store release** as 100%.
+
+### App features — complete
 
 - [x] Main navigation
 - [x] Home screen
-- [x] Google Calendar events
+- [x] Google Calendar events through deployed backend
 - [x] Event reminders
 - [x] E-Board profiles and LinkedIn links
-- [x] About experience
+- [x] About screen
 - [x] Camera and photo-library capture
+- [x] Front/rear camera switching
+- [x] Double-tap camera switching
+- [x] Camera zoom controls
 - [x] Google Drive photo uploads
 - [x] Photo naming
-- [x] Photo filters
-- [x] Optional location consent
+- [x] Normal, Warm, Cool, B&W, Vintage, and ALPFA filters
+- [x] Filters baked into uploaded photos on web
+- [x] Optional photo location
 - [x] Draggable location label
 - [x] Location composited into uploaded photo
 - [x] Backend upload validation and rate limiting
 - [x] iPhone dual-camera module with graceful fallback
 - [x] Final ALPFA × NJIT loading/splash animation
-- [ ] Final cross-device QA
-- [ ] Production iOS/Android build preparation
+- [x] Public Privacy Policy page
+- [x] Public Support page
+
+### Remaining launch work — ~15%
+
+- [ ] Enroll in the Apple Developer Program
+- [ ] Connect the Apple Developer account to Expo/EAS
+- [ ] Confirm final iOS bundle/signing configuration
+- [ ] Create the App Store Connect app record
+- [ ] Create a production iOS build with EAS
+- [ ] Install and test the native build on a physical iPhone
+- [ ] Test camera switching, zoom, filters, location, uploads, calendar, reminders, links, and permissions on iOS
+- [ ] Upload the build to TestFlight
+- [ ] Complete App Store listing information, screenshots, privacy answers, age rating, and required metadata
+- [ ] Run final release QA and fix any device-specific issues
+- [ ] Submit the iOS app for Apple review
+- [ ] Release after approval
+
+### What “100%” means
+
+For this README, **100% means the first production version is approved and available on the iOS App Store**. Android/Google Play publication can be tracked as a separate release milestone afterward.
 
 ## Opening animation
 
@@ -256,7 +286,9 @@ The animation preserves the original logo geometry rather than recreating the vi
 
 ## Next phase
 
-Animation work is complete and feature-frozen. The remaining launch work is **cross-device QA and production iOS/Android build preparation**, including final store/privacy/support requirements and testing on physical devices.
+Core feature development is substantially complete. The immediate next phase is the **iOS release pipeline**: Apple Developer enrollment → EAS production build → physical-iPhone QA → TestFlight → App Store metadata/privacy review → Apple submission.
+
+The app is currently estimated at **~85% of the way to its first public iOS release**. This number will be updated as launch milestones are completed.
 
 ## Maintainers
 
