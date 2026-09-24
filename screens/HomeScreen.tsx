@@ -1,3 +1,5 @@
+import shadow from '../utils/shadow';
+import { Platform } from 'react-native';
 import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Image, Linking, ScrollView, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -37,8 +39,8 @@ export default function HomeScreen() {
 
   useEffect(() => {
     Animated.parallel([
-      Animated.timing(fade, { toValue: 1, duration: 520, useNativeDriver: true }),
-      Animated.spring(rise, { toValue: 0, speed: 12, bounciness: 4, useNativeDriver: true }),
+      Animated.timing(fade, { toValue: 1, duration: 520, useNativeDriver: Platform.OS !== 'web' }),
+      Animated.spring(rise, { toValue: 0, speed: 12, bounciness: 4, useNativeDriver: Platform.OS !== 'web' }),
     ]).start();
 
     const selectNext = (events: CalendarEvent[]) => {
@@ -59,7 +61,7 @@ export default function HomeScreen() {
     <View style={[styles.screen, { backgroundColor: isDark ? '#070B18' : '#F8F7F4' }]}>
       <StatusBar style={isDark ? 'light' : 'dark'} />
 
-      <View pointerEvents="none" style={styles.backgroundDecor}>
+      <View style={[styles.backgroundDecor, { pointerEvents: "none" }]}>
         <View style={[styles.liquidOrb, styles.liquidRed, isDark && styles.liquidRedDark]} />
         <View style={[styles.liquidOrb, styles.liquidBlue, isDark && styles.liquidBlueDark]} />
         <View style={[styles.liquidOrb, styles.liquidPurple, isDark && styles.liquidPurpleDark]} />
@@ -106,7 +108,7 @@ export default function HomeScreen() {
           <Text style={[styles.motto, { color: colors.textSecondary }]}>BUILD  •  CONNECT  •  BELONG</Text>
 
           <TouchableOpacity style={[styles.eventCard, isDark && styles.eventCardDark, { minHeight: 164 * scale, marginTop: 12 * scale, padding: 14 * scale, borderRadius: 18 * scale }]} activeOpacity={0.9} onPress={() => navigation.navigate('Events')}>
-            <View pointerEvents="none" style={styles.eventDecor}>
+            <View style={[styles.eventDecor, { pointerEvents: "none" }]}>
               <View style={styles.eventLiquidBlue} />
               <View style={styles.eventLiquidRed} />
               <View style={styles.eventRedSlash} />
@@ -198,7 +200,7 @@ const styles = StyleSheet.create({
   welcome: { color: '#081C37', fontSize: 29, lineHeight: 31, fontWeight: '900', marginTop: 9 },
   familia: { color: '#9D1734', fontSize: 29, lineHeight: 30, fontWeight: '900' },
   motto: { color: '#081C37', fontSize: 9, fontWeight: '800', letterSpacing: 1.5, marginTop: 7 },
-  eventCard: { minHeight: 151, marginTop: 10, padding: 12, borderRadius: 16, backgroundColor: '#081C37', overflow: 'hidden', shadowColor: '#081C37', shadowOpacity: 0.24, shadowRadius: 10, shadowOffset: { width: 0, height: 6 } },
+  eventCard: { minHeight: 151, marginTop: 10, padding: 12, borderRadius: 16, backgroundColor: '#081C37', overflow: 'hidden', ...shadow('#081C37', 0.24, 10, 0, 6),    },
   eventDecor: { ...StyleSheet.absoluteFill, zIndex: 0 },
   eventCardDark: { backgroundColor: 'rgba(10,20,48,0.94)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)' },
   eventLiquidBlue: { position: 'absolute', width: 190, height: 190, borderRadius: 95, left: -70, bottom: -115, backgroundColor: 'rgba(28,119,255,0.28)' },
@@ -221,8 +223,8 @@ const styles = StyleSheet.create({
   eventArrow: { position: 'absolute', right: 11, bottom: 11, width: 31, height: 31, borderRadius: 16, backgroundColor: '#B51C35', alignItems: 'center', justifyContent: 'center' },
   quickHeading: { color: '#081C37', fontSize: 10, fontWeight: '900', letterSpacing: 1.8, marginTop: 14, marginBottom: 6 },
   quickGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: 7 },
-  quickCard: { width: '48.8%', minHeight: 42, borderRadius: 13, paddingHorizontal: 9, backgroundColor: 'rgba(255,255,255,0.78)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.88)', flexDirection: 'row', alignItems: 'center', gap: 7, shadowColor: '#081C37', shadowOpacity: 0.06, shadowRadius: 5, shadowOffset: { width: 0, height: 2 } },
-  quickCardDark: { backgroundColor: 'rgba(20,28,54,0.82)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.10)', shadowOpacity: 0.18 },
+  quickCard: { width: '48.8%', minHeight: 42, borderRadius: 13, paddingHorizontal: 9, backgroundColor: 'rgba(255,255,255,0.78)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.88)', flexDirection: 'row', alignItems: 'center', gap: 7, ...shadow('#081C37', 0.06, 5, 0, 2),    },
+  quickCardDark: { backgroundColor: 'rgba(20,28,54,0.82)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.10)', ...shadow('#081C37', 0.18, 5, 0, 2), },
   quickIcon: { width: 28, height: 28, borderRadius: 9, alignItems: 'center', justifyContent: 'center' },
   quickLabel: { color: '#081C37', fontSize: 10, fontWeight: '700', flex: 1 },
   quickLabelDark: { color: '#F7F8FC' },

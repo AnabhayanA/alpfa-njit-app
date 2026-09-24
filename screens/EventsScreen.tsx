@@ -1,3 +1,4 @@
+import { Platform } from 'react-native';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   Animated,
@@ -78,13 +79,13 @@ export default function EventsScreen() {
         toValue: 1,
         duration: 500,
         easing: Easing.out(Easing.ease),
-        useNativeDriver: true,
+        useNativeDriver: Platform.OS !== 'web',
       }),
       Animated.timing(headerSlideY, {
         toValue: 0,
         duration: 500,
         easing: Easing.out(Easing.ease),
-        useNativeDriver: true,
+        useNativeDriver: Platform.OS !== 'web',
       }),
     ]).start();
   }, []);
@@ -150,7 +151,6 @@ export default function EventsScreen() {
   const handleScroll = (event: any) => {
     const currentOffset = event.nativeEvent.contentOffset.y;
     const scrollDiff = currentOffset - scrollOffsetY.current;
-    
     if (scrollDiff > 8 && lastScrollDir !== 'down') {
       setLastScrollDir('down');
       navigation.setParams({ navScrollState: 'down' } as any);
@@ -158,13 +158,12 @@ export default function EventsScreen() {
       setLastScrollDir('up');
       navigation.setParams({ navScrollState: 'up' } as any);
     }
-    
     scrollOffsetY.current = currentOffset;
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      <View pointerEvents="none" style={styles.liquidLayer}>
+      <View style={[styles.liquidLayer, { pointerEvents: "none" }]}>
         <View style={[styles.liquidOrb, styles.liquidRed, isDark && styles.liquidRedDark]} />
         <View style={[styles.liquidOrb, styles.liquidBlue, isDark && styles.liquidBlueDark]} />
         <View style={[styles.liquidOrb, styles.liquidPurple, isDark && styles.liquidPurpleDark]} />
@@ -303,7 +302,6 @@ const createStyles = (colors: ThemePalette) => StyleSheet.create({
   liquidBlueDark: { backgroundColor: 'rgba(25,108,255,0.29)' },
   liquidPurpleDark: { backgroundColor: 'rgba(142,77,255,0.26)' },
   liquidCyanDark: { backgroundColor: 'rgba(0,207,255,0.23)' },
-  
   // Header
   header: {
     backgroundColor: 'rgba(255,255,255,0.10)',

@@ -1,9 +1,10 @@
+import shadow from '../utils/shadow';
 import React, { useRef, useState } from 'react';
 import { Alert, Animated, Linking, Platform, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { CalendarEvent, formatEventTime } from '../utils/calendarUtils';
 import useTheme from '../utils/useTheme';
-import { cancelEventReminder, isReminderSet, scheduleEventReminder } from '../utils/eventNotifications';
+import { cancelEventReminder, isReminderSet, scheduleEventReminder, subscribeEventReminders } from '../utils/eventNotifications';
 
 export default function EventCard({ event, animationDelay }: { event: CalendarEvent; animationDelay: number }) {
   const { colors, isDark } = useTheme();
@@ -11,16 +12,27 @@ export default function EventCard({ event, animationDelay }: { event: CalendarEv
   const [expanded, setExpanded] = useState(false);
   const [reminderSet, setReminderSet] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [reminderError, setReminderError] = useState<string | null>(null);
   const opacity = useRef(new Animated.Value(0)).current;
   const translateY = useRef(new Animated.Value(12)).current;
 
   React.useEffect(() => {
-    isReminderSet(event.id).then(setReminderSet);
+
     Animated.parallel([
-      Animated.timing(opacity, { toValue: 1, duration: 320, delay: animationDelay, useNativeDriver: true }),
-      Animated.spring(translateY, { toValue: 0, delay: animationDelay, useNativeDriver: true }),
+      Animated.timing(opacity, { toValue: 1, duration: 320, delay: animationDelay, useNativeDriver: Platform.OS !== 'web' }),
+      Animated.spring(translateY, { toValue: 0, delay: animationDelay, useNativeDriver: Platform.OS !== 'web' }),
     ]).start();
   }, [animationDelay, event.id, opacity, translateY]);
+
+  React.useEffect(() => {
+    let active = true;
+    const refresh = () => { void isReminderSet(event.id).then(value => {
+      if (active) setReminderSet(value);
+    }).catch(() => { if (active) setReminderError('Could not read saved reminders. Allow site storage and try again.'); }); };
+    refresh();
+    const unsubscribe = subscribeEventReminders(refresh);
+    return () => { active = false; unsubscribe(); };
+  }, [event.id]);
 
   const month = event.startDate.toLocaleDateString('en-US', { month: 'short', timeZone: 'America/New_York' }).toUpperCase();
   const day = event.startDate.toLocaleDateString('en-US', { day: 'numeric', timeZone: 'America/New_York' });
@@ -48,6 +60,7 @@ export default function EventCard({ event, animationDelay }: { event: CalendarEv
 
   const toggleReminder = async () => {
     if (busy) return;
+    setReminderError(null);
     setBusy(true);
     try {
       if (reminderSet) {
@@ -56,8 +69,11 @@ export default function EventCard({ event, animationDelay }: { event: CalendarEv
       } else {
         const scheduled = await scheduleEventReminder(event);
         if (scheduled) setReminderSet(true);
-        else Alert.alert('Reminder unavailable', 'Enable notifications and make sure the event has not started.');
+        else setReminderError('Enable notifications in your device settings. Reminders can only be set more than 30 minutes before the event.');
       }
+    } catch (error) {
+      console.warn('Unable to update event reminder:', error);
+      setReminderError(Platform.OS === 'web' ? (error instanceof Error ? error.message : 'Could not save your reminder. Allow site storage and try again.') : 'Could not update your reminder. Check notification permissions and try again.');
     } finally { setBusy(false); }
   };
 
@@ -103,8 +119,10 @@ export default function EventCard({ event, animationDelay }: { event: CalendarEv
 
       <View style={styles.reminder}>
         <View style={styles.reminderLabel}><Ionicons name="notifications-outline" size={16} color="#777B7D" /><Text style={styles.reminderText}>Notify me</Text></View>
-        <Switch value={reminderSet} onValueChange={toggleReminder} disabled={busy} trackColor={{ false: '#DDDDDB', true: '#C99AA5' }} thumbColor={reminderSet ? '#8D102B' : '#FFFFFF'} />
+        <Switch accessibilityLabel={`Notify me about ${event.title}`} value={reminderSet} onValueChange={toggleReminder} disabled={busy} trackColor={{ false: '#DDDDDB', true: '#8D102B' }} thumbColor="#2563EB" {...(Platform.OS === 'web' ? { activeThumbColor: '#2563EB' } : {})} />
       </View>
+      {Platform.OS === 'web' && <Text style={styles.reminderText}>Keep this page open for reminders. If browser notifications are unavailable, a reminder will appear on this page. Sleeping tabs may delay reminders.</Text>}
+      {reminderError && <Text accessibilityRole="alert" style={styles.reminderText}>{reminderError}</Text>}
     </Animated.View>
   );
 }
@@ -114,7 +132,7 @@ function Info({ icon, text, styles }: { icon: keyof typeof Ionicons.glyphMap; te
 }
 
 const createStyles = (colors: ReturnType<typeof useTheme>['colors'], isDark: boolean) => StyleSheet.create({
-  card: { marginHorizontal: 18, marginBottom: 14, backgroundColor: colors.surface, borderRadius: 15, padding: 12, shadowColor: '#4B392C', shadowOpacity: 0.09, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 3 },
+  card: { marginHorizontal: 18, marginBottom: 14, backgroundColor: colors.surface, borderRadius: 15, padding: 12, ...shadow('#4B392C', 0.09, 12, 0, 4),    elevation: 3 },
   top: { flexDirection: 'row', alignItems: 'center', gap: 11 },
   date: { width: 55, height: 61, borderRadius: 10, backgroundColor: isDark ? '#161C31' : '#F2F2F0', overflow: 'hidden', alignItems: 'center', borderWidth: isDark ? 1 : 0, borderColor: isDark ? 'rgba(255,255,255,0.10)' : 'transparent' },
   monthBar: { width: '100%', backgroundColor: '#8D102B', paddingVertical: 4, alignItems: 'center' },

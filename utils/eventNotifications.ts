@@ -4,6 +4,7 @@ import { Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CalendarEvent } from './calendarUtils';
+import { explainPermissionSettings } from './permissionSettings';
 
 const STORAGE_KEY = 'alpfa-njit:event-reminders';
 export const REMINDER_MINUTES_BEFORE = 30;
@@ -56,12 +57,17 @@ export async function requestNotificationPermissions(): Promise<boolean> {
     return true;
   }
 
-  const { status } = await Notifications.requestPermissionsAsync();
-  return status === 'granted';
+  const result = await Notifications.requestPermissionsAsync({
+    ios: { allowAlert: true, allowBadge: true, allowSound: true },
+  });
+  const granted = result.granted || result.ios?.status === Notifications.IosAuthorizationStatus.PROVISIONAL;
+  if (!granted && !result.canAskAgain) explainPermissionSettings('Notification');
+  return granted;
 }
 
 // Schedule a reminder to fire shortly before the event starts
 export async function scheduleEventReminder(event: CalendarEvent): Promise<boolean> {
+  if (Platform.OS === 'web') return false;
   const granted = await requestNotificationPermissions();
   if (!granted) {
     return false;
@@ -81,6 +87,7 @@ export async function scheduleEventReminder(event: CalendarEvent): Promise<boole
     trigger: {
       type: Notifications.SchedulableTriggerInputTypes.DATE,
       date: triggerDate,
+      ...(Platform.OS === 'android' ? { channelId: 'event-reminders' } : {}),
     },
   });
 
@@ -94,8 +101,12 @@ export async function cancelEventReminder(eventId: string): Promise<void> {
   const map = await getReminderMap();
   const identifier = map[eventId];
   if (identifier) {
-    await Notifications.cancelScheduledNotificationAsync(identifier).catch(() => undefined);
+    await Notifications.cancelScheduledNotificationAsync(identifier);
     delete map[eventId];
     await saveReminderMap(map);
   }
 }
+
+// Native reminders are managed by the operating system.
+export function startEventReminders(): () => void { return () => {}; }
+export function subscribeEventReminders(_onChange: () => void): () => void { return () => {}; }

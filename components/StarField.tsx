@@ -1,3 +1,5 @@
+import shadow from '../utils/shadow';
+import { Platform } from 'react-native';
 import React, { useEffect, useMemo, useRef } from 'react';
 import { Animated, Easing, StyleSheet, View } from 'react-native';
 
@@ -46,8 +48,8 @@ function GlowStar({ x, y, size, opacity, width, height }: Star & { width: number
   useEffect(() => {
     const loop = Animated.loop(
       Animated.sequence([
-        Animated.timing(twinkle, { toValue: 1, duration: 1100, easing: Easing.inOut(Easing.quad), useNativeDriver: true }),
-        Animated.timing(twinkle, { toValue: 0, duration: 1200, easing: Easing.inOut(Easing.quad), useNativeDriver: true }),
+        Animated.timing(twinkle, { toValue: 1, duration: 1100, easing: Easing.inOut(Easing.quad), useNativeDriver: Platform.OS !== 'web' }),
+        Animated.timing(twinkle, { toValue: 0, duration: 1200, easing: Easing.inOut(Easing.quad), useNativeDriver: Platform.OS !== 'web' }),
       ])
     );
     loop.start();
@@ -114,9 +116,6 @@ const styles = StyleSheet.create({
   glowStar: {
     position: 'absolute',
     backgroundColor: '#D9EAFF',
-    shadowColor: '#9FC8FF',
-    shadowOpacity: 0.65,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 0 },
+    ...shadow('#9FC8FF', 0.65, 6, 0, 0),
   },
 });

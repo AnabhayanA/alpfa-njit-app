@@ -1,3 +1,5 @@
+import shadow from '../utils/shadow';
+import { Platform } from 'react-native';
 import React, { useEffect, useRef, useState } from 'react';
 import { Animated, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
@@ -191,15 +193,14 @@ export default function EBoardScreen() {
 
   useEffect(() => {
     Animated.parallel([
-      Animated.timing(fade, { toValue: 1, duration: 650, useNativeDriver: true }),
-      Animated.spring(slide, { toValue: 0, speed: 9, bounciness: 5, useNativeDriver: true }),
+      Animated.timing(fade, { toValue: 1, duration: 650, useNativeDriver: Platform.OS !== 'web' }),
+      Animated.spring(slide, { toValue: 0, speed: 9, bounciness: 5, useNativeDriver: Platform.OS !== 'web' }),
     ]).start();
   }, []);
 
   const handleScroll = (event: any) => {
     const currentOffset = event.nativeEvent.contentOffset.y;
     const scrollDiff = currentOffset - scrollOffsetY.current;
-    
     if (scrollDiff > 8 && lastScrollDir !== 'down') {
       setLastScrollDir('down');
       navigation.setParams({ navScrollState: 'down' } as any);
@@ -207,13 +208,12 @@ export default function EBoardScreen() {
       setLastScrollDir('up');
       navigation.setParams({ navScrollState: 'up' } as any);
     }
-    
     scrollOffsetY.current = currentOffset;
   };
 
   return (
     <View style={styles.container}>
-      <View pointerEvents="none" style={styles.liquidLayer}>
+      <View style={[styles.liquidLayer, { pointerEvents: "none" }]}>
         <View style={[styles.liquidOrb, styles.liquidRed, isDark && styles.liquidRedDark]} />
         <View style={[styles.liquidOrb, styles.liquidBlue, isDark && styles.liquidBlueDark]} />
         <View style={[styles.liquidOrb, styles.liquidPurple, isDark && styles.liquidPurpleDark]} />
@@ -316,10 +316,7 @@ const createStyles = (colors: ThemePalette) => StyleSheet.create({
     backgroundColor: colors.surface,
     flexDirection: 'row',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 5 },
+    ...shadow('#000', 0.08, 12, 0, 5),
   },
   featureCircle: {
     width: 66,

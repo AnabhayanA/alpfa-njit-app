@@ -1,3 +1,4 @@
+import shadow from '../utils/shadow';
 import React, { useState, useRef } from 'react';
 import {
   Image,
@@ -56,7 +57,6 @@ export default function AboutScreen() {
   const handleScroll = (event: any) => {
     const currentOffset = event.nativeEvent.contentOffset.y;
     const scrollDiff = currentOffset - scrollOffsetY.current;
-    
     if (scrollDiff > 8 && lastScrollDir !== 'down') {
       setLastScrollDir('down');
       navigation.setParams({ navScrollState: 'down' } as any);
@@ -64,14 +64,13 @@ export default function AboutScreen() {
       setLastScrollDir('up');
       navigation.setParams({ navScrollState: 'up' } as any);
     }
-    
     scrollOffsetY.current = currentOffset;
   };
 
   return (
     <View style={styles.container}>
       <StatusBar style={isDark ? 'light' : 'dark'} />
-      <View pointerEvents="none" style={styles.liquidLayer}>
+      <View style={[styles.liquidLayer, { pointerEvents: "none" }]}>
         <View style={[styles.liquidOrb, styles.liquidRed, isDark && styles.liquidRedDark]} />
         <View style={[styles.liquidOrb, styles.liquidBlue, isDark && styles.liquidBlueDark]} />
         <View style={[styles.liquidOrb, styles.liquidPurple, isDark && styles.liquidPurpleDark]} />
@@ -330,10 +329,7 @@ const createStyles = (colors: ThemePalette, isDark: boolean) => StyleSheet.creat
     marginTop: 18,
     borderWidth: 1,
     borderColor: colors.surfaceBorder,
-    shadowColor: '#000',
-    shadowOpacity: 0.03,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 3 },
+    ...shadow('#000', 0.03, 10, 0, 3),
   },
   cardTitle: {
     color: colors.textPrimary,
@@ -356,10 +352,7 @@ const createStyles = (colors: ThemePalette, isDark: boolean) => StyleSheet.creat
     marginBottom: 12,
     borderWidth: 1,
     borderColor: colors.surfaceBorder,
-    shadowColor: '#000',
-    shadowOpacity: 0.02,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
+    ...shadow('#000', 0.02, 8, 0, 2),
   },
   infoIcon: {
     width: 40,
@@ -397,10 +390,7 @@ const createStyles = (colors: ThemePalette, isDark: boolean) => StyleSheet.creat
     marginTop: 12,
     borderWidth: 1,
     borderColor: colors.surfaceBorder,
-    shadowColor: '#000',
-    shadowOpacity: 0.02,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
+    ...shadow('#000', 0.02, 8, 0, 2),
   },
   linkIcon: {
     width: 40,

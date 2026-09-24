@@ -1,3 +1,5 @@
+import shadow from '../utils/shadow';
+import { Platform } from 'react-native';
 import React, { useEffect, useRef } from 'react';
 import { Animated, Easing, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -45,18 +47,18 @@ export default function BottomNav({ state, descriptors, navigation }: BottomTabB
         toValue: isDown ? 7 : 0,
         duration: 240,
         easing: Easing.out(Easing.cubic),
-        useNativeDriver: true,
+        useNativeDriver: Platform.OS !== 'web',
       }),
       Animated.timing(navScale, {
         toValue: isDown ? 0.91 : 1,
         duration: 240,
         easing: Easing.out(Easing.cubic),
-        useNativeDriver: true,
+        useNativeDriver: Platform.OS !== 'web',
       }),
       Animated.timing(navOpacity, {
         toValue: isDown ? 0.94 : 1,
         duration: 240,
-        useNativeDriver: true,
+        useNativeDriver: Platform.OS !== 'web',
       }),
     ]).start();
   }, [navOpacity, navScale, navTranslateY, state.index, state.routes]);
@@ -141,10 +143,7 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     flexDirection: 'row',
     alignItems: 'center',
-    shadowColor: '#4A3727',
-    shadowOpacity: 0.14,
-    shadowRadius: 18,
-    shadowOffset: { width: 0, height: 5 },
+    ...shadow('#4A3727', 0.14, 18, 0, 5),
     elevation: 8,
     overflow: 'hidden',
   },
@@ -152,8 +151,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(10,16,36,0.96)',
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.10)',
-    shadowColor: '#000000',
-    shadowOpacity: 0.35,
+    ...shadow('#000000', 0.35, 18, 0, 5),
   },
   tab: {
     flex: 1,

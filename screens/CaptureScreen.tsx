@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Image, Keyboard, PanResponder, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, useWindowDimensions } from 'react-native';
+import { ActivityIndicator, Alert, AppState, Image, Keyboard, KeyboardAvoidingView, Modal, PanResponder, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, useWindowDimensions } from 'react-native';
 import { CameraType, CameraView, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
@@ -9,12 +9,20 @@ import { File, Paths } from 'expo-file-system';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import useTheme from '../utils/useTheme';
+import { explainPermissionSettings, openAppSettings } from '../utils/permissionSettings';
 import { uploadPhotoToDrive } from '../utils/driveUpload';
 import {
   AlpfaDualCameraModule,
   AlpfaDualCameraView,
   type AlpfaDualCameraViewRef,
 } from '../modules/alpfa-dual-camera';
+
+function withLocationTimeout<T>(work: Promise<T>, milliseconds: number): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error('GPS took too long. Try again or type a location.')), milliseconds);
+    work.then(resolve, reject).finally(() => clearTimeout(timer));
+  });
+}
 
 const FILTER_MATRICES: Record<string, number[]> = {
   Warm: [1.12, 0.05, 0, 0, 0.03, 0.02, 1.03, 0, 0, 0.01, 0, 0.02, 0.88, 0, 0, 0, 0, 0, 1, 0],
@@ -134,7 +142,7 @@ export default function CaptureScreen() {
   const cameraRef = useRef<CameraView>(null);
   const filteredCanvasRef = useCanvasRef();
   const dualCameraRef = useRef<AlpfaDualCameraViewRef>(null);
-  const [permission, requestPermission] = useCameraPermissions();
+  const [permission, requestPermission, getPermission] = useCameraPermissions();
   const [cameraReady, setCameraReady] = useState(false);
   const [facing, setFacing] = useState<CameraType>('back');
   const [dualSupported, setDualSupported] = useState(false);
@@ -147,7 +155,10 @@ export default function CaptureScreen() {
   const [nameFocused, setNameFocused] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [selectedFilter, setSelectedFilter] = useState('Normal');
-  const [photoLocation, setPhotoLocation] = useState<{ latitude: number; longitude: number; label: string } | null>(null);
+  const [photoLocation, setPhotoLocation] = useState<{ label: string } | null>(null);
+  const [locationEditorOpen, setLocationEditorOpen] = useState(false);
+  const [locationDraft, setLocationDraft] = useState('');
+  const locationRequest = useRef(0);
   const [locationLoading, setLocationLoading] = useState(false);
   const [locationMessage, setLocationMessage] = useState('');
   const [locationPosition, setLocationPosition] = useState({ x: 28, y: 420 });
@@ -177,9 +188,38 @@ export default function CaptureScreen() {
     setDualMode(supported);
   }, []);
 
+  useFocusEffect(React.useCallback(() => {
+    const refresh = () => { void getPermission().catch(() => setCameraMessage('Could not check camera access. Please try again.')); };
+    refresh();
+    const subscription = AppState.addEventListener('change', (state) => {
+      if (state === 'active') refresh();
+    });
+    return () => subscription.remove();
+  }, [getPermission]));
+
+  const enableCamera = async () => {
+    try {
+      if (Platform.OS === 'web' && (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia)) {
+        setCameraMessage('Camera access needs HTTPS or localhost and a browser that supports cameras.');
+        return;
+      }
+      if (Platform.OS !== 'web' && permission && !permission.canAskAgain) {
+        await openAppSettings();
+        return;
+      }
+      const result = await requestPermission();
+      if (!result.granted && Platform.OS === 'web') setCameraMessage('Allow camera access in this browser site settings, then try again.');
+    } catch {
+      setCameraMessage('Could not request camera access. Check your device or browser settings.');
+    }
+  };
+
   const close = () => navigation.navigate('Home' as never);
 
   useFocusEffect(React.useCallback(() => () => {
+    locationRequest.current++;
+    setLocationEditorOpen(false);
+    setLocationLoading(false);
     setPhotoUri(null);
     setStatus('idle');
     setStatusMessage('');
@@ -214,38 +254,70 @@ export default function CaptureScreen() {
   const toggleCameraMode = () => { setCameraReady(false); setCameraMessage(''); setDualMode((current) => !current); };
   const retake = () => { setSelectedFilter('Normal'); setPhotoUri(null); setStatus('idle'); setStatusMessage(''); setPhotoName(''); setPhotoLocation(null); setLocationMessage(''); };
 
-  const confirmAndAddLocation = () => {
-    const message = 'Your current city/region will be displayed on the photo and included when the photo is shared to the ALPFA NJIT Drive.';
-    if (Platform.OS === 'web') {
-      if (window.confirm('Add location to this photo?\n\n' + message)) void addLocation();
-      return;
-    }
-    Alert.alert('Add location to this photo?', message, [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Add Location', onPress: addLocation },
-    ]);
+  const closeLocationEditor = () => {
+    locationRequest.current++;
+    setLocationLoading(false);
+    setLocationEditorOpen(false);
+    setLocationMessage('');
+    Keyboard.dismiss();
+  };
+
+  const openLocationEditor = () => {
+    locationRequest.current++;
+    setLocationLoading(false);
+    setLocationDraft(photoLocation?.label ?? '');
+    setLocationMessage('');
+    setLocationEditorOpen(true);
+  };
+
+  const saveLocation = () => {
+    const label = locationDraft.trim();
+    if (!label) { setLocationMessage('Enter a location name first.'); return; }
+    if (!photoLocation) setLocationPosition({ x: 28, y: Math.max(insets.top + 100, screenHeight * 0.5) });
+    setPhotoLocation({ label });
+    setLocationMessage('');
+    closeLocationEditor();
   };
 
   const addLocation = async () => {
+    const request = ++locationRequest.current;
+    setLocationLoading(true);
+    setLocationMessage('');
     try {
-      setLocationLoading(true); setLocationMessage('');
-      const { status: permissionStatus } = await Location.requestForegroundPermissionsAsync();
-      if (permissionStatus !== 'granted') {
-        setLocationMessage('Location permission was not granted. You can still share the photo without a location.');
-        return;
+      let label: string;
+      if (Platform.OS === 'web') {
+        if (!window.isSecureContext || !navigator.geolocation) {
+          throw new Error('GPS needs an HTTPS link. You can type a location instead.');
+        }
+        const position = await withLocationTimeout(new Promise<GeolocationPosition>((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 15_000, maximumAge: 60_000 });
+        }), 20_000);
+        label = position.coords.latitude.toFixed(3) + ', ' + position.coords.longitude.toFixed(3);
+      } else {
+        const permission = await Location.requestForegroundPermissionsAsync();
+        if (request !== locationRequest.current) return;
+        if (!permission.granted) {
+          if (!permission.canAskAgain) explainPermissionSettings('Location');
+          throw new Error('Location access is off. Type a location or allow access in Settings.');
+        }
+        const position = await withLocationTimeout(Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced }), 15_000);
+        const { latitude, longitude } = position.coords;
+        // Geocoding must not discard a successful GPS result.
+        const places = await withLocationTimeout(Location.reverseGeocodeAsync({ latitude, longitude }), 5_000).catch(() => []);
+        label = [places[0]?.city, places[0]?.region].filter(Boolean).join(', ') || latitude.toFixed(3) + ', ' + longitude.toFixed(3);
       }
-      const currentLocation = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
-      const { latitude, longitude } = currentLocation.coords;
-      const places = await Location.reverseGeocodeAsync({ latitude, longitude });
-      const place = places[0];
-      const label = place ? [place.city, place.region].filter(Boolean).join(', ') : 'Current location';
-      setLocationPosition({ x: 28, y: Math.max(insets.top + 100, screenHeight * 0.5) });
-      setPhotoLocation({ latitude, longitude, label: label || 'Current location' });
-    } catch { setLocationMessage('Location could not be added. You can still share the photo without it.'); }
-    finally { setLocationLoading(false); }
+      if (request === locationRequest.current) {
+        setLocationDraft(label);
+        setLocationMessage('Location found. Edit the text if you want, then tap Save Location.');
+      }
+    } catch (error) {
+      if (request === locationRequest.current) setLocationMessage(error instanceof Error ? error.message : 'GPS is unavailable or blocked. You can type a location instead.');
+    } finally {
+      if (request === locationRequest.current) setLocationLoading(false);
+    }
   };
 
-  const removeLocation = () => { setPhotoLocation(null); setLocationMessage(''); };
+  const removeLocation = () => { locationRequest.current++; setPhotoLocation(null); setLocationMessage(''); };
 
   const upload = async () => {
     if (!photoUri) return;
@@ -290,9 +362,9 @@ export default function CaptureScreen() {
     return (
       <View style={[styles.container, styles.centered, { paddingTop: insets.top + 24 }]}>
         <Ionicons name="camera-outline" size={48} color="rgba(255,255,255,0.75)" />
-        <Text style={styles.permissionTitle}>Camera access needed</Text>
+        <Text style={styles.permissionTitle}>Camera access needed</Text>{!!cameraMessage && <Text accessibilityRole="alert" style={styles.permissionText}>{cameraMessage}</Text>}
         <Text style={styles.permissionText}>Allow camera access so you can capture and share photos with the chapter.</Text>
-        <TouchableOpacity style={styles.primaryButton} onPress={requestPermission}><Text style={styles.primaryButtonText}>Grant permission</Text></TouchableOpacity>
+        <TouchableOpacity style={styles.primaryButton} onPress={enableCamera}><Text style={styles.primaryButtonText}>{Platform.OS !== 'web' && !permission.canAskAgain ? 'Open Settings' : 'Allow Camera'}</Text></TouchableOpacity>
         <TouchableOpacity style={styles.closeLink} onPress={close}><Text style={styles.closeLinkText}>Cancel</Text></TouchableOpacity>
       </View>
     );
@@ -301,6 +373,24 @@ export default function CaptureScreen() {
   if (photoUri) {
     return (
       <View style={styles.container}>
+        <Modal visible={locationEditorOpen} transparent animationType="fade" onRequestClose={closeLocationEditor}>
+          <KeyboardAvoidingView style={styles.locationEditorBackdrop} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+            <View style={styles.locationEditorCard} accessibilityViewIsModal>
+              <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ padding: 22 }}>
+                <Text style={styles.permissionTitle}>{photoLocation ? 'Edit Location' : 'Add Location'}</Text>
+                <Text style={styles.permissionText}>Type a place or use your current location. This text will appear on the shared photo.</Text>
+                <TextInput accessibilityLabel="Photo location" value={locationDraft} onChangeText={value => { locationRequest.current++; setLocationLoading(false); setLocationDraft(value); setLocationMessage(''); }} placeholder="e.g. NJIT Campus Center" placeholderTextColor="rgba(255,255,255,0.48)" style={styles.nameInput} maxLength={60} returnKeyType="done" onSubmitEditing={saveLocation} />
+                <TouchableOpacity style={styles.addLocationButton} onPress={addLocation} disabled={locationLoading} accessibilityRole="button">
+                  {locationLoading && <ActivityIndicator color="#FFFFFF" />}
+                  <Text style={styles.addLocationText}>{locationLoading ? 'Finding location...' : 'Use current location'}</Text>
+                </TouchableOpacity>
+                {!!locationMessage && <Text accessibilityRole="alert" style={styles.permissionText}>{locationMessage}</Text>}
+                <TouchableOpacity style={[styles.primaryButton, { marginTop: 16, opacity: locationDraft.trim() ? 1 : 0.5 }]} onPress={saveLocation} disabled={!locationDraft.trim()} accessibilityRole="button"><Text style={styles.primaryButtonText}>Save Location</Text></TouchableOpacity>
+                <TouchableOpacity style={styles.closeLink} onPress={closeLocationEditor} accessibilityRole="button"><Text style={styles.closeLinkText}>Cancel</Text></TouchableOpacity>
+              </ScrollView>
+            </View>
+          </KeyboardAvoidingView>
+        </Modal>
         <FilteredPhotoPreview uri={photoUri} filter={selectedFilter} canvasRef={filteredCanvasRef} locationLabel={photoLocation?.label} locationPosition={locationPosition} />
         {photoLocation && status !== 'done' && (
           <View style={[styles.photoLocationStamp, { left: locationPosition.x - 8, top: locationPosition.y - 8 }]} {...locationPanResponder.panHandlers}>
@@ -336,9 +426,9 @@ export default function CaptureScreen() {
               {!nameFocused && (
                 <View style={styles.locationCard}>
                   {photoLocation ? (
-                    <><View style={styles.locationInfo}><Ionicons name="location" size={18} color="#FFFFFF" /><View style={styles.locationTextWrap}><Text style={styles.locationLabel}>LOCATION ADDED</Text><Text style={styles.locationValue}>{photoLocation.label}</Text></View></View><TouchableOpacity style={styles.removeLocationButton} onPress={removeLocation} disabled={status === 'uploading'} accessibilityRole="button" accessibilityLabel="Remove location from photo"><Ionicons name="close" size={17} color="#FFFFFF" /></TouchableOpacity></>
+                    <><TouchableOpacity style={styles.locationInfo} onPress={openLocationEditor} disabled={status === 'uploading'} accessibilityRole="button" accessibilityLabel="Edit photo location"><Ionicons name="location" size={18} color="#FFFFFF" /><View style={styles.locationTextWrap}><Text style={styles.locationLabel}>LOCATION - TAP TO EDIT</Text><Text style={styles.locationValue}>{photoLocation.label}</Text></View><Ionicons name="pencil" size={18} color="#FFFFFF" /></TouchableOpacity><TouchableOpacity style={styles.removeLocationButton} onPress={removeLocation} disabled={status === 'uploading'} accessibilityRole="button" accessibilityLabel="Remove location from photo"><Ionicons name="close" size={17} color="#FFFFFF" /></TouchableOpacity></>
                   ) : (
-                    <TouchableOpacity style={styles.addLocationButton} onPress={confirmAndAddLocation} disabled={locationLoading || status === 'uploading'} accessibilityRole="button" accessibilityLabel="Add current location to photo">
+                    <TouchableOpacity style={styles.addLocationButton} onPress={openLocationEditor} disabled={locationLoading || status === 'uploading'} accessibilityRole="button" accessibilityLabel="Add or type a location for this photo">
                       {locationLoading ? <ActivityIndicator color="#FFFFFF" size="small" /> : <Ionicons name="location-outline" size={18} color="#FFFFFF" />}
                       <Text style={styles.addLocationText}>{locationLoading ? 'Finding location...' : 'Add Location'}</Text>
                     </TouchableOpacity>
@@ -365,7 +455,7 @@ export default function CaptureScreen() {
       {dualMode ? (
         <AlpfaDualCameraView ref={dualCameraRef} style={StyleSheet.absoluteFill} onReady={() => setCameraReady(true)} onError={(event) => { setCameraMessage(event.nativeEvent.message); setDualMode(false); setCameraReady(false); }} />
       ) : (
-        <CameraView ref={cameraRef} style={StyleSheet.absoluteFill} key={facing} facing={facing} mirror={facing === 'front'} onCameraReady={() => { setCameraReady(true); setCameraMessage(''); }} />
+        <CameraView ref={cameraRef} style={StyleSheet.absoluteFill} key={facing} facing={facing} mirror={facing === 'front'} onMountError={({ message }) => { setCameraReady(false); setCameraMessage(message); }} onCameraReady={() => { setCameraReady(true); setCameraMessage(''); }} />
       )}
       <TouchableOpacity style={[styles.closeButton, { top: insets.top + 12 }]} onPress={close}><Ionicons name="close" size={22} color="#FFFFFF" /></TouchableOpacity>
       {!dualMode && <TouchableOpacity style={[styles.flipCameraButton, { top: insets.top + 12 }]} onPress={toggleFacing} accessibilityRole="button" accessibilityLabel={`Switch to ${facing === 'back' ? 'front' : 'back'} camera`}><Ionicons name="camera-reverse-outline" size={23} color="#FFFFFF" /></TouchableOpacity>}
@@ -419,6 +509,8 @@ const createStyles = (colors: ReturnType<typeof useTheme>['colors']) => StyleShe
   locationLabel: { color: 'rgba(255,255,255,0.55)', fontSize: 9, fontWeight: '900', letterSpacing: 0.9 },
   locationValue: { color: '#FFFFFF', fontSize: 13, fontWeight: '800', marginTop: 2 },
   removeLocationButton: { width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.12)' },
+  locationEditorBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'center', alignItems: 'center', padding: 20 },
+  locationEditorCard: { width: '100%', maxWidth: 440, maxHeight: '90%', backgroundColor: '#10182A', borderRadius: 22 },
   locationMessage: { color: 'rgba(255,255,255,0.72)', fontSize: 11, textAlign: 'center', marginTop: -4, marginBottom: 10, lineHeight: 16 },
   photoLocationStamp: { position: 'absolute', zIndex: 8, maxWidth: '82%', minHeight: 44, paddingHorizontal: 8, paddingVertical: 8, flexDirection: 'row', alignItems: 'center', gap: 6 },
   photoLocationStampText: { color: '#FFFFFF', fontSize: 19, fontWeight: '900', textShadowColor: 'rgba(0,0,0,0.8)', textShadowOffset: { width: 1.5, height: 1.5 }, textShadowRadius: 3 },

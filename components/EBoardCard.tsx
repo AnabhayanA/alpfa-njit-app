@@ -1,3 +1,5 @@
+import shadow from '../utils/shadow';
+import { Platform } from 'react-native';
 import React, { useRef, useState } from 'react';
 import {
   Animated,
@@ -42,8 +44,8 @@ export default function EBoardCard({ member, animationDelay }: { member: EBoardM
 
   React.useEffect(() => {
     Animated.parallel([
-      Animated.timing(opacity, { toValue: 1, duration: 400, delay: animationDelay, useNativeDriver: true }),
-      Animated.spring(translateY, { toValue: 0, delay: animationDelay, useNativeDriver: true }),
+      Animated.timing(opacity, { toValue: 1, duration: 400, delay: animationDelay, useNativeDriver: Platform.OS !== 'web' }),
+      Animated.spring(translateY, { toValue: 0, delay: animationDelay, useNativeDriver: Platform.OS !== 'web' }),
     ]).start();
   }, [animationDelay, opacity, translateY]);
 
@@ -52,7 +54,7 @@ export default function EBoardCard({ member, animationDelay }: { member: EBoardM
       toValue: isFlipped ? 0 : 1,
       duration: 520,
       easing: Easing.inOut(Easing.ease),
-      useNativeDriver: true,
+      useNativeDriver: Platform.OS !== 'web',
     }).start();
     setIsFlipped((value) => !value);
   };
@@ -72,8 +74,7 @@ export default function EBoardCard({ member, animationDelay }: { member: EBoardM
     <Animated.View style={[styles.wrapper, { width: cardWidth, opacity, transform: [{ translateY }] }]}>
       <View style={styles.cardStage}>
         <Animated.View
-          pointerEvents={isFlipped ? 'none' : 'auto'}
-          style={[styles.face, styles.front, { opacity: frontOpacity, transform: [{ perspective: 1000 }, { rotateY: frontRotateY }] }]}
+          style={[[styles.face, styles.front, { opacity: frontOpacity, transform: [{ perspective: 1000 }, { rotateY: frontRotateY }] }], { pointerEvents: isFlipped ? 'none' : 'auto' }]}
         >
           <TouchableOpacity style={styles.frontPressable} activeOpacity={0.92} onPress={toggleFlip}>
             <View style={styles.profileRow}>
@@ -99,8 +100,7 @@ export default function EBoardCard({ member, animationDelay }: { member: EBoardM
         </Animated.View>
 
         <Animated.View
-          pointerEvents={isFlipped ? 'auto' : 'none'}
-          style={[styles.face, styles.back, { opacity: backOpacity, transform: [{ perspective: 1000 }, { rotateY: backRotateY }] }]}
+          style={[[styles.face, styles.back, { opacity: backOpacity, transform: [{ perspective: 1000 }, { rotateY: backRotateY }] }], { pointerEvents: isFlipped ? 'auto' : 'none' }]}
         >
           <TouchableOpacity style={styles.backHeader} activeOpacity={0.85} onPress={toggleFlip}>
             <View>
@@ -173,10 +173,7 @@ const createStyles = (colors: ReturnType<typeof useTheme>['colors']) => StyleShe
     borderRadius: 18,
     overflow: 'hidden',
     backfaceVisibility: 'hidden',
-    shadowColor: '#4B392C',
-    shadowOpacity: 0.12,
-    shadowRadius: 13,
-    shadowOffset: { width: 0, height: 5 },
+    ...shadow('#4B392C', 0.12, 13, 0, 5),
     elevation: 4,
   },
   front: { backgroundColor: colors.surface },

@@ -66,8 +66,7 @@ export default function LightStreak({
 
   return (
     <Animated.View
-      pointerEvents="none"
-      style={[
+      style={[[
         styles.wrap,
         {
           left: centerX - length / 2,
@@ -82,7 +81,7 @@ export default function LightStreak({
             { scaleX },
           ],
         },
-      ]}
+      ], { pointerEvents: "none" }]}
     >
       <View style={[styles.glow, { height: thickness * 5, borderRadius: thickness * 2.5 }]} />
       <View style={[styles.core, { height: thickness, borderRadius: thickness / 2 }]} />

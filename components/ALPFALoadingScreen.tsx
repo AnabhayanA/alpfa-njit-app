@@ -1,8 +1,9 @@
+import { Platform } from 'react-native';
 import React, { useEffect, useRef } from 'react';
 import { Animated, Easing, StyleSheet, View, useWindowDimensions } from 'react-native';
-import Svg, { ClipPath, Defs, Path, Rect } from 'react-native-svg';
+import Svg, { ClipPath, Defs, Path } from 'react-native-svg';
 
-const AnimatedRect = Animated.createAnimatedComponent(Rect);
+import AnimatedRect from './AnimatedClipRect';
 import NJITInstituteText from './NJITInstituteText';
 import AnimatedALPFAMark from './AnimatedALPFAMark';
 
@@ -48,31 +49,31 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
     const animation = Animated.sequence([
       Animated.delay(120),
       Animated.parallel([
-        Animated.timing(opacity, { toValue: 1, duration: 220, easing: Easing.out(Easing.quad), useNativeDriver: true }),
-        Animated.spring(scale, { toValue: 1, damping: 17, stiffness: 130, mass: 0.8, useNativeDriver: true }),
-        Animated.timing(translateY, { toValue: 0, duration: 500, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
+        Animated.timing(opacity, { toValue: 1, duration: 220, easing: Easing.out(Easing.quad), useNativeDriver: Platform.OS !== 'web' }),
+        Animated.spring(scale, { toValue: 1, damping: 17, stiffness: 130, mass: 0.8, useNativeDriver: Platform.OS !== 'web' }),
+        Animated.timing(translateY, { toValue: 0, duration: 500, easing: Easing.out(Easing.cubic), useNativeDriver: Platform.OS !== 'web' }),
         Animated.parallel([
-          Animated.timing(lockupOpacity, { toValue: 1, duration: 480, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
-          Animated.spring(lockupScale, { toValue: 1, damping: 16, stiffness: 135, mass: 0.75, useNativeDriver: true }),
-          Animated.timing(lockupTranslateY, { toValue: 0, duration: 620, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
-          Animated.timing(lockupRotate, { toValue: 0, duration: 620, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
+          Animated.timing(lockupOpacity, { toValue: 1, duration: 480, easing: Easing.out(Easing.cubic), useNativeDriver: Platform.OS !== 'web' }),
+          Animated.spring(lockupScale, { toValue: 1, damping: 16, stiffness: 135, mass: 0.75, useNativeDriver: Platform.OS !== 'web' }),
+          Animated.timing(lockupTranslateY, { toValue: 0, duration: 620, easing: Easing.out(Easing.cubic), useNativeDriver: Platform.OS !== 'web' }),
+          Animated.timing(lockupRotate, { toValue: 0, duration: 620, easing: Easing.out(Easing.cubic), useNativeDriver: Platform.OS !== 'web' }),
         ]),
       ]),
       Animated.delay(180),
       Animated.timing(alpfaProgress, { toValue: 1, duration: 1150, easing: Easing.out(Easing.cubic), useNativeDriver: false }),
       Animated.parallel([
-        Animated.timing(alpfaLettersOpacity, { toValue: 1, duration: 360, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
-        Animated.spring(alpfaLettersScale, { toValue: 1, damping: 14, stiffness: 150, mass: 0.7, useNativeDriver: true }),
+        Animated.timing(alpfaLettersOpacity, { toValue: 1, duration: 360, easing: Easing.out(Easing.cubic), useNativeDriver: Platform.OS !== 'web' }),
+        Animated.spring(alpfaLettersScale, { toValue: 1, damping: 14, stiffness: 150, mass: 0.7, useNativeDriver: Platform.OS !== 'web' }),
       ]),
       Animated.timing(connectorProgress, { toValue: 1, duration: 760, easing: Easing.inOut(Easing.cubic), useNativeDriver: false }),
-      Animated.timing(logoGlowOpacity, { toValue: 0.28, duration: 260, easing: Easing.out(Easing.quad), useNativeDriver: true }),
+      Animated.timing(logoGlowOpacity, { toValue: 0.28, duration: 260, easing: Easing.out(Easing.quad), useNativeDriver: Platform.OS !== 'web' }),
       Animated.delay(180),
-      Animated.timing(logoGlowOpacity, { toValue: 0.10, duration: 140, easing: Easing.inOut(Easing.quad), useNativeDriver: true }),
+      Animated.timing(logoGlowOpacity, { toValue: 0.10, duration: 140, easing: Easing.inOut(Easing.quad), useNativeDriver: Platform.OS !== 'web' }),
       Animated.delay(60),
       Animated.parallel([
-        Animated.timing(opacity, { toValue: 0, duration: 180, easing: Easing.in(Easing.quad), useNativeDriver: true }),
-        Animated.timing(scale, { toValue: 2.8, duration: 220, easing: Easing.in(Easing.cubic), useNativeDriver: true }),
-        Animated.timing(translateY, { toValue: -10, duration: 220, easing: Easing.in(Easing.cubic), useNativeDriver: true }),
+        Animated.timing(opacity, { toValue: 0, duration: 180, easing: Easing.in(Easing.quad), useNativeDriver: Platform.OS !== 'web' }),
+        Animated.timing(scale, { toValue: 2.8, duration: 220, easing: Easing.in(Easing.cubic), useNativeDriver: Platform.OS !== 'web' }),
+        Animated.timing(translateY, { toValue: -10, duration: 220, easing: Easing.in(Easing.cubic), useNativeDriver: Platform.OS !== 'web' }),
       ]),
     ]);
     animation.start(({ finished }) => finished && onAnimationComplete?.());
@@ -84,14 +85,14 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
       <Animated.View style={[styles.composition, { width: lockupWidth, height: lockupWidth * 0.92, opacity, transform: [{ translateY }, { scale }] }]}>
         <View style={[styles.alpfaStage, { width: lockupWidth, height: lockupWidth }]}>
           <AnimatedALPFAMark progress={alpfaProgress} size={lockupWidth} />
-          <View pointerEvents="none" style={StyleSheet.absoluteFill}>
+          <View style={[StyleSheet.absoluteFill, { pointerEvents: "none" }]}>
             <Svg width={lockupWidth} height={lockupWidth} viewBox="0 0 500 500">
               <Defs>
                 <ClipPath id="connector-long-reveal">
                   <AnimatedRect
                     x="158"
                     y="232"
-                    width={connectorProgress.interpolate({ inputRange: [0, 0.72, 1], outputRange: [0, 105, 105], extrapolate: 'clamp' })}
+                    progress={connectorProgress} inputRange={[0, 0.72, 1]} outputRange={[0, 105, 105]}
                     height="45"
                   />
                 </ClipPath>
@@ -99,7 +100,7 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
                   <AnimatedRect
                     x="260"
                     y="232"
-                    width={connectorProgress.interpolate({ inputRange: [0, 0.28, 1], outputRange: [0, 0, 52], extrapolate: 'clamp' })}
+                    progress={connectorProgress} inputRange={[0, 0.28, 1]} outputRange={[0, 0, 52]}
                     height="30"
                   />
                 </ClipPath>
@@ -108,13 +109,13 @@ export default function ALPFALoadingScreen({ onAnimationComplete }: Props) {
               <Path d={ALPFA_CONNECTOR_PATHS[1]} fill="#888888" clipPath="url(#connector-short-reveal)" />
             </Svg>
           </View>
-          <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { opacity: logoGlowOpacity, transform: [{ scale: 1.012 }] }]}>
+          <Animated.View style={[[StyleSheet.absoluteFill, { opacity: logoGlowOpacity, transform: [{ scale: 1.012 }] }], { pointerEvents: "none" }]}>
             <Svg width={lockupWidth} height={lockupWidth} viewBox="0 0 500 500">
               <Path d={ALPFA_CONNECTOR_PATHS[0]} fill="#FFFFFF" />
               <Path d={ALPFA_CONNECTOR_PATHS[1]} fill="#97A0AB" />
             </Svg>
           </Animated.View>
-          <Animated.View style={[StyleSheet.absoluteFill, { opacity: alpfaLettersOpacity, transform: [{ scale: alpfaLettersScale }] }]} pointerEvents="none">
+          <Animated.View style={[[StyleSheet.absoluteFill, { opacity: alpfaLettersOpacity, transform: [{ scale: alpfaLettersScale }] }], { pointerEvents: "none" }]} >
             <Svg width={lockupWidth} height={lockupWidth} viewBox="0 0 500 500">
               {ALPFA_LETTER_PATHS.map((d, index) => <Path key={`alpfa-letter-${index}`} d={d} fill="#FFFFFF" />)}
             </Svg>

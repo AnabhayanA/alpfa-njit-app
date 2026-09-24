@@ -1,5 +1,6 @@
-import React, { useCallback, useState } from 'react';
-import { PanResponder, Platform, StyleSheet, View } from 'react-native';
+import shadow from './utils/shadow';
+import React, { useCallback, useEffect, useState } from 'react';
+import { ActivityIndicator, PanResponder, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
@@ -7,6 +8,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
 import ALPFALoadingScreen from './components/ALPFALoadingScreen';
 import BottomNav from './components/BottomNav';
+import FirstVisitPermissions from './components/FirstVisitPermissions';
 import HomeScreen from './screens/HomeScreen';
 import EventsScreen from './screens/EventsScreen';
 import EBoardScreen from './screens/EBoardScreen';
@@ -14,6 +16,8 @@ import AboutScreen from './screens/AboutScreen';
 import CaptureScreen from './screens/CaptureScreen';
 import useTheme from './utils/useTheme';
 import { ThemeProvider } from './utils/ThemeContext';
+import { startEventReminders } from './utils/eventNotifications';
+import loadIconFont from './utils/loadIconFont';
 
 const Tab = createBottomTabNavigator();
 
@@ -79,8 +83,25 @@ function MainApp() {
 }
 
 function AppContent() {
+  useEffect(() => startEventReminders(), []);
   const { colors } = useTheme();
   const [showSplash, setShowSplash] = useState(true);
+  const [iconsReady, setIconsReady] = useState(false);
+  const [iconError, setIconError] = useState(false);
+  const [iconAttempt, setIconAttempt] = useState(0);
+
+  useEffect(() => {
+    let active = true;
+    setIconError(false);
+    const timeout = setTimeout(() => { if (active) setIconError(true); }, 15_000);
+    loadIconFont().then(() => {
+      if (active) { setIconsReady(true); setIconError(false); }
+    }).catch(error => {
+      console.warn('Could not load app icons:', error);
+      if (active) setIconError(true);
+    }).finally(() => clearTimeout(timeout));
+    return () => { active = false; clearTimeout(timeout); };
+  }, [iconAttempt]);
 
   const handleAnimationComplete = useCallback(() => {
     setShowSplash(false);
@@ -98,10 +119,27 @@ function AppContent() {
 
         {showSplash ? (
           <ALPFALoadingScreen onAnimationComplete={handleAnimationComplete} />
+        ) : !iconsReady ? (
+          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+            {iconError ? (
+              <>
+                <Text accessibilityRole="alert" style={{ color: colors.textPrimary, textAlign: 'center', marginBottom: 16 }}>App icons could not load. Check your connection and try again.</Text>
+                <Pressable accessibilityRole="button" onPress={() => setIconAttempt(attempt => attempt + 1)} style={{ padding: 16, borderRadius: 12, backgroundColor: '#8D102B' }}>
+                  <Text style={{ color: '#FFFFFF', fontWeight: '700' }}>Retry loading icons</Text>
+                </Pressable>
+              </>
+            ) : (
+              <>
+                <ActivityIndicator color="#8D102B" />
+                <Text style={{ color: colors.textPrimary, marginTop: 12 }}>Loading icons...</Text>
+              </>
+            )}
+          </View>
         ) : (
           <View style={[styles.appViewport, Platform.OS === 'web' && styles.webViewport]}>
             <View style={[styles.mainApp, { backgroundColor: colors.background }]}>
               <MainApp />
+              <FirstVisitPermissions />
             </View>
           </View>
         )}
@@ -150,10 +188,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     borderRadius: 34,
     overflow: 'hidden',
-    shadowColor: '#17182F',
-    shadowOpacity: 0.18,
-    shadowRadius: 24,
-    shadowOffset: { width: 0, height: 12 },
+    ...shadow('#17182F', 0.18, 24, 0, 12),
   },
   mainApp: {
     flex: 1,
