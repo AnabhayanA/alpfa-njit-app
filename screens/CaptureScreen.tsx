@@ -167,6 +167,8 @@ export default function CaptureScreen() {
   const [permission, requestPermission, getPermission] = useCameraPermissions();
   const [cameraReady, setCameraReady] = useState(false);
   const [facing, setFacing] = useState<CameraType>('back');
+  const [zoom, setZoom] = useState(0);
+  const lastCameraTap = useRef(0);
   const [dualSupported, setDualSupported] = useState(false);
   const [dualMode, setDualMode] = useState(false);
   const [cameraMessage, setCameraMessage] = useState('');
@@ -272,7 +274,19 @@ export default function CaptureScreen() {
     } catch { setCameraMessage('The photo could not be captured. Please try again.'); }
   };
 
-  const toggleFacing = () => { setCameraReady(false); setFacing((current) => current === 'back' ? 'front' : 'back'); };
+  const toggleFacing = () => { setCameraReady(false); setZoom(0); setFacing((current) => current === 'back' ? 'front' : 'back'); };
+  const handleCameraTap = () => {
+    if (dualMode) return;
+    const now = Date.now();
+    if (now - lastCameraTap.current < 300) {
+      lastCameraTap.current = 0;
+      toggleFacing();
+      return;
+    }
+    lastCameraTap.current = now;
+  };
+  const zoomIn = () => setZoom((current) => Math.min(1, Math.round((current + 0.1) * 10) / 10));
+  const zoomOut = () => setZoom((current) => Math.max(0, Math.round((current - 0.1) * 10) / 10));
   const toggleCameraMode = () => { setCameraReady(false); setCameraMessage(''); setDualMode((current) => !current); };
   const retake = () => { setSelectedFilter('Normal'); setPhotoUri(null); setStatus('idle'); setStatusMessage(''); setPhotoName(''); setPhotoLocation(null); setLocationMessage(''); };
 
@@ -477,11 +491,19 @@ export default function CaptureScreen() {
       {dualMode ? (
         <AlpfaDualCameraView ref={dualCameraRef} style={StyleSheet.absoluteFill} onReady={() => setCameraReady(true)} onError={(event) => { setCameraMessage(event.nativeEvent.message); setDualMode(false); setCameraReady(false); }} />
       ) : (
-        <CameraView ref={cameraRef} style={StyleSheet.absoluteFill} key={facing} facing={facing} mirror={facing === 'front'} onMountError={({ message }) => { setCameraReady(false); setCameraMessage(message); }} onCameraReady={() => { setCameraReady(true); setCameraMessage(''); }} />
+        <CameraView ref={cameraRef} style={StyleSheet.absoluteFill} key={facing} facing={facing} mirror={facing === 'front'} zoom={zoom} onMountError={({ message }) => { setCameraReady(false); setCameraMessage(message); }} onCameraReady={() => { setCameraReady(true); setCameraMessage(''); }} />
       )}
+      {!dualMode && <TouchableOpacity style={styles.cameraGestureLayer} activeOpacity={1} onPress={handleCameraTap} accessibilityLabel="Camera preview. Double tap to switch camera." />}
       <TouchableOpacity style={[styles.closeButton, { top: insets.top + 12 }]} onPress={close}><Ionicons name="close" size={22} color="#FFFFFF" /></TouchableOpacity>
       {!dualMode && <TouchableOpacity style={[styles.flipCameraButton, { top: insets.top + 12 }]} onPress={toggleFacing} accessibilityRole="button" accessibilityLabel={`Switch to ${facing === 'back' ? 'front' : 'back'} camera`}><Ionicons name="camera-reverse-outline" size={23} color="#FFFFFF" /></TouchableOpacity>}
       {dualSupported && <TouchableOpacity style={[styles.modeButton, { top: insets.top + 64 }]} onPress={toggleCameraMode} accessibilityRole="button" accessibilityLabel={dualMode ? 'Use one camera' : 'Use front and rear cameras'}><Ionicons name={dualMode ? 'copy' : 'copy-outline'} size={16} color="#FFFFFF" /><Text style={styles.modeButtonText}>{dualMode ? 'DUAL' : 'SINGLE'}</Text></TouchableOpacity>}
+      {!dualMode && (
+        <View style={[styles.zoomControls, { top: insets.top + 66 }]}>
+          <TouchableOpacity style={styles.zoomButton} onPress={zoomOut} disabled={zoom <= 0} accessibilityRole="button" accessibilityLabel="Zoom out"><Ionicons name="remove" size={20} color="#FFFFFF" /></TouchableOpacity>
+          <Text style={styles.zoomText}>{zoom === 0 ? '1×' : `${(1 + zoom * 4).toFixed(1)}×`}</Text>
+          <TouchableOpacity style={styles.zoomButton} onPress={zoomIn} disabled={zoom >= 1} accessibilityRole="button" accessibilityLabel="Zoom in"><Ionicons name="add" size={20} color="#FFFFFF" /></TouchableOpacity>
+        </View>
+      )}
       <View style={[styles.captureBar, { paddingBottom: insets.bottom + 24 }]}>
         <Text style={styles.hintText}>{cameraMessage || (dualMode ? 'Front + rear photo · shared to the ALPFA NJIT Drive' : 'Photos are shared to the ALPFA NJIT Google Drive')}</Text>
         <View style={styles.cameraActions}>
@@ -499,6 +521,10 @@ const createStyles = (colors: ReturnType<typeof useTheme>['colors']) => StyleShe
   centered: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32 },
   permissionTitle: { color: '#FFFFFF', fontSize: 20, fontWeight: '900', marginTop: 16 },
   permissionText: { color: 'rgba(255,255,255,0.75)', fontSize: 13, textAlign: 'center', marginTop: 8, lineHeight: 19 },
+  cameraGestureLayer: { ...StyleSheet.absoluteFill, zIndex: 1 },
+  zoomControls: { position: 'absolute', right: 16, zIndex: 10, flexDirection: 'row', alignItems: 'center', gap: 6, padding: 4, borderRadius: 20, backgroundColor: 'rgba(0,0,0,0.45)' },
+  zoomButton: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
+  zoomText: { color: '#FFFFFF', minWidth: 36, textAlign: 'center', fontSize: 11, fontWeight: '900' },
   closeButton: { position: 'absolute', right: 16, width: 38, height: 38, borderRadius: 19, backgroundColor: 'rgba(0,0,0,0.45)', alignItems: 'center', justifyContent: 'center', zIndex: 10 },
   flipCameraButton: { position: 'absolute', left: 16, width: 42, height: 42, borderRadius: 21, backgroundColor: 'rgba(0,0,0,0.45)', alignItems: 'center', justifyContent: 'center', zIndex: 10 },
   modeButton: { position: 'absolute', left: 16, flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, height: 34, borderRadius: 17, backgroundColor: 'rgba(110,27,45,0.88)', zIndex: 10 },
