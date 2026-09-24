@@ -41,6 +41,26 @@ const WEB_FILTERS: Record<string, string> = {
   ALPFA: 'contrast(1.08) saturate(1.22) hue-rotate(-8deg)',
 };
 
+function applyWebColorMatrix(context: CanvasRenderingContext2D, width: number, height: number, matrix?: number[]) {
+  if (!matrix) return;
+  const imageData = context.getImageData(0, 0, width, height);
+  const pixels = imageData.data;
+
+  for (let i = 0; i < pixels.length; i += 4) {
+    const r = pixels[i];
+    const g = pixels[i + 1];
+    const b = pixels[i + 2];
+    const a = pixels[i + 3];
+
+    pixels[i] = Math.max(0, Math.min(255, r * matrix[0] + g * matrix[1] + b * matrix[2] + a * matrix[3] + matrix[4] * 255));
+    pixels[i + 1] = Math.max(0, Math.min(255, r * matrix[5] + g * matrix[6] + b * matrix[7] + a * matrix[8] + matrix[9] * 255));
+    pixels[i + 2] = Math.max(0, Math.min(255, r * matrix[10] + g * matrix[11] + b * matrix[12] + a * matrix[13] + matrix[14] * 255));
+    pixels[i + 3] = Math.max(0, Math.min(255, r * matrix[15] + g * matrix[16] + b * matrix[17] + a * matrix[18] + matrix[19] * 255));
+  }
+
+  context.putImageData(imageData, 0, 0);
+}
+
 async function prepareWebPhoto(uri: string, filter: string, locationLabel?: string, locationPosition?: { x: number; y: number }) {
   const response = await fetch(uri);
   const sourceBlob = await response.blob();
@@ -59,9 +79,11 @@ async function prepareWebPhoto(uri: string, filter: string, locationLabel?: stri
     const context = canvas.getContext('2d');
     if (!context) throw new Error('Could not prepare the photo.');
 
-    context.filter = WEB_FILTERS[filter] || 'none';
+    // Draw the source first, then bake the same color matrix used by the native
+    // Skia preview into the actual JPEG pixels. Canvas CSS filters can preview
+    // correctly on web while still producing an unfiltered upload in some browsers.
     context.drawImage(image, 0, 0, canvas.width, canvas.height);
-    context.filter = 'none';
+    applyWebColorMatrix(context, canvas.width, canvas.height, FILTER_MATRICES[filter]);
 
     if (locationLabel && locationPosition) {
       const scaleX = canvas.width / Math.max(window.innerWidth, 1);
