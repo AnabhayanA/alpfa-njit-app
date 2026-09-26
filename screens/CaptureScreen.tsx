@@ -149,7 +149,7 @@ function FilteredPhotoPreview({ uri, filter, canvasRef, locationLabel, locationP
         {matrix && <ColorMatrix matrix={matrix} />}
       </SkiaImage>
       {selfieImage && (
-        <SkiaImage image={selfieImage} x={width - 142} y={48} width={122} height={164} fit="cover" />
+        <SkiaImage image={selfieImage} x={10} y={10} width={92} height={122} fit="cover" />
       )}
       {locationLabel && locationFont && (
         <>
