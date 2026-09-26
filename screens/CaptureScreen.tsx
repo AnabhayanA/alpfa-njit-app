@@ -313,9 +313,11 @@ export default function CaptureScreen() {
     setCaptureMode(mode);
     setDualPrimaryUri(null);
     setCameraMessage('');
-    setCameraReady(false);
     setZoom(0);
-    setFacing('back');
+    if (facing !== 'back') {
+      setCameraReady(false);
+      setFacing('back');
+    }
   };
 
   const toggleFacing = () => { setCameraReady(false); setZoom(0); setFacing((current) => current === 'back' ? 'front' : 'back'); };
