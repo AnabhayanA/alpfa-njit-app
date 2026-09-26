@@ -84,8 +84,12 @@ export default function BottomNav({ state, descriptors, navigation }: BottomTabB
     ]).start();
   }, [navOpacity, navScale, navTranslateY, state.index, state.routes]);
 
+  const compactBottomInset = Platform.OS === 'ios'
+    ? Math.max(6, Math.min(insets.bottom * 0.35, 12))
+    : Math.max(insets.bottom, 4);
+
   return (
-    <View style={[styles.wrapper, { paddingBottom: Math.max(insets.bottom, 10) + 4 }]}>
+    <View style={[styles.wrapper, { paddingBottom: compactBottomInset }]}>
       <Animated.View
         {...glideResponder.panHandlers}
         style={[
