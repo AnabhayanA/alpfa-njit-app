@@ -560,7 +560,7 @@ const createStyles = (colors: ReturnType<typeof useTheme>['colors']) => StyleShe
   flipCameraButton: { position: 'absolute', left: 16, width: 42, height: 42, borderRadius: 21, backgroundColor: 'rgba(0,0,0,0.45)', alignItems: 'center', justifyContent: 'center', zIndex: 10 },
   modeButton: { position: 'absolute', left: 16, flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, height: 34, borderRadius: 17, backgroundColor: 'rgba(110,27,45,0.88)', zIndex: 10 },
   modeButtonText: { color: '#FFFFFF', fontSize: 10, fontWeight: '900', letterSpacing: 0.8 },
-  captureBar: { position: 'absolute', bottom: 0, left: 0, right: 0, alignItems: 'center', paddingTop: 18, backgroundColor: 'rgba(10,10,10,0.72)' },
+  captureBar: { position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 5, elevation: 5, alignItems: 'center', paddingTop: 18, backgroundColor: 'rgba(10,10,10,0.72)' },
   previewFilterPicker: { marginBottom: 12 },
   previewFilterLabel: { color: 'rgba(255,255,255,0.72)', fontSize: 10, fontWeight: '900', letterSpacing: 1.1, marginBottom: 8, paddingHorizontal: 2 },
   filterRow: { gap: 8, paddingBottom: 6 },
