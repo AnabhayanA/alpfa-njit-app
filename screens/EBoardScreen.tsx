@@ -245,7 +245,7 @@ export default function EBoardScreen() {
           {/* Section Header */}
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Leadership Team</Text>
-            <Text style={styles.memberCount}>{BOARD_MEMBERS.length} members</Text>
+            <Text style={[styles.memberCount, isDark && styles.memberCountDark]}>{BOARD_MEMBERS.length} members</Text>
           </View>
 
           {/* Member Cards */}
@@ -370,10 +370,13 @@ const createStyles = (colors: ThemePalette) => StyleSheet.create({
     flexShrink: 1,
   },
   memberCount: {
-    color: '#6E1B2D',
+    color: '#8D102B',
     fontSize: 11,
     fontWeight: '800',
     marginLeft: 12,
+  },
+  memberCountDark: {
+    color: '#FF9AAF',
   },
   bottomCard: {
     backgroundColor: '#0F102E',
