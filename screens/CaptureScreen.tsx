@@ -141,7 +141,9 @@ function FilteredPhotoPreview({ uri, filter, canvasRef, locationLabel, locationP
 
   const image = useImage(uri);
   if (!image) return <Image source={{ uri }} style={StyleSheet.absoluteFill} resizeMode="cover" />;
-  if (!matrix && !locationLabel) return <Image source={{ uri }} style={StyleSheet.absoluteFill} resizeMode="cover" />;
+  // Dual photos must always render through Skia so the selfie is included in
+  // both the preview and the exported Drive image.
+  if (!matrix && !locationLabel && !selfieUri) return <Image source={{ uri }} style={StyleSheet.absoluteFill} resizeMode="cover" />;
 
   return (
     <Canvas ref={canvasRef} style={StyleSheet.absoluteFill}>
