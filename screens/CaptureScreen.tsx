@@ -106,9 +106,16 @@ async function prepareWebPhoto(uri: string, filter: string, locationLabel?: stri
 
 const locationFont = Platform.OS === 'web' ? null : matchFont({
   fontFamily: Platform.OS === 'ios' ? 'Helvetica' : 'sans-serif',
-  fontSize: 19,
+  fontSize: 18,
   fontWeight: 'bold',
 });
+
+const cleanLocationLabel = (value: string) =>
+  value
+    .replace(/[\u0000-\u001F\u007F]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 60);
 
 function FilteredPhotoPreview({ uri, filter, canvasRef, locationLabel, locationPosition }: {
   uri: string;
@@ -334,8 +341,9 @@ export default function CaptureScreen() {
   };
 
   const saveLocation = () => {
-    const label = locationDraft.trim();
+    const label = cleanLocationLabel(locationDraft);
     if (!label) { setLocationMessage('Enter a location name first.'); return; }
+    setLocationDraft(label);
     if (!photoLocation) setLocationPosition({ x: 28, y: Math.max(insets.top + 100, screenHeight * 0.5) });
     setPhotoLocation({ label });
     setLocationMessage('');
@@ -367,7 +375,13 @@ export default function CaptureScreen() {
         const { latitude, longitude } = position.coords;
         // Geocoding must not discard a successful GPS result.
         const places = await withLocationTimeout(Location.reverseGeocodeAsync({ latitude, longitude }), 5_000).catch(() => []);
-        label = [places[0]?.city, places[0]?.region].filter(Boolean).join(', ') || latitude.toFixed(3) + ', ' + longitude.toFixed(3);
+        const place = places[0];
+        label = cleanLocationLabel(
+          [place?.name, place?.city, place?.region]
+            .filter(Boolean)
+            .filter((part, index, parts) => parts.indexOf(part) === index)
+            .join(', ')
+        ) || latitude.toFixed(3) + ', ' + longitude.toFixed(3);
       }
       if (request === locationRequest.current) {
         setLocationDraft(label);
@@ -457,8 +471,10 @@ export default function CaptureScreen() {
         <FilteredPhotoPreview uri={photoUri} filter={selectedFilter} canvasRef={filteredCanvasRef} locationLabel={photoLocation?.label} locationPosition={locationPosition} />
         {photoLocation && status !== 'done' && (
           <View style={[styles.photoLocationStamp, { left: locationPosition.x - 8, top: locationPosition.y - 8 }]} {...locationPanResponder.panHandlers}>
-            <Ionicons name="location" size={19} color="#FFFFFF" />
-            <Text style={styles.photoLocationStampText}>{photoLocation.label}</Text>
+            <View style={styles.photoLocationStampPill}>
+              <Ionicons name="location" size={16} color="#FFFFFF" />
+              <Text style={styles.photoLocationStampText} numberOfLines={1}>{photoLocation.label}</Text>
+            </View>
           </View>
         )}
         <TouchableOpacity style={[styles.closeButton, { top: insets.top + 12 }]} onPress={close}><Ionicons name="close" size={22} color="#FFFFFF" /></TouchableOpacity>
@@ -591,8 +607,9 @@ const createStyles = (colors: ReturnType<typeof useTheme>['colors']) => StyleShe
   locationEditorBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'center', alignItems: 'center', padding: 20 },
   locationEditorCard: { width: '100%', maxWidth: 440, maxHeight: '90%', backgroundColor: '#10182A', borderRadius: 22 },
   locationMessage: { color: 'rgba(255,255,255,0.72)', fontSize: 11, textAlign: 'center', marginTop: -4, marginBottom: 10, lineHeight: 16 },
-  photoLocationStamp: { position: 'absolute', zIndex: 8, maxWidth: '82%', minHeight: 44, paddingHorizontal: 8, paddingVertical: 8, flexDirection: 'row', alignItems: 'center', gap: 6 },
-  photoLocationStampText: { color: '#FFFFFF', fontSize: 19, fontWeight: '900', textShadowColor: 'rgba(0,0,0,0.8)', textShadowOffset: { width: 1.5, height: 1.5 }, textShadowRadius: 3 },
+  photoLocationStamp: { position: 'absolute', zIndex: 8, maxWidth: '86%', minHeight: 44, padding: 6, backgroundColor: 'transparent' },
+  photoLocationStampPill: { maxWidth: '100%', minHeight: 38, paddingHorizontal: 14, borderRadius: 19, backgroundColor: 'rgba(0,0,0,0.92)', flexDirection: 'row', alignItems: 'center', gap: 6 },
+  photoLocationStampText: { flexShrink: 1, color: '#FFFFFF', fontSize: 15, fontWeight: '800' },
   previewActions: { flexDirection: 'row', gap: 12, justifyContent: 'center' },
   primaryButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: '#6E1B2D', borderRadius: 999, paddingVertical: 14, paddingHorizontal: 22, marginTop: 16 },
   uploadButton: { flex: 1, marginTop: 0 },

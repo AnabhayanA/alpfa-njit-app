@@ -83,8 +83,8 @@ export default function AboutScreen() {
         onScroll={handleScroll}
         scrollEventThrottle={16}
       >
-        <View style={[styles.hero, { paddingTop: insets.top + (responsive.isSmallPhone ? 20 : 24), paddingBottom: responsive.isSmallPhone ? 22 : 28, marginHorizontal: -responsive.horizontalPadding, paddingHorizontal: responsive.horizontalPadding + 20 }]}>
-          <View style={[styles.heroImageFrame, { height: responsive.isSmallPhone ? 180 : 220, borderRadius: responsive.isSmallPhone ? 20 : 26 }]}>
+        <View style={[styles.hero, { paddingTop: insets.top + (responsive.isSmallPhone ? 8 : 12), paddingBottom: responsive.isSmallPhone ? 14 : 18, marginHorizontal: -responsive.horizontalPadding, paddingHorizontal: responsive.horizontalPadding + 10 }]}>
+          <View style={[styles.heroImageFrame, { height: responsive.isSmallPhone ? 190 : 210, borderRadius: responsive.isSmallPhone ? 20 : 24 }]}>
             <Image
               source={require('../assets/images/Alpfa-Eboard Group-pic.jpg')}
               style={styles.heroImage}
@@ -316,12 +316,12 @@ const createStyles = (colors: ThemePalette, isDark: boolean) => StyleSheet.creat
     color: '#FFFFFF',
     fontSize: 28,
     fontWeight: '900',
-    marginTop: 18,
+    marginTop: 12,
   },
   subtitle: {
     color: 'rgba(255,255,255,0.6)',
     fontSize: 11,
-    marginTop: 7,
+    marginTop: 4,
     textAlign: 'center',
   },
   card: {
