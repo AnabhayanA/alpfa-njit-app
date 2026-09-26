@@ -84,11 +84,11 @@ export default function AboutScreen() {
         scrollEventThrottle={16}
       >
         <View style={[styles.hero, { paddingTop: insets.top + (responsive.isSmallPhone ? 4 : 6), paddingBottom: responsive.isSmallPhone ? 10 : 12, marginHorizontal: -responsive.horizontalPadding, paddingHorizontal: responsive.horizontalPadding + 10 }]}>
-          <View style={[styles.heroImageFrame, { height: responsive.isSmallPhone ? 180 : 195, borderRadius: responsive.isSmallPhone ? 20 : 24 }]}>
+          <View style={[styles.heroImageFrame, { height: responsive.isSmallPhone ? 170 : 185, borderRadius: responsive.isSmallPhone ? 20 : 24 }]}>
             <Image
               source={require('../assets/images/Alpfa-Eboard Group-pic.jpg')}
               style={styles.heroImage}
-              resizeMode="contain"
+              resizeMode="cover"
               accessibilityLabel="ALPFA NJIT executive board group photo"
             />
           </View>
@@ -297,7 +297,7 @@ const createStyles = (colors: ThemePalette, isDark: boolean) => StyleSheet.creat
     paddingBottom: 40,
   },
   hero: {
-    backgroundColor: 'rgba(15,16,46,0.92)',
+    backgroundColor: 'rgba(15,16,46,0.86)',
     alignItems: 'center',
     paddingHorizontal: 20,
   },
@@ -308,8 +308,8 @@ const createStyles = (colors: ThemePalette, isDark: boolean) => StyleSheet.creat
   heroImageFrame: {
     width: '100%',
     maxWidth: 620,
-    backgroundColor: '#FFFFFF',
-    padding: 4,
+    backgroundColor: 'transparent',
+    padding: 0,
     overflow: 'hidden',
   },
   title: {
