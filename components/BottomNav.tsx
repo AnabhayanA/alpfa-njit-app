@@ -1,5 +1,5 @@
 import shadow from '../utils/shadow';
-import { Platform } from 'react-native';
+import { PanResponder, Platform } from 'react-native';
 import React, { useEffect, useRef } from 'react';
 import { Animated, Easing, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -33,8 +33,29 @@ export default function BottomNav({ state, descriptors, navigation }: BottomTabB
   const navTranslateY = useRef(new Animated.Value(0)).current;
   const navScale = useRef(new Animated.Value(1)).current;
   const navOpacity = useRef(new Animated.Value(1)).current;
+  const lastGlideIndex = useRef(state.index);
 
   const navWidth = Math.min(Math.max(responsive.safeWidth - 40, 280), 374);
+
+  const navigateToIndex = React.useCallback((index: number) => {
+    const route = state.routes[index];
+    if (!route || index === lastGlideIndex.current) return;
+    lastGlideIndex.current = index;
+    navigation.navigate(route.name);
+  }, [navigation, state.routes]);
+
+  const glideResponder = React.useMemo(() => PanResponder.create({
+    onStartShouldSetPanResponder: () => false,
+    onMoveShouldSetPanResponder: (_, gesture) => Math.abs(gesture.dx) > 5 && Math.abs(gesture.dx) > Math.abs(gesture.dy),
+    onPanResponderGrant: () => { lastGlideIndex.current = state.index; },
+    onPanResponderMove: (event) => {
+      const x = Math.max(0, Math.min(navWidth - 1, event.nativeEvent.locationX));
+      const index = Math.min(state.routes.length - 1, Math.floor(x / (navWidth / state.routes.length)));
+      navigateToIndex(index);
+    },
+    onPanResponderRelease: () => { lastGlideIndex.current = state.index; },
+    onPanResponderTerminate: () => { lastGlideIndex.current = state.index; },
+  }), [navWidth, navigateToIndex, state.index, state.routes.length]);
 
   useEffect(() => {
     const currentRoute = state.routes[state.index];
@@ -66,6 +87,7 @@ export default function BottomNav({ state, descriptors, navigation }: BottomTabB
   return (
     <View style={[styles.wrapper, { paddingBottom: Math.max(insets.bottom, 10) + 4 }]}>
       <Animated.View
+        {...glideResponder.panHandlers}
         style={[
           styles.navbar,
           isDark && styles.navbarDark,
@@ -90,6 +112,7 @@ export default function BottomNav({ state, descriptors, navigation }: BottomTabB
           const icon = TAB_ICONS[route.name] ?? 'ellipse';
 
           const onPress = () => {
+            lastGlideIndex.current = index;
             const event = navigation.emit({
               type: 'tabPress',
               target: route.key,
