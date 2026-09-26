@@ -117,15 +117,17 @@ const cleanLocationLabel = (value: string) =>
     .trim()
     .slice(0, 60);
 
-function FilteredPhotoPreview({ uri, filter, canvasRef, locationLabel, locationPosition }: {
+function FilteredPhotoPreview({ uri, filter, canvasRef, locationLabel, locationPosition, selfieUri }: {
   uri: string;
   filter: string;
   canvasRef: ReturnType<typeof useCanvasRef>;
   locationLabel?: string;
   locationPosition: { x: number; y: number };
+  selfieUri?: string | null;
 }) {
   const matrix = FILTER_MATRICES[filter];
   const { width, height } = useWindowDimensions();
+  const selfieImage = Platform.OS === 'web' ? null : useImage(selfieUri || null);
 
   if (Platform.OS === 'web') {
     return (
@@ -146,6 +148,9 @@ function FilteredPhotoPreview({ uri, filter, canvasRef, locationLabel, locationP
       <SkiaImage image={image} x={0} y={0} width={width} height={height} fit="cover">
         {matrix && <ColorMatrix matrix={matrix} />}
       </SkiaImage>
+      {selfieImage && (
+        <SkiaImage image={selfieImage} x={width - 142} y={48} width={122} height={164} fit="cover" />
+      )}
       {locationLabel && locationFont && (
         <>
           <SkiaText x={locationPosition.x + 1.5} y={locationPosition.y + 25.5} text={locationLabel} font={locationFont} color="rgba(0,0,0,0.78)" />
@@ -170,6 +175,7 @@ export default function CaptureScreen() {
   const [facing, setFacing] = useState<CameraType>('back');
   const [captureMode, setCaptureMode] = useState<'photo' | 'dual'>('photo');
   const [dualPrimaryUri, setDualPrimaryUri] = useState<string | null>(null);
+  const [dualSelfieUri, setDualSelfieUri] = useState<string | null>(null);
   const [zoom, setZoom] = useState(0);
   const lastCameraTap = useRef(0);
   const pinchStartDistance = useRef<number | null>(null);
@@ -304,17 +310,19 @@ export default function CaptureScreen() {
       setSelectedFilter('Normal');
       setPhotoLocation(null);
       setLocationMessage('');
-      // Dual mode keeps the selfie available for the next composition pass while
-      // preserving the existing editor/share flow. The primary image remains the
-      // main photo until the combined renderer is applied.
-      setPhotoUri(captureMode === 'dual' && dualPrimaryUri ? dualPrimaryUri : photo.uri);
+      if (captureMode === 'dual' && dualPrimaryUri) {
+        setDualSelfieUri(photo.uri);
+        setPhotoUri(dualPrimaryUri);
+      } else {
+        setPhotoUri(photo.uri);
+      }
       setCameraMessage('');
     } catch { setCameraMessage('The photo could not be captured. Please try again.'); }
   };
 
   const selectCaptureMode = (mode: 'photo' | 'dual') => {
     setCaptureMode(mode);
-    setDualPrimaryUri(null);
+    setDualPrimaryUri(null); setDualSelfieUri(null);
     setCameraMessage('');
     setZoom(0);
     if (facing !== 'back') {
@@ -354,7 +362,7 @@ export default function CaptureScreen() {
     onPanResponderRelease: () => { pinchStartDistance.current = null; },
     onPanResponderTerminate: () => { pinchStartDistance.current = null; },
   }), [zoom]);
-  const retake = () => { setSelectedFilter('Normal'); setPhotoUri(null); setDualPrimaryUri(null); setFacing('back'); setStatus('idle'); setStatusMessage(''); setPhotoName(''); setPhotoLocation(null); setLocationMessage(''); };
+  const retake = () => { setSelectedFilter('Normal'); setPhotoUri(null); setDualPrimaryUri(null); setDualSelfieUri(null); setFacing('back'); setStatus('idle'); setStatusMessage(''); setPhotoName(''); setPhotoLocation(null); setLocationMessage(''); };
 
   const closeLocationEditor = () => {
     locationRequest.current++;
@@ -449,7 +457,7 @@ export default function CaptureScreen() {
         setStatusMessage('The filtered photo could not be prepared. Please try again.');
         return;
       }
-    } else if (Platform.OS !== 'web' && (selectedFilter !== 'Normal' || photoLocation)) {
+    } else if (Platform.OS !== 'web' && (selectedFilter !== 'Normal' || photoLocation || dualSelfieUri)) {
       try {
         const snapshot = await filteredCanvasRef.current?.makeImageSnapshotAsync();
         if (!snapshot) { setStatus('error'); setStatusMessage('The photo could not be prepared. Please try again.'); return; }
@@ -500,7 +508,7 @@ export default function CaptureScreen() {
             </View>
           </KeyboardAvoidingView>
         </Modal>
-        <FilteredPhotoPreview uri={photoUri} filter={selectedFilter} canvasRef={filteredCanvasRef} locationLabel={photoLocation?.label} locationPosition={locationPosition} />
+        <FilteredPhotoPreview uri={photoUri} filter={selectedFilter} canvasRef={filteredCanvasRef} locationLabel={photoLocation?.label} locationPosition={locationPosition} selfieUri={captureMode === 'dual' ? dualSelfieUri : null} />
         {photoLocation && status !== 'done' && (
           <View style={[styles.photoLocationStamp, { left: locationPosition.x - 8, top: locationPosition.y - 8 }]} {...locationPanResponder.panHandlers}>
             <View style={styles.photoLocationStampPill}>
