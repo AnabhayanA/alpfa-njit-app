@@ -376,7 +376,8 @@ const createStyles = (colors: ThemePalette) => StyleSheet.create({
     marginLeft: 12,
   },
   memberCountDark: {
-    color: '#FF9AAF',
+    color: '#FF5C7A',
+    fontWeight: '900',
   },
   bottomCard: {
     backgroundColor: '#0F102E',
