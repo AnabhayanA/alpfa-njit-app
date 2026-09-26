@@ -535,10 +535,9 @@ export default function CaptureScreen() {
       <View style={styles.cameraGestureLayer} {...cameraPanResponder.panHandlers}>
         <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={handleCameraTap} accessibilityLabel="Camera preview. Pinch to zoom. Double tap to switch camera." />
       </View>
-      <TouchableOpacity style={[styles.closeButton, { top: insets.top + 12 }]} onPress={close}><Ionicons name="close" size={22} color="#FFFFFF" /></TouchableOpacity>
-      <TouchableOpacity style={[styles.flipCameraButton, { top: insets.top + 12 }]} onPress={toggleFacing} accessibilityRole="button" accessibilityLabel={`Switch to ${facing === 'back' ? 'front' : 'back'} camera`}><Ionicons name="camera-reverse-outline" size={23} color="#FFFFFF" /></TouchableOpacity>
-      <View style={[styles.captureBar, { bottom: insets.bottom + 62, paddingBottom: 14 }]}>
-        <Text style={styles.hintText}>{cameraMessage || 'Photos are shared to the ALPFA NJIT Google Drive'}</Text>
+      <TouchableOpacity style={[styles.closeButton, { top: insets.top + 12 }]} onPress={close} accessibilityRole="button" accessibilityLabel="Close camera"><Ionicons name="close" size={22} color="#FFFFFF" /></TouchableOpacity>
+      {!!cameraMessage && <View style={[styles.cameraMessagePill, { top: insets.top + 64 }]}><Text style={styles.cameraMessageText}>{cameraMessage}</Text></View>}
+      <View style={[styles.captureBar, { bottom: insets.bottom + 76 }]}>
         <View style={styles.lensControls}>
           {[1, 2, 5].map((value) => {
             const selected = Math.abs(displayZoom - value) < 0.35;
@@ -549,11 +548,10 @@ export default function CaptureScreen() {
             );
           })}
         </View>
-        <Text style={styles.pinchHint}>Pinch anywhere on the camera to zoom</Text>
         <View style={styles.cameraActions}>
           <TouchableOpacity style={styles.galleryButton} onPress={pickFromLibrary} accessibilityRole="button" accessibilityLabel="Choose a photo from your camera roll"><Ionicons name="images-outline" size={25} color="#FFFFFF" /></TouchableOpacity>
-          <TouchableOpacity style={styles.shutter} onPress={takePhoto} disabled={!cameraReady}><View style={styles.shutterInner} /></TouchableOpacity>
-          <View style={styles.actionSpacer} />
+          <TouchableOpacity style={styles.shutter} onPress={takePhoto} disabled={!cameraReady} accessibilityRole="button" accessibilityLabel="Take photo"><View style={styles.shutterInner} /></TouchableOpacity>
+          <TouchableOpacity style={styles.flipCameraButton} onPress={toggleFacing} accessibilityRole="button" accessibilityLabel={`Switch to ${facing === 'back' ? 'front' : 'back'} camera`}><Ionicons name="camera-reverse-outline" size={25} color="#FFFFFF" /></TouchableOpacity>
         </View>
       </View>
     </View>
@@ -566,17 +564,16 @@ const createStyles = (colors: ReturnType<typeof useTheme>['colors']) => StyleShe
   permissionTitle: { color: '#FFFFFF', fontSize: 20, fontWeight: '900', marginTop: 16 },
   permissionText: { color: 'rgba(255,255,255,0.75)', fontSize: 13, textAlign: 'center', marginTop: 8, lineHeight: 19 },
   cameraGestureLayer: { ...StyleSheet.absoluteFill, zIndex: 1 },
-  lensControls: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12, marginBottom: 7 },
-  lensButton: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.12)' },
-  lensButtonSelected: { backgroundColor: '#FFFFFF' },
-  lensText: { color: '#FFFFFF', fontSize: 12, fontWeight: '900' },
-  lensTextSelected: { color: '#111111' },
-  pinchHint: { color: 'rgba(255,255,255,0.52)', fontSize: 9, marginBottom: 12, textAlign: 'center' },
+  lensControls: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 18 },
+  lensButton: { minWidth: 42, height: 42, paddingHorizontal: 10, borderRadius: 21, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(18,18,18,0.72)' },
+  lensButtonSelected: { backgroundColor: 'rgba(34,34,34,0.96)' },
+  lensText: { color: 'rgba(255,255,255,0.9)', fontSize: 14, fontWeight: '700' },
+  lensTextSelected: { color: '#FFD84A' },
   closeButton: { position: 'absolute', right: 16, width: 38, height: 38, borderRadius: 19, backgroundColor: 'rgba(0,0,0,0.45)', alignItems: 'center', justifyContent: 'center', zIndex: 10 },
-  flipCameraButton: { position: 'absolute', left: 16, width: 42, height: 42, borderRadius: 21, backgroundColor: 'rgba(0,0,0,0.45)', alignItems: 'center', justifyContent: 'center', zIndex: 10 },
+  flipCameraButton: { width: 54, height: 54, borderRadius: 27, backgroundColor: 'rgba(18,18,18,0.76)', alignItems: 'center', justifyContent: 'center' },
   modeButton: { position: 'absolute', left: 16, flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, height: 34, borderRadius: 17, backgroundColor: 'rgba(110,27,45,0.88)', zIndex: 10 },
   modeButtonText: { color: '#FFFFFF', fontSize: 10, fontWeight: '900', letterSpacing: 0.8 },
-  captureBar: { position: 'absolute', left: 0, right: 0, zIndex: 5, elevation: 5, alignItems: 'center', paddingTop: 14, backgroundColor: 'rgba(10,10,10,0.68)' },
+  captureBar: { position: 'absolute', left: 0, right: 0, zIndex: 5, elevation: 5, alignItems: 'center', paddingHorizontal: 28, backgroundColor: 'transparent' },
   previewFilterPicker: { marginBottom: 12 },
   previewFilterLabel: { color: 'rgba(255,255,255,0.72)', fontSize: 10, fontWeight: '900', letterSpacing: 1.1, marginBottom: 8, paddingHorizontal: 2 },
   filterRow: { gap: 8, paddingBottom: 6 },
@@ -584,12 +581,12 @@ const createStyles = (colors: ReturnType<typeof useTheme>['colors']) => StyleShe
   filterChipSelected: { backgroundColor: '#FFFFFF', borderColor: '#FFFFFF' },
   filterText: { color: 'rgba(255,255,255,0.72)', fontSize: 11, fontWeight: '800' },
   filterTextSelected: { color: '#111111' },
-  hintText: { color: 'rgba(255,255,255,0.85)', fontSize: 11, marginBottom: 10, textAlign: 'center', paddingHorizontal: 24 },
-  cameraActions: { width: '100%', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around', paddingHorizontal: 28 },
-  galleryButton: { width: 52, height: 52, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.16)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.22)' },
-  actionSpacer: { width: 52, height: 52 },
-  shutter: { width: 74, height: 74, borderRadius: 37, borderWidth: 4, borderColor: '#8D102B', alignItems: 'center', justifyContent: 'center' },
-  shutterInner: { width: 58, height: 58, borderRadius: 29, backgroundColor: '#FFFFFF', borderWidth: 2, borderColor: '#FFFFFF' },
+  cameraMessagePill: { position: 'absolute', alignSelf: 'center', maxWidth: '82%', zIndex: 10, borderRadius: 16, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: 'rgba(0,0,0,0.62)' },
+  cameraMessageText: { color: '#FFFFFF', fontSize: 11, fontWeight: '700', textAlign: 'center' },
+  cameraActions: { width: '100%', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 12 },
+  galleryButton: { width: 54, height: 54, borderRadius: 18, backgroundColor: 'rgba(18,18,18,0.76)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.18)' },
+  shutter: { width: 82, height: 82, borderRadius: 41, borderWidth: 4, borderColor: '#FFFFFF', backgroundColor: 'rgba(0,0,0,0.18)', alignItems: 'center', justifyContent: 'center' },
+  shutterInner: { width: 68, height: 68, borderRadius: 34, backgroundColor: '#FFFFFF' },
   previewFooter: { position: 'absolute', left: 0, right: 0, paddingTop: 20, paddingHorizontal: 24, backgroundColor: 'rgba(0,0,0,0.55)' },
   nameCard: { marginBottom: 14, padding: 14, borderRadius: 18, backgroundColor: 'rgba(0,0,0,0.58)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.18)' },
   nameLabel: { color: 'rgba(255,255,255,0.72)', fontSize: 10, fontWeight: '900', letterSpacing: 1.1, marginBottom: 7 },
