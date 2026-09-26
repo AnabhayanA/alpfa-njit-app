@@ -284,7 +284,10 @@ export default function CaptureScreen() {
   };
 
   const takePhoto = async () => {
-    if (!cameraReady) return;
+    if (!cameraReady) {
+      setCameraMessage('Camera is getting ready — try the shutter again in a moment.');
+      return;
+    }
     try {
       const photo = await cameraRef.current?.takePictureAsync({ quality: 0.85 });
       if (!photo?.uri) return;
@@ -587,7 +590,7 @@ export default function CaptureScreen() {
         </View>
         <View style={styles.cameraActions}>
           <TouchableOpacity style={styles.galleryButton} onPress={pickFromLibrary} accessibilityRole="button" accessibilityLabel="Choose a photo from your camera roll"><Ionicons name="images-outline" size={25} color="#FFFFFF" /></TouchableOpacity>
-          <TouchableOpacity style={styles.shutter} onPress={takePhoto} disabled={!cameraReady} accessibilityRole="button" accessibilityLabel="Take photo"><View style={styles.shutterInner} /></TouchableOpacity>
+          <TouchableOpacity style={[styles.shutter, !cameraReady && styles.shutterNotReady]} onPress={takePhoto} accessibilityRole="button" accessibilityLabel="Take photo"><View pointerEvents="none" style={styles.shutterInner} /></TouchableOpacity>
           <TouchableOpacity style={styles.flipCameraButton} onPress={toggleFacing} accessibilityRole="button" accessibilityLabel={`Switch to ${facing === 'back' ? 'front' : 'back'} camera`}><Ionicons name="camera-reverse-outline" size={25} color="#FFFFFF" /></TouchableOpacity>
         </View>
       </View>
@@ -627,6 +630,7 @@ const createStyles = (colors: ReturnType<typeof useTheme>['colors']) => StyleShe
   cameraActions: { width: '100%', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 12 },
   galleryButton: { width: 54, height: 54, borderRadius: 18, backgroundColor: 'rgba(18,18,18,0.76)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.18)' },
   shutter: { width: 82, height: 82, borderRadius: 41, borderWidth: 4, borderColor: '#FFFFFF', backgroundColor: 'rgba(0,0,0,0.18)', alignItems: 'center', justifyContent: 'center' },
+  shutterNotReady: { opacity: 0.62 },
   shutterInner: { width: 68, height: 68, borderRadius: 34, backgroundColor: '#FFFFFF' },
   previewFooter: { position: 'absolute', left: 0, right: 0, paddingTop: 20, paddingHorizontal: 24, backgroundColor: 'rgba(0,0,0,0.55)' },
   nameCard: { marginBottom: 14, padding: 14, borderRadius: 18, backgroundColor: 'rgba(0,0,0,0.58)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.18)' },
