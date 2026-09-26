@@ -11,11 +11,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import useTheme from '../utils/useTheme';
 import { explainPermissionSettings, openAppSettings } from '../utils/permissionSettings';
 import { uploadPhotoToDrive } from '../utils/driveUpload';
-import {
-  AlpfaDualCameraModule,
-  AlpfaDualCameraView,
-  type AlpfaDualCameraViewRef,
-} from '../modules/alpfa-dual-camera';
 
 function withLocationTimeout<T>(work: Promise<T>, milliseconds: number): Promise<T> {
   return new Promise((resolve, reject) => {
@@ -163,14 +158,11 @@ export default function CaptureScreen() {
 
   const cameraRef = useRef<CameraView>(null);
   const filteredCanvasRef = useCanvasRef();
-  const dualCameraRef = useRef<AlpfaDualCameraViewRef>(null);
   const [permission, requestPermission, getPermission] = useCameraPermissions();
   const [cameraReady, setCameraReady] = useState(false);
   const [facing, setFacing] = useState<CameraType>('back');
   const [zoom, setZoom] = useState(0);
   const lastCameraTap = useRef(0);
-  const [dualSupported, setDualSupported] = useState(false);
-  const [dualMode, setDualMode] = useState(false);
   const [cameraMessage, setCameraMessage] = useState('');
   const [photoUri, setPhotoUri] = useState<string | null>(null);
   const [status, setStatus] = useState<'idle' | 'uploading' | 'done' | 'error'>('idle');
@@ -206,11 +198,6 @@ export default function CaptureScreen() {
     return () => { showSubscription.remove(); hideSubscription.remove(); };
   }, []);
 
-  useEffect(() => {
-    const supported = Platform.OS === 'ios' && Boolean(AlpfaDualCameraModule?.isSupported());
-    setDualSupported(supported);
-    setDualMode(supported);
-  }, []);
 
   useFocusEffect(React.useCallback(() => {
     const refresh = () => { void getPermission().catch(() => setCameraMessage('Could not check camera access. Please try again.')); };
@@ -267,7 +254,7 @@ export default function CaptureScreen() {
   const takePhoto = async () => {
     if (!cameraReady) return;
     try {
-      const photo = dualMode ? await dualCameraRef.current?.capture() : await cameraRef.current?.takePictureAsync({ quality: 0.85 });
+      const photo = await cameraRef.current?.takePictureAsync({ quality: 0.85 });
       if (photo?.uri) {
         setSelectedFilter('Normal'); setPhotoLocation(null); setLocationMessage(''); setPhotoUri(photo.uri);
       }
@@ -276,7 +263,6 @@ export default function CaptureScreen() {
 
   const toggleFacing = () => { setCameraReady(false); setZoom(0); setFacing((current) => current === 'back' ? 'front' : 'back'); };
   const handleCameraTap = () => {
-    if (dualMode) return;
     const now = Date.now();
     if (now - lastCameraTap.current < 300) {
       lastCameraTap.current = 0;
@@ -287,7 +273,6 @@ export default function CaptureScreen() {
   };
   const zoomIn = () => setZoom((current) => Math.min(1, Math.round((current + 0.1) * 10) / 10));
   const zoomOut = () => setZoom((current) => Math.max(0, Math.round((current - 0.1) * 10) / 10));
-  const toggleCameraMode = () => { setCameraReady(false); setCameraMessage(''); setDualMode((current) => !current); };
   const retake = () => { setSelectedFilter('Normal'); setPhotoUri(null); setStatus('idle'); setStatusMessage(''); setPhotoName(''); setPhotoLocation(null); setLocationMessage(''); };
 
   const closeLocationEditor = () => {
@@ -488,24 +473,17 @@ export default function CaptureScreen() {
 
   return (
     <View style={styles.container}>
-      {dualMode ? (
-        <AlpfaDualCameraView ref={dualCameraRef} style={StyleSheet.absoluteFill} onReady={() => setCameraReady(true)} onError={(event) => { setCameraMessage(event.nativeEvent.message); setDualMode(false); setCameraReady(false); }} />
-      ) : (
-        <CameraView ref={cameraRef} style={StyleSheet.absoluteFill} key={facing} facing={facing} mirror={facing === 'front'} zoom={zoom} onMountError={({ message }) => { setCameraReady(false); setCameraMessage(message); }} onCameraReady={() => { setCameraReady(true); setCameraMessage(''); }} />
-      )}
-      {!dualMode && <TouchableOpacity style={styles.cameraGestureLayer} activeOpacity={1} onPress={handleCameraTap} accessibilityLabel="Camera preview. Double tap to switch camera." />}
+      <CameraView ref={cameraRef} style={StyleSheet.absoluteFill} key={facing} facing={facing} mirror={facing === 'front'} zoom={zoom} onMountError={({ message }) => { setCameraReady(false); setCameraMessage(message); }} onCameraReady={() => { setCameraReady(true); setCameraMessage(''); }} />
+      <TouchableOpacity style={styles.cameraGestureLayer} activeOpacity={1} onPress={handleCameraTap} accessibilityLabel="Camera preview. Double tap to switch camera." />
       <TouchableOpacity style={[styles.closeButton, { top: insets.top + 12 }]} onPress={close}><Ionicons name="close" size={22} color="#FFFFFF" /></TouchableOpacity>
-      {!dualMode && <TouchableOpacity style={[styles.flipCameraButton, { top: insets.top + 12 }]} onPress={toggleFacing} accessibilityRole="button" accessibilityLabel={`Switch to ${facing === 'back' ? 'front' : 'back'} camera`}><Ionicons name="camera-reverse-outline" size={23} color="#FFFFFF" /></TouchableOpacity>}
-      {dualSupported && <TouchableOpacity style={[styles.modeButton, { top: insets.top + 64 }]} onPress={toggleCameraMode} accessibilityRole="button" accessibilityLabel={dualMode ? 'Use one camera' : 'Use front and rear cameras'}><Ionicons name={dualMode ? 'copy' : 'copy-outline'} size={16} color="#FFFFFF" /><Text style={styles.modeButtonText}>{dualMode ? 'DUAL' : 'SINGLE'}</Text></TouchableOpacity>}
-      {!dualMode && (
-        <View style={[styles.zoomControls, { top: insets.top + 66 }]}>
+      <TouchableOpacity style={[styles.flipCameraButton, { top: insets.top + 12 }]} onPress={toggleFacing} accessibilityRole="button" accessibilityLabel={`Switch to ${facing === 'back' ? 'front' : 'back'} camera`}><Ionicons name="camera-reverse-outline" size={23} color="#FFFFFF" /></TouchableOpacity>
+      <View style={[styles.zoomControls, { top: insets.top + 66 }]}>
           <TouchableOpacity style={styles.zoomButton} onPress={zoomOut} disabled={zoom <= 0} accessibilityRole="button" accessibilityLabel="Zoom out"><Ionicons name="remove" size={20} color="#FFFFFF" /></TouchableOpacity>
           <Text style={styles.zoomText}>{zoom === 0 ? '1×' : `${(1 + zoom * 4).toFixed(1)}×`}</Text>
           <TouchableOpacity style={styles.zoomButton} onPress={zoomIn} disabled={zoom >= 1} accessibilityRole="button" accessibilityLabel="Zoom in"><Ionicons name="add" size={20} color="#FFFFFF" /></TouchableOpacity>
         </View>
-      )}
       <View style={[styles.captureBar, { paddingBottom: insets.bottom + 24 }]}>
-        <Text style={styles.hintText}>{cameraMessage || (dualMode ? 'Front + rear photo · shared to the ALPFA NJIT Drive' : 'Photos are shared to the ALPFA NJIT Google Drive')}</Text>
+        <Text style={styles.hintText}>{cameraMessage || 'Photos are shared to the ALPFA NJIT Google Drive'}</Text>
         <View style={styles.cameraActions}>
           <TouchableOpacity style={styles.galleryButton} onPress={pickFromLibrary} accessibilityRole="button" accessibilityLabel="Choose a photo from your camera roll"><Ionicons name="images-outline" size={25} color="#FFFFFF" /></TouchableOpacity>
           <TouchableOpacity style={styles.shutter} onPress={takePhoto} disabled={!cameraReady}><View style={styles.shutterInner} /></TouchableOpacity>
