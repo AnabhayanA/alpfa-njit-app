@@ -478,7 +478,7 @@ export default function CaptureScreen() {
           </View>
         )}
         <TouchableOpacity style={[styles.closeButton, { top: insets.top + 12 }]} onPress={close}><Ionicons name="close" size={22} color="#FFFFFF" /></TouchableOpacity>
-        <View style={[styles.previewFooter, { bottom: keyboardHeight, paddingBottom: nameFocused ? 12 : insets.bottom + 24 }]}>
+        <View style={[styles.previewFooter, { bottom: nameFocused ? keyboardHeight : insets.bottom + 76, paddingBottom: nameFocused ? 12 : 10 }]}>
           {status === 'done' ? (
             <View style={styles.centered}>
               <Ionicons name="checkmark-circle" size={40} color="#4ADE80" />
