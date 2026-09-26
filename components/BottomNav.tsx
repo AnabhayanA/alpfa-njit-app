@@ -158,6 +158,12 @@ export default function BottomNav({ state, descriptors, navigation }: BottomTabB
 
 const styles = StyleSheet.create({
   wrapper: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 50,
+    elevation: 20,
     backgroundColor: 'transparent',
     alignItems: 'center',
     paddingTop: 0,
