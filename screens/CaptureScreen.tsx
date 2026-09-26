@@ -168,6 +168,8 @@ export default function CaptureScreen() {
   const [permission, requestPermission, getPermission] = useCameraPermissions();
   const [cameraReady, setCameraReady] = useState(false);
   const [facing, setFacing] = useState<CameraType>('back');
+  const [captureMode, setCaptureMode] = useState<'photo' | 'dual'>('photo');
+  const [dualPrimaryUri, setDualPrimaryUri] = useState<string | null>(null);
   const [zoom, setZoom] = useState(0);
   const lastCameraTap = useRef(0);
   const pinchStartDistance = useRef<number | null>(null);
@@ -285,10 +287,35 @@ export default function CaptureScreen() {
     if (!cameraReady) return;
     try {
       const photo = await cameraRef.current?.takePictureAsync({ quality: 0.85 });
-      if (photo?.uri) {
-        setSelectedFilter('Normal'); setPhotoLocation(null); setLocationMessage(''); setPhotoUri(photo.uri);
+      if (!photo?.uri) return;
+
+      if (captureMode === 'dual' && !dualPrimaryUri) {
+        setDualPrimaryUri(photo.uri);
+        setCameraReady(false);
+        setZoom(0);
+        setFacing('front');
+        setCameraMessage('Main photo captured — take your selfie.');
+        return;
       }
+
+      setSelectedFilter('Normal');
+      setPhotoLocation(null);
+      setLocationMessage('');
+      // Dual mode keeps the selfie available for the next composition pass while
+      // preserving the existing editor/share flow. The primary image remains the
+      // main photo until the combined renderer is applied.
+      setPhotoUri(captureMode === 'dual' && dualPrimaryUri ? dualPrimaryUri : photo.uri);
+      setCameraMessage('');
     } catch { setCameraMessage('The photo could not be captured. Please try again.'); }
+  };
+
+  const selectCaptureMode = (mode: 'photo' | 'dual') => {
+    setCaptureMode(mode);
+    setDualPrimaryUri(null);
+    setCameraMessage('');
+    setCameraReady(false);
+    setZoom(0);
+    setFacing('back');
   };
 
   const toggleFacing = () => { setCameraReady(false); setZoom(0); setFacing((current) => current === 'back' ? 'front' : 'back'); };
@@ -322,7 +349,7 @@ export default function CaptureScreen() {
     onPanResponderRelease: () => { pinchStartDistance.current = null; },
     onPanResponderTerminate: () => { pinchStartDistance.current = null; },
   }), [zoom]);
-  const retake = () => { setSelectedFilter('Normal'); setPhotoUri(null); setStatus('idle'); setStatusMessage(''); setPhotoName(''); setPhotoLocation(null); setLocationMessage(''); };
+  const retake = () => { setSelectedFilter('Normal'); setPhotoUri(null); setDualPrimaryUri(null); setFacing('back'); setStatus('idle'); setStatusMessage(''); setPhotoName(''); setPhotoLocation(null); setLocationMessage(''); };
 
   const closeLocationEditor = () => {
     locationRequest.current++;
@@ -538,6 +565,14 @@ export default function CaptureScreen() {
       <TouchableOpacity style={[styles.closeButton, { top: insets.top + 12 }]} onPress={close} accessibilityRole="button" accessibilityLabel="Close camera"><Ionicons name="close" size={22} color="#FFFFFF" /></TouchableOpacity>
       {!!cameraMessage && <View style={[styles.cameraMessagePill, { top: insets.top + 64 }]}><Text style={styles.cameraMessageText}>{cameraMessage}</Text></View>}
       <View style={[styles.captureBar, { bottom: insets.bottom + 76 }]}>
+        <View style={styles.captureModeSelector}>
+          {(['photo', 'dual'] as const).map((mode) => (
+            <TouchableOpacity key={mode} onPress={() => selectCaptureMode(mode)} accessibilityRole="button" accessibilityLabel={mode === 'photo' ? 'Photo mode' : 'Dual photo mode'}>
+              <Text style={[styles.captureModeText, captureMode === mode && styles.captureModeTextSelected]}>{mode.toUpperCase()}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+        {captureMode === 'dual' && <Text style={styles.dualHint}>{dualPrimaryUri ? 'SELFIE' : 'MAIN PHOTO'}</Text>}
         <View style={styles.lensControls}>
           {[1, 2, 5].map((value) => {
             const selected = Math.abs(displayZoom - value) < 0.35;
@@ -564,6 +599,10 @@ const createStyles = (colors: ReturnType<typeof useTheme>['colors']) => StyleShe
   permissionTitle: { color: '#FFFFFF', fontSize: 20, fontWeight: '900', marginTop: 16 },
   permissionText: { color: 'rgba(255,255,255,0.75)', fontSize: 13, textAlign: 'center', marginTop: 8, lineHeight: 19 },
   cameraGestureLayer: { ...StyleSheet.absoluteFill, zIndex: 1 },
+  captureModeSelector: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 28, marginBottom: 10 },
+  captureModeText: { color: 'rgba(255,255,255,0.62)', fontSize: 12, fontWeight: '800', letterSpacing: 1.1 },
+  captureModeTextSelected: { color: '#FFD84A' },
+  dualHint: { color: 'rgba(255,255,255,0.78)', fontSize: 9, fontWeight: '900', letterSpacing: 1.2, marginBottom: 8 },
   lensControls: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 18 },
   lensButton: { minWidth: 42, height: 42, paddingHorizontal: 10, borderRadius: 21, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(18,18,18,0.72)' },
   lensButtonSelected: { backgroundColor: 'rgba(34,34,34,0.96)' },
