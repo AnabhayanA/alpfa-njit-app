@@ -35,7 +35,7 @@ export default function BottomNav({ state, descriptors, navigation }: BottomTabB
   const navOpacity = useRef(new Animated.Value(1)).current;
   const lastGlideIndex = useRef(state.index);
 
-  const navWidth = Math.min(Math.max(responsive.safeWidth - 40, 280), 374);
+  const navWidth = Math.min(Math.max(responsive.safeWidth - 72, 260), 350);
 
   const navigateToIndex = React.useCallback((index: number) => {
     const route = state.routes[index];
@@ -93,7 +93,7 @@ export default function BottomNav({ state, descriptors, navigation }: BottomTabB
           isDark && styles.navbarDark,
           {
             width: navWidth,
-            height: responsive.isSmallPhone ? 64 : 68,
+            height: responsive.isSmallPhone ? 52 : 56,
             paddingHorizontal: NAV_HORIZONTAL_PADDING,
             transform: [{ translateY: navTranslateY }, { scale: navScale }],
             opacity: navOpacity,
@@ -157,8 +157,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     alignItems: 'center',
     paddingTop: 0,
-    paddingHorizontal: 20,
-    paddingBottom: 10,
+    paddingHorizontal: 8,
+    paddingBottom: 2,
   },
   navbar: {
     position: 'relative',
@@ -185,7 +185,7 @@ const styles = StyleSheet.create({
   },
   iconContainer: {
     width: 36,
-    height: 30,
+    height: 25,
     alignItems: 'center',
     justifyContent: 'center',
   },
