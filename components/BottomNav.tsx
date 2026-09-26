@@ -85,8 +85,8 @@ export default function BottomNav({ state, descriptors, navigation }: BottomTabB
   }, [navOpacity, navScale, navTranslateY, state.index, state.routes]);
 
   const compactBottomInset = Platform.OS === 'ios'
-    ? Math.max(3, Math.min(insets.bottom * 0.14, 6))
-    : Math.max(insets.bottom, 4);
+    ? Math.max(10, Math.min(insets.bottom * 0.35, 14))
+    : Math.max(insets.bottom, 8);
 
   return (
     <View style={[styles.wrapper, { paddingBottom: compactBottomInset }]}>
