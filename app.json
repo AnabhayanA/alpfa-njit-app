@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "alpfa-njit-app",
+    "name": "ALPFA NJIT",
     "slug": "alpfa-njit-app",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -40,6 +40,12 @@
         "expo-camera",
         {
           "cameraPermission": "Allow ALPFA NJIT to access your camera to share photos to the chapter's Google Drive."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow ALPFA NJIT to access your photos so you can choose images to share with the chapter."
         }
       ],
       [

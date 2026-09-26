@@ -163,6 +163,8 @@ export default function CaptureScreen() {
   const [facing, setFacing] = useState<CameraType>('back');
   const [zoom, setZoom] = useState(0);
   const lastCameraTap = useRef(0);
+  const pinchStartDistance = useRef<number | null>(null);
+  const pinchStartZoom = useRef(0);
   const [cameraMessage, setCameraMessage] = useState('');
   const [photoUri, setPhotoUri] = useState<string | null>(null);
   const [status, setStatus] = useState<'idle' | 'uploading' | 'done' | 'error'>('idle');
@@ -240,14 +242,35 @@ export default function CaptureScreen() {
   }, []));
 
   const pickFromLibrary = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], allowsEditing: false, quality: 0.9 });
-    if (!result.canceled && result.assets[0]?.uri) {
-      setSelectedFilter('Normal');
-      setPhotoLocation(null);
-      setLocationMessage('');
-      setPhotoUri(result.assets[0].uri);
-      setStatus('idle');
-      setStatusMessage('');
+    try {
+      const access = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!access.granted) {
+        if (!access.canAskAgain) {
+          Alert.alert('Photos access needed', 'Allow ALPFA NJIT to access your photos in Settings so you can choose an image.', [
+            { text: 'Cancel', style: 'cancel' },
+            { text: 'Open Settings', onPress: () => { void openAppSettings(); } },
+          ]);
+        } else {
+          Alert.alert('Photos access needed', 'Please allow photo library access to choose an image.');
+        }
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: false,
+        quality: 0.9,
+      });
+      if (!result.canceled && result.assets[0]?.uri) {
+        setSelectedFilter('Normal');
+        setPhotoLocation(null);
+        setLocationMessage('');
+        setPhotoUri(result.assets[0].uri);
+        setStatus('idle');
+        setStatusMessage('');
+      }
+    } catch {
+      Alert.alert('Could not open Photos', 'Please try again or check ALPFA NJIT photo permissions in Settings.');
     }
   };
 
@@ -271,8 +294,27 @@ export default function CaptureScreen() {
     }
     lastCameraTap.current = now;
   };
-  const zoomIn = () => setZoom((current) => Math.min(1, Math.round((current + 0.1) * 10) / 10));
-  const zoomOut = () => setZoom((current) => Math.max(0, Math.round((current - 0.1) * 10) / 10));
+  const displayZoom = 1 + zoom * 4;
+  const setDisplayZoom = (value: number) => setZoom(Math.max(0, Math.min(1, (value - 1) / 4)));
+  const cameraPanResponder = React.useMemo(() => PanResponder.create({
+    onStartShouldSetPanResponder: (event) => event.nativeEvent.touches.length >= 2,
+    onMoveShouldSetPanResponder: (event) => event.nativeEvent.touches.length >= 2,
+    onPanResponderGrant: (event) => {
+      if (event.nativeEvent.touches.length < 2) return;
+      const [a, b] = event.nativeEvent.touches;
+      pinchStartDistance.current = Math.hypot(a.pageX - b.pageX, a.pageY - b.pageY);
+      pinchStartZoom.current = zoom;
+    },
+    onPanResponderMove: (event) => {
+      if (event.nativeEvent.touches.length < 2 || !pinchStartDistance.current) return;
+      const [a, b] = event.nativeEvent.touches;
+      const distance = Math.hypot(a.pageX - b.pageX, a.pageY - b.pageY);
+      const ratio = distance / pinchStartDistance.current;
+      setZoom(Math.max(0, Math.min(1, pinchStartZoom.current + (ratio - 1) * 0.35)));
+    },
+    onPanResponderRelease: () => { pinchStartDistance.current = null; },
+    onPanResponderTerminate: () => { pinchStartDistance.current = null; },
+  }), [zoom]);
   const retake = () => { setSelectedFilter('Normal'); setPhotoUri(null); setStatus('idle'); setStatusMessage(''); setPhotoName(''); setPhotoLocation(null); setLocationMessage(''); };
 
   const closeLocationEditor = () => {
@@ -474,16 +516,24 @@ export default function CaptureScreen() {
   return (
     <View style={styles.container}>
       <CameraView ref={cameraRef} style={StyleSheet.absoluteFill} key={facing} facing={facing} mirror={facing === 'front'} zoom={zoom} onMountError={({ message }) => { setCameraReady(false); setCameraMessage(message); }} onCameraReady={() => { setCameraReady(true); setCameraMessage(''); }} />
-      <TouchableOpacity style={styles.cameraGestureLayer} activeOpacity={1} onPress={handleCameraTap} accessibilityLabel="Camera preview. Double tap to switch camera." />
+      <View style={styles.cameraGestureLayer} {...cameraPanResponder.panHandlers}>
+        <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={handleCameraTap} accessibilityLabel="Camera preview. Pinch to zoom. Double tap to switch camera." />
+      </View>
       <TouchableOpacity style={[styles.closeButton, { top: insets.top + 12 }]} onPress={close}><Ionicons name="close" size={22} color="#FFFFFF" /></TouchableOpacity>
       <TouchableOpacity style={[styles.flipCameraButton, { top: insets.top + 12 }]} onPress={toggleFacing} accessibilityRole="button" accessibilityLabel={`Switch to ${facing === 'back' ? 'front' : 'back'} camera`}><Ionicons name="camera-reverse-outline" size={23} color="#FFFFFF" /></TouchableOpacity>
-      <View style={[styles.zoomControls, { top: insets.top + 66 }]}>
-          <TouchableOpacity style={styles.zoomButton} onPress={zoomOut} disabled={zoom <= 0} accessibilityRole="button" accessibilityLabel="Zoom out"><Ionicons name="remove" size={20} color="#FFFFFF" /></TouchableOpacity>
-          <Text style={styles.zoomText}>{zoom === 0 ? '1×' : `${(1 + zoom * 4).toFixed(1)}×`}</Text>
-          <TouchableOpacity style={styles.zoomButton} onPress={zoomIn} disabled={zoom >= 1} accessibilityRole="button" accessibilityLabel="Zoom in"><Ionicons name="add" size={20} color="#FFFFFF" /></TouchableOpacity>
-        </View>
       <View style={[styles.captureBar, { paddingBottom: insets.bottom + 24 }]}>
         <Text style={styles.hintText}>{cameraMessage || 'Photos are shared to the ALPFA NJIT Google Drive'}</Text>
+        <View style={styles.lensControls}>
+          {[1, 2, 5].map((value) => {
+            const selected = Math.abs(displayZoom - value) < 0.35;
+            return (
+              <TouchableOpacity key={value} style={[styles.lensButton, selected && styles.lensButtonSelected]} onPress={() => setDisplayZoom(value)} accessibilityRole="button" accessibilityLabel={`Zoom to ${value} times`}>
+                <Text style={[styles.lensText, selected && styles.lensTextSelected]}>{value}×</Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+        <Text style={styles.pinchHint}>Pinch anywhere on the camera to zoom</Text>
         <View style={styles.cameraActions}>
           <TouchableOpacity style={styles.galleryButton} onPress={pickFromLibrary} accessibilityRole="button" accessibilityLabel="Choose a photo from your camera roll"><Ionicons name="images-outline" size={25} color="#FFFFFF" /></TouchableOpacity>
           <TouchableOpacity style={styles.shutter} onPress={takePhoto} disabled={!cameraReady}><View style={styles.shutterInner} /></TouchableOpacity>
@@ -500,9 +550,12 @@ const createStyles = (colors: ReturnType<typeof useTheme>['colors']) => StyleShe
   permissionTitle: { color: '#FFFFFF', fontSize: 20, fontWeight: '900', marginTop: 16 },
   permissionText: { color: 'rgba(255,255,255,0.75)', fontSize: 13, textAlign: 'center', marginTop: 8, lineHeight: 19 },
   cameraGestureLayer: { ...StyleSheet.absoluteFill, zIndex: 1 },
-  zoomControls: { position: 'absolute', right: 16, zIndex: 10, flexDirection: 'row', alignItems: 'center', gap: 6, padding: 4, borderRadius: 20, backgroundColor: 'rgba(0,0,0,0.45)' },
-  zoomButton: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
-  zoomText: { color: '#FFFFFF', minWidth: 36, textAlign: 'center', fontSize: 11, fontWeight: '900' },
+  lensControls: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12, marginBottom: 7 },
+  lensButton: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.12)' },
+  lensButtonSelected: { backgroundColor: '#FFFFFF' },
+  lensText: { color: '#FFFFFF', fontSize: 12, fontWeight: '900' },
+  lensTextSelected: { color: '#111111' },
+  pinchHint: { color: 'rgba(255,255,255,0.52)', fontSize: 9, marginBottom: 12, textAlign: 'center' },
   closeButton: { position: 'absolute', right: 16, width: 38, height: 38, borderRadius: 19, backgroundColor: 'rgba(0,0,0,0.45)', alignItems: 'center', justifyContent: 'center', zIndex: 10 },
   flipCameraButton: { position: 'absolute', left: 16, width: 42, height: 42, borderRadius: 21, backgroundColor: 'rgba(0,0,0,0.45)', alignItems: 'center', justifyContent: 'center', zIndex: 10 },
   modeButton: { position: 'absolute', left: 16, flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, height: 34, borderRadius: 17, backgroundColor: 'rgba(110,27,45,0.88)', zIndex: 10 },
@@ -515,7 +568,7 @@ const createStyles = (colors: ReturnType<typeof useTheme>['colors']) => StyleShe
   filterChipSelected: { backgroundColor: '#FFFFFF', borderColor: '#FFFFFF' },
   filterText: { color: 'rgba(255,255,255,0.72)', fontSize: 11, fontWeight: '800' },
   filterTextSelected: { color: '#111111' },
-  hintText: { color: 'rgba(255,255,255,0.85)', fontSize: 11, marginBottom: 16, textAlign: 'center', paddingHorizontal: 24 },
+  hintText: { color: 'rgba(255,255,255,0.85)', fontSize: 11, marginBottom: 10, textAlign: 'center', paddingHorizontal: 24 },
   cameraActions: { width: '100%', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around', paddingHorizontal: 28 },
   galleryButton: { width: 52, height: 52, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.16)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.22)' },
   actionSpacer: { width: 52, height: 52 },
