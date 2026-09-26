@@ -35,7 +35,7 @@ export default function BottomNav({ state, descriptors, navigation }: BottomTabB
   const navOpacity = useRef(new Animated.Value(1)).current;
   const lastGlideIndex = useRef(state.index);
 
-  const navWidth = Math.min(Math.max(responsive.safeWidth - 72, 260), 350);
+  const navWidth = Math.min(Math.max(responsive.safeWidth - 34, 286), 382);
 
   const navigateToIndex = React.useCallback((index: number) => {
     const route = state.routes[index];
@@ -85,7 +85,7 @@ export default function BottomNav({ state, descriptors, navigation }: BottomTabB
   }, [navOpacity, navScale, navTranslateY, state.index, state.routes]);
 
   const compactBottomInset = Platform.OS === 'ios'
-    ? Math.max(6, Math.min(insets.bottom * 0.35, 12))
+    ? Math.max(3, Math.min(insets.bottom * 0.14, 6))
     : Math.max(insets.bottom, 4);
 
   return (
@@ -97,7 +97,7 @@ export default function BottomNav({ state, descriptors, navigation }: BottomTabB
           isDark && styles.navbarDark,
           {
             width: navWidth,
-            height: responsive.isSmallPhone ? 52 : 56,
+            height: responsive.isSmallPhone ? 58 : 62,
             paddingHorizontal: NAV_HORIZONTAL_PADDING,
             transform: [{ translateY: navTranslateY }, { scale: navScale }],
             opacity: navOpacity,
@@ -161,24 +161,26 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     alignItems: 'center',
     paddingTop: 0,
-    paddingHorizontal: 8,
-    paddingBottom: 2,
+    paddingHorizontal: 4,
+    paddingBottom: 0,
   },
   navbar: {
     position: 'relative',
-    backgroundColor: 'rgba(255,254,252,0.97)',
+    backgroundColor: 'rgba(255,254,252,0.94)',
     borderRadius: 999,
     flexDirection: 'row',
     alignItems: 'center',
-    ...shadow('#4A3727', 0.14, 18, 0, 5),
-    elevation: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(17,24,39,0.07)',
+    ...shadow('#17182F', 0.22, 24, 0, 7),
+    elevation: 12,
     overflow: 'hidden',
   },
   navbarDark: {
-    backgroundColor: 'rgba(10,16,36,0.96)',
+    backgroundColor: 'rgba(18,22,31,0.92)',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.10)',
-    ...shadow('#000000', 0.35, 18, 0, 5),
+    borderColor: 'rgba(255,255,255,0.14)',
+    ...shadow('#000000', 0.42, 24, 0, 7),
   },
   tab: {
     flex: 1,
@@ -189,7 +191,7 @@ const styles = StyleSheet.create({
   },
   iconContainer: {
     width: 36,
-    height: 25,
+    height: 27,
     alignItems: 'center',
     justifyContent: 'center',
   },
