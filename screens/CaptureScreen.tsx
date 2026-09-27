@@ -244,7 +244,19 @@ export default function CaptureScreen() {
     }
   };
 
-  const close = () => navigation.navigate('Home' as never);
+  const goHome = () => {
+    setPhotoUri(null);
+    setDualPrimaryUri(null);
+    setDualSelfieUri(null);
+    setStatus('idle');
+    setStatusMessage('');
+    setPhotoName('');
+    setPhotoLocation(null);
+    setLocationMessage('');
+    setFacing('back');
+    navigation.navigate('Home' as never);
+  };
+  const close = goHome;
 
   useFocusEffect(React.useCallback(() => () => {
     locationRequest.current++;
@@ -525,7 +537,7 @@ export default function CaptureScreen() {
             <View style={styles.centered}>
               <Ionicons name="checkmark-circle" size={40} color="#4ADE80" />
               <Text style={styles.statusTextLight}>{statusMessage}</Text>
-              <TouchableOpacity style={styles.primaryButton} onPress={close}><Text style={styles.primaryButtonText}>Done</Text></TouchableOpacity>
+              <TouchableOpacity style={styles.primaryButton} onPress={goHome}><Text style={styles.primaryButtonText}>Done</Text></TouchableOpacity>
             </View>
           ) : (
             <>
