@@ -3,8 +3,9 @@ import { ActivityIndicator, Alert, AppState, Image, Keyboard, KeyboardAvoidingVi
 import { CameraType, CameraView, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
+import { Asset as MediaAsset, requestPermissionsAsync as requestMediaLibraryPermissionsAsync } from 'expo-media-library';
 import { Ionicons } from '@expo/vector-icons';
-import { Canvas, ColorMatrix, Image as SkiaImage, ImageFormat, Text as SkiaText, matchFont, useCanvasRef, useImage } from '@shopify/react-native-skia';
+import { Canvas, ColorMatrix, Group, Image as SkiaImage, ImageFormat, RoundedRect, Text as SkiaText, matchFont, rect, rrect, useCanvasRef, useImage } from '@shopify/react-native-skia';
 import { File, Paths } from 'expo-file-system';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -117,15 +118,17 @@ const cleanLocationLabel = (value: string) =>
     .trim()
     .slice(0, 60);
 
-function FilteredPhotoPreview({ uri, filter, canvasRef, locationLabel, locationPosition }: {
+function FilteredPhotoPreview({ uri, filter, canvasRef, locationLabel, locationPosition, selfieUri }: {
   uri: string;
   filter: string;
   canvasRef: ReturnType<typeof useCanvasRef>;
   locationLabel?: string;
   locationPosition: { x: number; y: number };
+  selfieUri?: string | null;
 }) {
   const matrix = FILTER_MATRICES[filter];
   const { width, height } = useWindowDimensions();
+  const selfieImage = Platform.OS === 'web' ? null : useImage(selfieUri || null);
 
   if (Platform.OS === 'web') {
     return (
@@ -139,13 +142,25 @@ function FilteredPhotoPreview({ uri, filter, canvasRef, locationLabel, locationP
 
   const image = useImage(uri);
   if (!image) return <Image source={{ uri }} style={StyleSheet.absoluteFill} resizeMode="cover" />;
-  if (!matrix && !locationLabel) return <Image source={{ uri }} style={StyleSheet.absoluteFill} resizeMode="cover" />;
+  // Dual photos must always render through Skia so the selfie is included in
+  // both the preview and the exported Drive image.
+  if (!matrix && !locationLabel && !selfieUri) return <Image source={{ uri }} style={StyleSheet.absoluteFill} resizeMode="cover" />;
 
   return (
     <Canvas ref={canvasRef} style={StyleSheet.absoluteFill}>
       <SkiaImage image={image} x={0} y={0} width={width} height={height} fit="cover">
         {matrix && <ColorMatrix matrix={matrix} />}
       </SkiaImage>
+      {selfieImage && (
+        <>
+          <RoundedRect x={6} y={6} width={100} height={132} r={10} color="rgba(0,0,0,0.88)" />
+          <Group clip={rrect(rect(8, 8, 96, 128), 8, 8)}>
+            <SkiaImage image={selfieImage} x={8} y={8} width={96} height={128} fit="cover">
+              {matrix && <ColorMatrix matrix={matrix} />}
+            </SkiaImage>
+          </Group>
+        </>
+      )}
       {locationLabel && locationFont && (
         <>
           <SkiaText x={locationPosition.x + 1.5} y={locationPosition.y + 25.5} text={locationLabel} font={locationFont} color="rgba(0,0,0,0.78)" />
@@ -165,9 +180,13 @@ export default function CaptureScreen() {
 
   const cameraRef = useRef<CameraView>(null);
   const filteredCanvasRef = useCanvasRef();
+  const completedPhotoUriRef = useRef<string | null>(null);
   const [permission, requestPermission, getPermission] = useCameraPermissions();
   const [cameraReady, setCameraReady] = useState(false);
   const [facing, setFacing] = useState<CameraType>('back');
+  const [captureMode, setCaptureMode] = useState<'photo' | 'dual'>('photo');
+  const [dualPrimaryUri, setDualPrimaryUri] = useState<string | null>(null);
+  const [dualSelfieUri, setDualSelfieUri] = useState<string | null>(null);
   const [zoom, setZoom] = useState(0);
   const lastCameraTap = useRef(0);
   const pinchStartDistance = useRef<number | null>(null);
@@ -236,6 +255,51 @@ export default function CaptureScreen() {
 
   const close = () => navigation.navigate('Home' as never);
 
+  const saveCompletedPhoto = async () => {
+    if (Platform.OS === 'web') {
+      setStatusMessage('Saving to Photos is available in the iPhone and Android app.');
+      return;
+    }
+    const uri = completedPhotoUriRef.current;
+    if (!uri) {
+      setStatusMessage('The finished photo is no longer available to save.');
+      return;
+    }
+    try {
+      const permission = await requestMediaLibraryPermissionsAsync(true, ['photo']);
+      if (!permission.granted) {
+        setStatusMessage('Allow photo access to save this picture to your device.');
+        return;
+      }
+      await MediaAsset.create(uri);
+      setStatusMessage('Saved to Photos! It was also sent to the ALPFA NJIT Drive.');
+    } catch {
+      setStatusMessage('Could not save to Photos. Please try again.');
+    }
+  };
+
+  const resetAfterUpload = () => {
+    locationRequest.current++;
+    setLocationEditorOpen(false);
+    setLocationLoading(false);
+    setPhotoUri(null);
+    setDualPrimaryUri(null);
+    setDualSelfieUri(null);
+    setStatus('idle');
+    setStatusMessage('');
+    setPhotoName('');
+    setPhotoLocation(null);
+    setLocationMessage('');
+    setSelectedFilter('Normal');
+    setZoom(0);
+    setCameraMessage('');
+    completedPhotoUriRef.current = null;
+    if (facing !== 'back') {
+      setCameraReady(false);
+      setFacing('back');
+    }
+  };
+
   useFocusEffect(React.useCallback(() => () => {
     locationRequest.current++;
     setLocationEditorOpen(false);
@@ -282,13 +346,45 @@ export default function CaptureScreen() {
   };
 
   const takePhoto = async () => {
-    if (!cameraReady) return;
+    if (!cameraReady) {
+      setCameraMessage('Camera is getting ready — try the shutter again in a moment.');
+      return;
+    }
     try {
       const photo = await cameraRef.current?.takePictureAsync({ quality: 0.85 });
-      if (photo?.uri) {
-        setSelectedFilter('Normal'); setPhotoLocation(null); setLocationMessage(''); setPhotoUri(photo.uri);
+      if (!photo?.uri) return;
+
+      if (captureMode === 'dual' && !dualPrimaryUri) {
+        setDualPrimaryUri(photo.uri);
+        setCameraReady(false);
+        setZoom(0);
+        setFacing('front');
+        setCameraMessage('Main photo captured — take your selfie.');
+        return;
       }
+
+      setSelectedFilter('Normal');
+      setPhotoLocation(null);
+      setLocationMessage('');
+      if (captureMode === 'dual' && dualPrimaryUri) {
+        setDualSelfieUri(photo.uri);
+        setPhotoUri(dualPrimaryUri);
+      } else {
+        setPhotoUri(photo.uri);
+      }
+      setCameraMessage('');
     } catch { setCameraMessage('The photo could not be captured. Please try again.'); }
+  };
+
+  const selectCaptureMode = (mode: 'photo' | 'dual') => {
+    setCaptureMode(mode);
+    setDualPrimaryUri(null); setDualSelfieUri(null);
+    setCameraMessage('');
+    setZoom(0);
+    if (facing !== 'back') {
+      setCameraReady(false);
+      setFacing('back');
+    }
   };
 
   const toggleFacing = () => { setCameraReady(false); setZoom(0); setFacing((current) => current === 'back' ? 'front' : 'back'); };
@@ -322,7 +418,7 @@ export default function CaptureScreen() {
     onPanResponderRelease: () => { pinchStartDistance.current = null; },
     onPanResponderTerminate: () => { pinchStartDistance.current = null; },
   }), [zoom]);
-  const retake = () => { setSelectedFilter('Normal'); setPhotoUri(null); setStatus('idle'); setStatusMessage(''); setPhotoName(''); setPhotoLocation(null); setLocationMessage(''); };
+  const retake = () => { setSelectedFilter('Normal'); setPhotoUri(null); setDualPrimaryUri(null); setDualSelfieUri(null); setFacing('back'); setStatus('idle'); setStatusMessage(''); setPhotoName(''); setPhotoLocation(null); setLocationMessage(''); };
 
   const closeLocationEditor = () => {
     locationRequest.current++;
@@ -417,7 +513,7 @@ export default function CaptureScreen() {
         setStatusMessage('The filtered photo could not be prepared. Please try again.');
         return;
       }
-    } else if (Platform.OS !== 'web' && (selectedFilter !== 'Normal' || photoLocation)) {
+    } else if (Platform.OS !== 'web' && (selectedFilter !== 'Normal' || photoLocation || dualSelfieUri)) {
       try {
         const snapshot = await filteredCanvasRef.current?.makeImageSnapshotAsync();
         if (!snapshot) { setStatus('error'); setStatusMessage('The photo could not be prepared. Please try again.'); return; }
@@ -428,8 +524,13 @@ export default function CaptureScreen() {
       } catch { setStatus('error'); setStatusMessage('The photo could not be prepared. Please try again.'); return; }
     }
     const result = await uploadPhotoToDrive(uploadUri, cleanName);
-    if (webPreparedUri) URL.revokeObjectURL(webPreparedUri);
-    if (result.success) { setStatus('done'); setStatusMessage('Photo sent to the ALPFA NJIT Drive!'); }
+    if (result.success) {
+      completedPhotoUriRef.current = Platform.OS === 'web' ? null : uploadUri;
+      setStatus('done');
+      setStatusMessage('Photo sent to the ALPFA NJIT Drive!');
+    } else if (webPreparedUri) {
+      URL.revokeObjectURL(webPreparedUri);
+    }
     else { setStatus('error'); setStatusMessage(result.message || 'Something went wrong. Try again.'); }
   };
 
@@ -468,7 +569,7 @@ export default function CaptureScreen() {
             </View>
           </KeyboardAvoidingView>
         </Modal>
-        <FilteredPhotoPreview uri={photoUri} filter={selectedFilter} canvasRef={filteredCanvasRef} locationLabel={photoLocation?.label} locationPosition={locationPosition} />
+        <FilteredPhotoPreview uri={photoUri} filter={selectedFilter} canvasRef={filteredCanvasRef} locationLabel={photoLocation?.label} locationPosition={locationPosition} selfieUri={captureMode === 'dual' ? dualSelfieUri : null} />
         {photoLocation && status !== 'done' && (
           <View style={[styles.photoLocationStamp, { left: locationPosition.x - 8, top: locationPosition.y - 8 }]} {...locationPanResponder.panHandlers}>
             <View style={styles.photoLocationStampPill}>
@@ -478,12 +579,13 @@ export default function CaptureScreen() {
           </View>
         )}
         <TouchableOpacity style={[styles.closeButton, { top: insets.top + 12 }]} onPress={close}><Ionicons name="close" size={22} color="#FFFFFF" /></TouchableOpacity>
-        <View style={[styles.previewFooter, { bottom: keyboardHeight, paddingBottom: nameFocused ? 12 : insets.bottom + 24 }]}>
+        <View style={[styles.previewFooter, { bottom: nameFocused ? keyboardHeight : insets.bottom + 76, paddingBottom: nameFocused ? 12 : 10 }]}>
           {status === 'done' ? (
             <View style={styles.centered}>
               <Ionicons name="checkmark-circle" size={40} color="#4ADE80" />
               <Text style={styles.statusTextLight}>{statusMessage}</Text>
-              <TouchableOpacity style={styles.primaryButton} onPress={close}><Text style={styles.primaryButtonText}>Done</Text></TouchableOpacity>
+              <TouchableOpacity style={styles.primaryButton} onPress={saveCompletedPhoto}><Text style={styles.primaryButtonText}>Save to Photos</Text></TouchableOpacity>
+              <TouchableOpacity style={styles.closeLink} onPress={resetAfterUpload}><Text style={styles.closeLinkText}>Done</Text></TouchableOpacity>
             </View>
           ) : (
             <>
@@ -535,10 +637,17 @@ export default function CaptureScreen() {
       <View style={styles.cameraGestureLayer} {...cameraPanResponder.panHandlers}>
         <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={handleCameraTap} accessibilityLabel="Camera preview. Pinch to zoom. Double tap to switch camera." />
       </View>
-      <TouchableOpacity style={[styles.closeButton, { top: insets.top + 12 }]} onPress={close}><Ionicons name="close" size={22} color="#FFFFFF" /></TouchableOpacity>
-      <TouchableOpacity style={[styles.flipCameraButton, { top: insets.top + 12 }]} onPress={toggleFacing} accessibilityRole="button" accessibilityLabel={`Switch to ${facing === 'back' ? 'front' : 'back'} camera`}><Ionicons name="camera-reverse-outline" size={23} color="#FFFFFF" /></TouchableOpacity>
-      <View style={[styles.captureBar, { paddingBottom: insets.bottom + 24 }]}>
-        <Text style={styles.hintText}>{cameraMessage || 'Photos are shared to the ALPFA NJIT Google Drive'}</Text>
+      <TouchableOpacity style={[styles.closeButton, { top: insets.top + 12 }]} onPress={close} accessibilityRole="button" accessibilityLabel="Close camera"><Ionicons name="close" size={22} color="#FFFFFF" /></TouchableOpacity>
+      {!!cameraMessage && <View style={[styles.cameraMessagePill, { top: insets.top + 64 }]}><Text style={styles.cameraMessageText}>{cameraMessage}</Text></View>}
+      <View style={[styles.captureBar, { bottom: insets.bottom + 76 }]}>
+        <View style={styles.captureModeSelector}>
+          {(['photo', 'dual'] as const).map((mode) => (
+            <TouchableOpacity key={mode} onPress={() => selectCaptureMode(mode)} accessibilityRole="button" accessibilityLabel={mode === 'photo' ? 'Photo mode' : 'Dual photo mode'}>
+              <Text style={[styles.captureModeText, captureMode === mode && styles.captureModeTextSelected]}>{mode.toUpperCase()}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+        {captureMode === 'dual' && <Text style={styles.dualHint}>{dualPrimaryUri ? 'SELFIE' : 'MAIN PHOTO'}</Text>}
         <View style={styles.lensControls}>
           {[1, 2, 5].map((value) => {
             const selected = Math.abs(displayZoom - value) < 0.35;
@@ -549,11 +658,10 @@ export default function CaptureScreen() {
             );
           })}
         </View>
-        <Text style={styles.pinchHint}>Pinch anywhere on the camera to zoom</Text>
         <View style={styles.cameraActions}>
           <TouchableOpacity style={styles.galleryButton} onPress={pickFromLibrary} accessibilityRole="button" accessibilityLabel="Choose a photo from your camera roll"><Ionicons name="images-outline" size={25} color="#FFFFFF" /></TouchableOpacity>
-          <TouchableOpacity style={styles.shutter} onPress={takePhoto} disabled={!cameraReady}><View style={styles.shutterInner} /></TouchableOpacity>
-          <View style={styles.actionSpacer} />
+          <TouchableOpacity style={[styles.shutter, !cameraReady && styles.shutterNotReady]} onPress={takePhoto} accessibilityRole="button" accessibilityLabel="Take photo"><View pointerEvents="none" style={styles.shutterInner} /></TouchableOpacity>
+          <TouchableOpacity style={styles.flipCameraButton} onPress={toggleFacing} accessibilityRole="button" accessibilityLabel={`Switch to ${facing === 'back' ? 'front' : 'back'} camera`}><Ionicons name="camera-reverse-outline" size={25} color="#FFFFFF" /></TouchableOpacity>
         </View>
       </View>
     </View>
@@ -566,17 +674,20 @@ const createStyles = (colors: ReturnType<typeof useTheme>['colors']) => StyleShe
   permissionTitle: { color: '#FFFFFF', fontSize: 20, fontWeight: '900', marginTop: 16 },
   permissionText: { color: 'rgba(255,255,255,0.75)', fontSize: 13, textAlign: 'center', marginTop: 8, lineHeight: 19 },
   cameraGestureLayer: { ...StyleSheet.absoluteFill, zIndex: 1 },
-  lensControls: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12, marginBottom: 7 },
-  lensButton: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.12)' },
-  lensButtonSelected: { backgroundColor: '#FFFFFF' },
-  lensText: { color: '#FFFFFF', fontSize: 12, fontWeight: '900' },
-  lensTextSelected: { color: '#111111' },
-  pinchHint: { color: 'rgba(255,255,255,0.52)', fontSize: 9, marginBottom: 12, textAlign: 'center' },
+  captureModeSelector: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 28, marginBottom: 10 },
+  captureModeText: { color: 'rgba(255,255,255,0.62)', fontSize: 12, fontWeight: '800', letterSpacing: 1.1 },
+  captureModeTextSelected: { color: '#FFD84A' },
+  dualHint: { color: 'rgba(255,255,255,0.78)', fontSize: 9, fontWeight: '900', letterSpacing: 1.2, marginBottom: 8 },
+  lensControls: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 18 },
+  lensButton: { minWidth: 42, height: 42, paddingHorizontal: 10, borderRadius: 21, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(18,18,18,0.72)' },
+  lensButtonSelected: { backgroundColor: 'rgba(34,34,34,0.96)' },
+  lensText: { color: 'rgba(255,255,255,0.9)', fontSize: 14, fontWeight: '700' },
+  lensTextSelected: { color: '#FFD84A' },
   closeButton: { position: 'absolute', right: 16, width: 38, height: 38, borderRadius: 19, backgroundColor: 'rgba(0,0,0,0.45)', alignItems: 'center', justifyContent: 'center', zIndex: 10 },
-  flipCameraButton: { position: 'absolute', left: 16, width: 42, height: 42, borderRadius: 21, backgroundColor: 'rgba(0,0,0,0.45)', alignItems: 'center', justifyContent: 'center', zIndex: 10 },
+  flipCameraButton: { width: 54, height: 54, borderRadius: 27, backgroundColor: 'rgba(18,18,18,0.76)', alignItems: 'center', justifyContent: 'center' },
   modeButton: { position: 'absolute', left: 16, flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, height: 34, borderRadius: 17, backgroundColor: 'rgba(110,27,45,0.88)', zIndex: 10 },
   modeButtonText: { color: '#FFFFFF', fontSize: 10, fontWeight: '900', letterSpacing: 0.8 },
-  captureBar: { position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 5, elevation: 5, alignItems: 'center', paddingTop: 18, backgroundColor: 'rgba(10,10,10,0.72)' },
+  captureBar: { position: 'absolute', left: 0, right: 0, zIndex: 5, elevation: 5, alignItems: 'center', paddingHorizontal: 28, backgroundColor: 'transparent' },
   previewFilterPicker: { marginBottom: 12 },
   previewFilterLabel: { color: 'rgba(255,255,255,0.72)', fontSize: 10, fontWeight: '900', letterSpacing: 1.1, marginBottom: 8, paddingHorizontal: 2 },
   filterRow: { gap: 8, paddingBottom: 6 },
@@ -584,12 +695,13 @@ const createStyles = (colors: ReturnType<typeof useTheme>['colors']) => StyleShe
   filterChipSelected: { backgroundColor: '#FFFFFF', borderColor: '#FFFFFF' },
   filterText: { color: 'rgba(255,255,255,0.72)', fontSize: 11, fontWeight: '800' },
   filterTextSelected: { color: '#111111' },
-  hintText: { color: 'rgba(255,255,255,0.85)', fontSize: 11, marginBottom: 10, textAlign: 'center', paddingHorizontal: 24 },
-  cameraActions: { width: '100%', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around', paddingHorizontal: 28 },
-  galleryButton: { width: 52, height: 52, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.16)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.22)' },
-  actionSpacer: { width: 52, height: 52 },
-  shutter: { width: 74, height: 74, borderRadius: 37, borderWidth: 4, borderColor: '#8D102B', alignItems: 'center', justifyContent: 'center' },
-  shutterInner: { width: 58, height: 58, borderRadius: 29, backgroundColor: '#FFFFFF', borderWidth: 2, borderColor: '#FFFFFF' },
+  cameraMessagePill: { position: 'absolute', alignSelf: 'center', maxWidth: '82%', zIndex: 10, borderRadius: 16, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: 'rgba(0,0,0,0.62)' },
+  cameraMessageText: { color: '#FFFFFF', fontSize: 11, fontWeight: '700', textAlign: 'center' },
+  cameraActions: { width: '100%', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 12 },
+  galleryButton: { width: 54, height: 54, borderRadius: 18, backgroundColor: 'rgba(18,18,18,0.76)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.18)' },
+  shutter: { width: 82, height: 82, borderRadius: 41, borderWidth: 4, borderColor: '#FFFFFF', backgroundColor: 'rgba(0,0,0,0.18)', alignItems: 'center', justifyContent: 'center' },
+  shutterNotReady: { opacity: 0.62 },
+  shutterInner: { width: 68, height: 68, borderRadius: 34, backgroundColor: '#FFFFFF' },
   previewFooter: { position: 'absolute', left: 0, right: 0, paddingTop: 20, paddingHorizontal: 24, backgroundColor: 'rgba(0,0,0,0.55)' },
   nameCard: { marginBottom: 14, padding: 14, borderRadius: 18, backgroundColor: 'rgba(0,0,0,0.58)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.18)' },
   nameLabel: { color: 'rgba(255,255,255,0.72)', fontSize: 10, fontWeight: '900', letterSpacing: 1.1, marginBottom: 7 },
