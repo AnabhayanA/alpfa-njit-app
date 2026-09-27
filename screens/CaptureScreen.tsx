@@ -4,7 +4,7 @@ import { CameraType, CameraView, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
 import { Ionicons } from '@expo/vector-icons';
-import { Canvas, ColorMatrix, Image as SkiaImage, ImageFormat, Text as SkiaText, matchFont, useCanvasRef, useImage } from '@shopify/react-native-skia';
+import { Canvas, ColorMatrix, Group, Image as SkiaImage, ImageFormat, RoundedRect, Text as SkiaText, matchFont, rect, rrect, useCanvasRef, useImage } from '@shopify/react-native-skia';
 import { File, Paths } from 'expo-file-system';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -151,7 +151,14 @@ function FilteredPhotoPreview({ uri, filter, canvasRef, locationLabel, locationP
         {matrix && <ColorMatrix matrix={matrix} />}
       </SkiaImage>
       {selfieImage && (
-        <SkiaImage image={selfieImage} x={10} y={10} width={92} height={122} fit="cover" />
+        <>
+          <RoundedRect x={6} y={6} width={100} height={132} r={10} color="rgba(0,0,0,0.88)" />
+          <Group clip={rrect(rect(8, 8, 96, 128), 8, 8)}>
+            <SkiaImage image={selfieImage} x={8} y={8} width={96} height={128} fit="cover">
+              {matrix && <ColorMatrix matrix={matrix} />}
+            </SkiaImage>
+          </Group>
+        </>
       )}
       {locationLabel && locationFont && (
         <>
