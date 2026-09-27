@@ -3,6 +3,7 @@ import { ActivityIndicator, Alert, AppState, Image, Keyboard, KeyboardAvoidingVi
 import { CameraType, CameraView, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
+import { Asset as MediaAsset, requestPermissionsAsync as requestMediaLibraryPermissionsAsync } from 'expo-media-library';
 import { Ionicons } from '@expo/vector-icons';
 import { Canvas, ColorMatrix, Group, Image as SkiaImage, ImageFormat, RoundedRect, Text as SkiaText, matchFont, rect, rrect, useCanvasRef, useImage } from '@shopify/react-native-skia';
 import { File, Paths } from 'expo-file-system';
@@ -179,6 +180,7 @@ export default function CaptureScreen() {
 
   const cameraRef = useRef<CameraView>(null);
   const filteredCanvasRef = useCanvasRef();
+  const completedPhotoUriRef = useRef<string | null>(null);
   const [permission, requestPermission, getPermission] = useCameraPermissions();
   const [cameraReady, setCameraReady] = useState(false);
   const [facing, setFacing] = useState<CameraType>('back');
@@ -253,6 +255,29 @@ export default function CaptureScreen() {
 
   const close = () => navigation.navigate('Home' as never);
 
+  const saveCompletedPhoto = async () => {
+    if (Platform.OS === 'web') {
+      setStatusMessage('Saving to Photos is available in the iPhone and Android app.');
+      return;
+    }
+    const uri = completedPhotoUriRef.current;
+    if (!uri) {
+      setStatusMessage('The finished photo is no longer available to save.');
+      return;
+    }
+    try {
+      const permission = await requestMediaLibraryPermissionsAsync(true, ['photo']);
+      if (!permission.granted) {
+        setStatusMessage('Allow photo access to save this picture to your device.');
+        return;
+      }
+      await MediaAsset.create(uri);
+      setStatusMessage('Saved to Photos! It was also sent to the ALPFA NJIT Drive.');
+    } catch {
+      setStatusMessage('Could not save to Photos. Please try again.');
+    }
+  };
+
   const resetAfterUpload = () => {
     locationRequest.current++;
     setLocationEditorOpen(false);
@@ -268,6 +293,7 @@ export default function CaptureScreen() {
     setSelectedFilter('Normal');
     setZoom(0);
     setCameraMessage('');
+    completedPhotoUriRef.current = null;
     if (facing !== 'back') {
       setCameraReady(false);
       setFacing('back');
@@ -498,8 +524,13 @@ export default function CaptureScreen() {
       } catch { setStatus('error'); setStatusMessage('The photo could not be prepared. Please try again.'); return; }
     }
     const result = await uploadPhotoToDrive(uploadUri, cleanName);
-    if (webPreparedUri) URL.revokeObjectURL(webPreparedUri);
-    if (result.success) { setStatus('done'); setStatusMessage('Photo sent to the ALPFA NJIT Drive!'); }
+    if (result.success) {
+      completedPhotoUriRef.current = Platform.OS === 'web' ? null : uploadUri;
+      setStatus('done');
+      setStatusMessage('Photo sent to the ALPFA NJIT Drive!');
+    } else if (webPreparedUri) {
+      URL.revokeObjectURL(webPreparedUri);
+    }
     else { setStatus('error'); setStatusMessage(result.message || 'Something went wrong. Try again.'); }
   };
 
@@ -553,7 +584,8 @@ export default function CaptureScreen() {
             <View style={styles.centered}>
               <Ionicons name="checkmark-circle" size={40} color="#4ADE80" />
               <Text style={styles.statusTextLight}>{statusMessage}</Text>
-              <TouchableOpacity style={styles.primaryButton} onPress={resetAfterUpload}><Text style={styles.primaryButtonText}>Done</Text></TouchableOpacity>
+              <TouchableOpacity style={styles.primaryButton} onPress={saveCompletedPhoto}><Text style={styles.primaryButtonText}>Save to Photos</Text></TouchableOpacity>
+              <TouchableOpacity style={styles.closeLink} onPress={resetAfterUpload}><Text style={styles.closeLinkText}>Done</Text></TouchableOpacity>
             </View>
           ) : (
             <>
