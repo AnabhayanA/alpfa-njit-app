@@ -188,6 +188,8 @@ export default function CaptureScreen() {
   const [dualPrimaryUri, setDualPrimaryUri] = useState<string | null>(null);
   const [dualSelfieUri, setDualSelfieUri] = useState<string | null>(null);
   const [zoom, setZoom] = useState(0);
+  const [zoomDialVisible, setZoomDialVisible] = useState(false);
+  const zoomDialTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastCameraTap = useRef(0);
   const pinchStartDistance = useRef<number | null>(null);
   const pinchStartZoom = useRef(0);
@@ -205,7 +207,7 @@ export default function CaptureScreen() {
   const locationRequest = useRef(0);
   const [locationLoading, setLocationLoading] = useState(false);
   const [locationMessage, setLocationMessage] = useState('');
-  const [locationPosition, setLocationPosition] = useState({ x: 28, y: 420 });
+  const [locationPosition, setLocationPosition] = useState({ x: 28, y: Math.max(420, screenHeight * 0.68) });
   const cameraFilters = ['Normal', 'Warm', 'Cool', 'B&W', 'Vintage', 'ALPFA'];
 
   const locationPanResponder = React.useMemo(() => PanResponder.create({
@@ -213,7 +215,7 @@ export default function CaptureScreen() {
     onMoveShouldSetPanResponder: () => true,
     onPanResponderMove: (event) => {
       const x = Math.max(16, Math.min(event.nativeEvent.pageX - 70, screenWidth - 170));
-      const y = Math.max(insets.top + 70, Math.min(event.nativeEvent.pageY - 22, screenHeight - 300));
+      const y = Math.max(insets.top + 70, Math.min(event.nativeEvent.pageY - 22, screenHeight - 190));
       setLocationPosition({ x, y });
     },
   }), [insets.top, screenHeight, screenWidth]);
@@ -397,8 +399,17 @@ export default function CaptureScreen() {
     }
     lastCameraTap.current = now;
   };
-  const displayZoom = 1 + zoom * 4;
-  const setDisplayZoom = (value: number) => setZoom(Math.max(0, Math.min(1, (value - 1) / 4)));
+  const MAX_CAMERA_ZOOM = 0.45;
+  const displayZoom = 1 + (Math.min(zoom, MAX_CAMERA_ZOOM) / MAX_CAMERA_ZOOM) * 4;
+  const showZoomDial = () => {
+    setZoomDialVisible(true);
+    if (zoomDialTimer.current) clearTimeout(zoomDialTimer.current);
+    zoomDialTimer.current = setTimeout(() => setZoomDialVisible(false), 1200);
+  };
+  const setDisplayZoom = (value: number) => {
+    setZoom(Math.max(0, Math.min(MAX_CAMERA_ZOOM, ((value - 1) / 4) * MAX_CAMERA_ZOOM)));
+    showZoomDial();
+  };
   const cameraPanResponder = React.useMemo(() => PanResponder.create({
     onStartShouldSetPanResponder: (event) => event.nativeEvent.touches.length >= 2,
     onMoveShouldSetPanResponder: (event) => event.nativeEvent.touches.length >= 2,
@@ -413,11 +424,18 @@ export default function CaptureScreen() {
       const [a, b] = event.nativeEvent.touches;
       const distance = Math.hypot(a.pageX - b.pageX, a.pageY - b.pageY);
       const ratio = distance / pinchStartDistance.current;
-      setZoom(Math.max(0, Math.min(1, pinchStartZoom.current + (ratio - 1) * 0.35)));
+      setZoom(Math.max(0, Math.min(MAX_CAMERA_ZOOM, pinchStartZoom.current + (ratio - 1) * 0.16)));
+      showZoomDial();
     },
     onPanResponderRelease: () => { pinchStartDistance.current = null; },
     onPanResponderTerminate: () => { pinchStartDistance.current = null; },
   }), [zoom]);
+  const swapDualPhotos = () => {
+    if (captureMode !== 'dual' || !photoUri || !dualSelfieUri || status === 'uploading') return;
+    const currentMain = photoUri;
+    setPhotoUri(dualSelfieUri);
+    setDualSelfieUri(currentMain);
+  };
   const retake = () => { setSelectedFilter('Normal'); setPhotoUri(null); setDualPrimaryUri(null); setDualSelfieUri(null); setFacing('back'); setStatus('idle'); setStatusMessage(''); setPhotoName(''); setPhotoLocation(null); setLocationMessage(''); };
 
   const closeLocationEditor = () => {
@@ -440,7 +458,7 @@ export default function CaptureScreen() {
     const label = cleanLocationLabel(locationDraft);
     if (!label) { setLocationMessage('Enter a location name first.'); return; }
     setLocationDraft(label);
-    if (!photoLocation) setLocationPosition({ x: 28, y: Math.max(insets.top + 100, screenHeight * 0.5) });
+    if (!photoLocation) setLocationPosition({ x: 28, y: Math.min(screenHeight - 190, Math.max(insets.top + 100, screenHeight * 0.68)) });
     setPhotoLocation({ label });
     setLocationMessage('');
     closeLocationEditor();
@@ -570,6 +588,12 @@ export default function CaptureScreen() {
           </KeyboardAvoidingView>
         </Modal>
         <FilteredPhotoPreview uri={photoUri} filter={selectedFilter} canvasRef={filteredCanvasRef} locationLabel={photoLocation?.label} locationPosition={locationPosition} selfieUri={captureMode === 'dual' ? dualSelfieUri : null} />
+        {captureMode === 'dual' && dualSelfieUri && status !== 'done' && (
+          <TouchableOpacity style={[styles.dualSwapButton, { top: insets.top + 12 }]} onPress={swapDualPhotos} accessibilityRole="button" accessibilityLabel="Swap main and inset Dual photos">
+            <Ionicons name="swap-horizontal" size={20} color="#FFFFFF" />
+            <Text style={styles.dualSwapText}>Swap</Text>
+          </TouchableOpacity>
+        )}
         {photoLocation && status !== 'done' && (
           <View style={[styles.photoLocationStamp, { left: locationPosition.x - 8, top: locationPosition.y - 8 }]} {...locationPanResponder.panHandlers}>
             <View style={styles.photoLocationStampPill}>
@@ -639,6 +663,16 @@ export default function CaptureScreen() {
       </View>
       <TouchableOpacity style={[styles.closeButton, { top: insets.top + 12 }]} onPress={close} accessibilityRole="button" accessibilityLabel="Close camera"><Ionicons name="close" size={22} color="#FFFFFF" /></TouchableOpacity>
       {!!cameraMessage && <View style={[styles.cameraMessagePill, { top: insets.top + 64 }]}><Text style={styles.cameraMessageText}>{cameraMessage}</Text></View>}
+      {zoomDialVisible && (
+        <View pointerEvents="none" style={[styles.zoomDial, { bottom: insets.bottom + 245 }]}>
+          <View style={styles.zoomDialArc}>
+            {Array.from({ length: 21 }).map((_, index) => (
+              <View key={index} style={[styles.zoomTick, index % 5 === 0 && styles.zoomTickMajor, { transform: [{ rotate: `${-50 + index * 5}deg` }, { translateY: -37 }] }]} />
+            ))}
+          </View>
+          <Text style={styles.zoomDialValue}>{displayZoom.toFixed(1)}×</Text>
+        </View>
+      )}
       <View style={[styles.captureBar, { bottom: insets.bottom + 76 }]}>
         <View style={styles.captureModeSelector}>
           {(['photo', 'dual'] as const).map((mode) => (
@@ -697,6 +731,59 @@ const createStyles = (colors: ReturnType<typeof useTheme>['colors']) => StyleShe
   filterTextSelected: { color: '#111111' },
   cameraMessagePill: { position: 'absolute', alignSelf: 'center', maxWidth: '82%', zIndex: 10, borderRadius: 16, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: 'rgba(0,0,0,0.62)' },
   cameraMessageText: { color: '#FFFFFF', fontSize: 11, fontWeight: '700', textAlign: 'center' },
+  dualSwapButton: {
+    position: 'absolute',
+    left: 118,
+    zIndex: 30,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: 'rgba(0,0,0,0.68)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.28)',
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  dualSwapText: { color: '#FFFFFF', fontSize: 11, fontWeight: '900' },
+  zoomDial: {
+    position: 'absolute',
+    alignSelf: 'center',
+    width: 190,
+    height: 92,
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    zIndex: 25,
+  },
+  zoomDialArc: {
+    position: 'absolute',
+    bottom: 4,
+    width: 150,
+    height: 75,
+    borderTopLeftRadius: 150,
+    borderTopRightRadius: 150,
+    borderWidth: 1,
+    borderBottomWidth: 0,
+    borderColor: 'rgba(255,255,255,0.42)',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+  },
+  zoomTick: {
+    position: 'absolute',
+    bottom: 35,
+    width: 1,
+    height: 7,
+    backgroundColor: 'rgba(255,255,255,0.62)',
+  },
+  zoomTickMajor: { height: 12, width: 2, backgroundColor: '#FFFFFF' },
+  zoomDialValue: {
+    color: '#FFD84D',
+    fontSize: 18,
+    fontWeight: '900',
+    textShadowColor: 'rgba(0,0,0,0.75)',
+    textShadowRadius: 4,
+    marginBottom: 12,
+  },
   cameraActions: { width: '100%', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 12 },
   galleryButton: { width: 54, height: 54, borderRadius: 18, backgroundColor: 'rgba(18,18,18,0.76)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.18)' },
   shutter: { width: 82, height: 82, borderRadius: 41, borderWidth: 4, borderColor: '#FFFFFF', backgroundColor: 'rgba(0,0,0,0.18)', alignItems: 'center', justifyContent: 'center' },
