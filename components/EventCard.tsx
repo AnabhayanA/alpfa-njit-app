@@ -58,8 +58,7 @@ export default function EventCard({ event, animationDelay }: { event: CalendarEv
     }
   };
 
-  const addToCalendar = async () => {
-    const fallbackUrl = (() => {
+  const getGoogleCalendarUrl = () => {
       const compact = (date: Date) => date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
       const params = new URLSearchParams({
         action: 'TEMPLATE',
@@ -69,7 +68,18 @@ export default function EventCard({ event, animationDelay }: { event: CalendarEv
         location: event.location || '',
       });
       return `https://calendar.google.com/calendar/render?${params.toString()}`;
-    })();
+  };
+
+  const addToGoogleCalendar = async () => {
+    try {
+      await Linking.openURL(getGoogleCalendarUrl());
+    } catch {
+      Alert.alert('Google Calendar unavailable', 'We could not open Google Calendar for this event.');
+    }
+  };
+
+  const addToCalendar = async () => {
+    const fallbackUrl = getGoogleCalendarUrl();
 
     if (Platform.OS === 'web') {
       await Linking.openURL(fallbackUrl);
@@ -158,10 +168,16 @@ export default function EventCard({ event, animationDelay }: { event: CalendarEv
               <Text style={styles.linkText}>View event details</Text><Ionicons name="arrow-forward" size={15} color="#8D102B" />
             </TouchableOpacity>
           )}
-          <TouchableOpacity style={styles.calendarButton} onPress={addToCalendar} accessibilityRole="button" accessibilityLabel={`Add ${event.title} to my calendar`}>
-            <Ionicons name="calendar-outline" size={16} color="#FFFFFF" />
-            <Text style={styles.calendarButtonText}>Add to My Calendar</Text>
-          </TouchableOpacity>
+          <View style={styles.calendarActions}>
+            <TouchableOpacity style={styles.calendarButton} onPress={addToCalendar} accessibilityRole="button" accessibilityLabel={`Add ${event.title} to my device calendar`}>
+              <Ionicons name="calendar-outline" size={16} color="#FFFFFF" />
+              <Text style={styles.calendarButtonText}>Device Calendar</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.googleCalendarButton} onPress={addToGoogleCalendar} accessibilityRole="link" accessibilityLabel={`Add ${event.title} to Google Calendar`}>
+              <Ionicons name="logo-google" size={15} color="#FFFFFF" />
+              <Text style={styles.calendarButtonText}>Google Calendar</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       )}
 
@@ -194,7 +210,9 @@ const createStyles = (colors: ReturnType<typeof useTheme>['colors'], isDark: boo
   infoText: { flex: 1, color: colors.textSecondary, fontSize: 11, lineHeight: 16 },
   directionsButton: { alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 9, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 9, backgroundColor: '#8D102B' },
   directionsText: { color: '#FFFFFF', fontSize: 11, fontWeight: '800' },
-  calendarButton: { alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 7, marginTop: 6, paddingHorizontal: 13, paddingVertical: 9, borderRadius: 9, backgroundColor: '#0F102E' },
+  calendarActions: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 6 },
+  calendarButton: { alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 7, paddingHorizontal: 13, paddingVertical: 9, borderRadius: 9, backgroundColor: '#0F102E' },
+  googleCalendarButton: { alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 7, paddingHorizontal: 13, paddingVertical: 9, borderRadius: 9, backgroundColor: '#1F2937' },
   calendarButtonText: { color: '#FFFFFF', fontSize: 11, fontWeight: '800' },
   link: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 3 },
   linkText: { color: '#8D102B', fontSize: 11, fontWeight: '800' },
