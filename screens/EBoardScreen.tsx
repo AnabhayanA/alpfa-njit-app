@@ -146,18 +146,7 @@ const BOARD_MEMBERS = [
     whyAlpfa: 'I joined ALPFA to connect with driven students and professionals, expand my network, and develop the leadership, business, and technical skills that will help me grow professionally.',
     role: 'Responsible for planning and executing events that promote engagement and development within the organization.',
   },
-  {
-    name: 'Diego Guevara',
-    position: 'IT Committee Member',
-    major: 'Business & Information Systems',
-    classYear: '2028',
-    image: require('../assets/images/Diego-Guevara.jpg'),
-  linkedin: 'https://www.linkedin.com/in/diegoguevara2093/',
-    bio: "Diego Guevara is a junior majoring in Business & Information Systems at NJIT. He is of Ecuadorian and Chinese heritage and is passionate about technology, business, and finding ways to use both to create meaningful solutions. As a member of ALPFA’s IT Committee, he is helping support the development and launch of the organization’s official app. He also enjoys developing his leadership, technical, and professional skills while connecting with others who share similar career ambitions.",
-    goal: 'My goal within ALPFA is to help strengthen the organization’s digital presence through technology while also building meaningful relationships with other members. I want to contribute to projects such as the ALPFA app, develop my leadership and technical skills, and help create tools and opportunities that make it easier for members to connect, grow professionally, and stay involved with the organization.',
-    whyAlpfa: 'I joined ALPFA to connect with driven students and professionals, expand my network, and develop the leadership, business, and technical skills that will help me grow professionally.',
-    role: 'Helping develop and launch ALPFA NJIT’s official app while supporting the organization’s technology and digital initiatives.',
-  },
+
 
 
 ].sort((a, b) => {
@@ -173,7 +162,6 @@ const BOARD_MEMBERS = [
     'Director of Events',
     'Director of Fundraising',
     'Director Of IT',
-    'IT Committee Member',
   ];
   return order.indexOf(a.position) - order.indexOf(b.position);
 }).map((member, index) => ({
@@ -256,6 +244,17 @@ export default function EBoardScreen() {
               animationDelay={index * 100}
             />
           ))}
+
+          <View style={styles.creditsCard}>
+            <Text style={styles.creditsEyebrow}>APP CREDITS</Text>
+            <Text style={styles.creditsTitle}>Built with the ALPFA NJIT community</Text>
+            <Text style={styles.creditsText}>App development support</Text>
+            <View style={styles.creditPersonRow}>
+              <Text style={styles.creditPerson}>Diego Guevara</Text>
+              <Text style={styles.creditRole}>IT Committee</Text>
+            </View>
+            <Text style={styles.creditsNote}>Special thanks to the E-Board, committee members, and beta testers who contributed feedback and helped shape the app.</Text>
+          </View>
 
           <Text style={styles.follow}>Follow @alpfanjit</Text>
         </Animated.View>
@@ -403,5 +402,21 @@ const createStyles = (colors: ThemePalette) => StyleSheet.create({
     textAlign: 'center',
     marginTop: 6,
   },
+  creditsCard: {
+    marginTop: 30,
+    backgroundColor: colors.surface,
+    borderRadius: 20,
+    padding: 18,
+    borderWidth: 1,
+    borderColor: colors.border,
+    ...shadow('#000', 0.07, 12, 0, 4),
+  },
+  creditsEyebrow: { color: '#8D102B', fontSize: 9, fontWeight: '900', letterSpacing: 1.8 },
+  creditsTitle: { color: colors.textPrimary, fontSize: 17, fontWeight: '900', marginTop: 6 },
+  creditsText: { color: colors.textSecondary, fontSize: 11, fontWeight: '700', marginTop: 14 },
+  creditPersonRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 7, gap: 12 },
+  creditPerson: { color: colors.textPrimary, fontSize: 14, fontWeight: '900', flexShrink: 1 },
+  creditRole: { color: '#8D102B', fontSize: 10, fontWeight: '800' },
+  creditsNote: { color: colors.textSecondary, fontSize: 10, lineHeight: 16, marginTop: 14 },
   follow: { color: '#8D102B', fontSize: 11, fontWeight: '800', textAlign: 'center', marginTop: 22, paddingVertical: 16, borderTopWidth: 1, borderTopColor: '#E7CFA5' },
 });
