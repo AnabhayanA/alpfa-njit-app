@@ -188,6 +188,8 @@ export default function CaptureScreen() {
   const [dualPrimaryUri, setDualPrimaryUri] = useState<string | null>(null);
   const [dualSelfieUri, setDualSelfieUri] = useState<string | null>(null);
   const [zoom, setZoom] = useState(0);
+  const [availableLenses, setAvailableLenses] = useState<string[]>([]);
+  const [selectedLens, setSelectedLens] = useState<string | undefined>(undefined);
   const [zoomDialVisible, setZoomDialVisible] = useState(false);
   const zoomDialTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastCameraTap = useRef(0);
@@ -400,13 +402,27 @@ export default function CaptureScreen() {
     lastCameraTap.current = now;
   };
   const MAX_CAMERA_ZOOM = 0.45;
-  const displayZoom = 1 + (Math.min(zoom, MAX_CAMERA_ZOOM) / MAX_CAMERA_ZOOM) * 4;
+  const isUltraWideSelected = Boolean(ultraWideLens && selectedLens === ultraWideLens);
+  const displayZoom = isUltraWideSelected ? 0.5 : 1 + (Math.min(zoom, MAX_CAMERA_ZOOM) / MAX_CAMERA_ZOOM) * 4;
   const showZoomDial = () => {
     setZoomDialVisible(true);
     if (zoomDialTimer.current) clearTimeout(zoomDialTimer.current);
     zoomDialTimer.current = setTimeout(() => setZoomDialVisible(false), 1200);
   };
+  const ultraWideLens = availableLenses.find((lens) => lens.toLowerCase().includes('ultrawide'));
+  const wideLens = availableLenses.find((lens) => {
+    const normalized = lens.toLowerCase();
+    return normalized.includes('wideangle') && !normalized.includes('ultrawide');
+  });
+  const supportsUltraWide = Platform.OS === 'ios' && facing === 'back' && Boolean(ultraWideLens);
   const setDisplayZoom = (value: number) => {
+    if (value === 0.5 && ultraWideLens) {
+      setSelectedLens(ultraWideLens);
+      setZoom(0);
+      showZoomDial();
+      return;
+    }
+    if (selectedLens === ultraWideLens && wideLens) setSelectedLens(wideLens);
     setZoom(Math.max(0, Math.min(MAX_CAMERA_ZOOM, ((value - 1) / 4) * MAX_CAMERA_ZOOM)));
     showZoomDial();
   };
@@ -683,7 +699,7 @@ export default function CaptureScreen() {
         </View>
         {captureMode === 'dual' && <Text style={styles.dualHint}>{dualPrimaryUri ? 'SELFIE' : 'MAIN PHOTO'}</Text>}
         <View style={styles.lensControls}>
-          {[1, 2, 5].map((value) => {
+          {(supportsUltraWide ? [0.5, 1, 2, 5] : [1, 2, 5]).map((value) => {
             const selected = Math.abs(displayZoom - value) < 0.35;
             return (
               <TouchableOpacity key={value} style={[styles.lensButton, selected && styles.lensButtonSelected]} onPress={() => setDisplayZoom(value)} accessibilityRole="button" accessibilityLabel={`Zoom to ${value} times`}>
@@ -712,10 +728,10 @@ const createStyles = (colors: ReturnType<typeof useTheme>['colors']) => StyleShe
   captureModeText: { color: 'rgba(255,255,255,0.62)', fontSize: 12, fontWeight: '800', letterSpacing: 1.1 },
   captureModeTextSelected: { color: '#FFD84A' },
   dualHint: { color: 'rgba(255,255,255,0.78)', fontSize: 9, fontWeight: '900', letterSpacing: 1.2, marginBottom: 8 },
-  lensControls: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 18 },
-  lensButton: { minWidth: 42, height: 42, paddingHorizontal: 10, borderRadius: 21, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(18,18,18,0.72)' },
+  lensControls: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 18 },
+  lensButton: { minWidth: 50, height: 50, paddingHorizontal: 12, borderRadius: 25, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(18,18,18,0.72)' },
   lensButtonSelected: { backgroundColor: 'rgba(34,34,34,0.96)' },
-  lensText: { color: 'rgba(255,255,255,0.9)', fontSize: 14, fontWeight: '700' },
+  lensText: { color: 'rgba(255,255,255,0.9)', fontSize: 15, fontWeight: '800' },
   lensTextSelected: { color: '#FFD84A' },
   closeButton: { position: 'absolute', right: 16, width: 38, height: 38, borderRadius: 19, backgroundColor: 'rgba(0,0,0,0.45)', alignItems: 'center', justifyContent: 'center', zIndex: 10 },
   flipCameraButton: { width: 54, height: 54, borderRadius: 27, backgroundColor: 'rgba(18,18,18,0.76)', alignItems: 'center', justifyContent: 'center' },
