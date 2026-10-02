@@ -30,7 +30,7 @@ const BOARD_MEMBERS = [
     name: 'Renzo Rey',
     position: 'Director of Professional Development',
     major: 'Mechanical Engineering',
-    classYear: '2027',
+    classYear: '2028',
     image: require('../assets/images/Renzo-Rey.jpg'),
     linkedin: 'https://www.linkedin.com/in/renzo-rey/',
     bio: 'I am a junior majoring in Mechanical Engineering, half Peruvian and half Argentinian, and support the Knicks and FC Barcelona. I am passionate about helping others and strive to be someone people know they can count on. Whether it is school or everyday life, I try to bring energy, openness, and a willingness to help wherever I can. More than anything, I hope to be remembered as someone who pushed the people around me to believe in themselves and grow.',
