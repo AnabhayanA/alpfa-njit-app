@@ -21,55 +21,17 @@ import loadIconFont from './utils/loadIconFont';
 
 const Tab = createBottomTabNavigator();
 
-function SwipeableScreen({ children, navigation, route }: any) {
-  const routes = ['Home', 'Events', 'Capture', 'EBoard', 'About'];
-  const index = routes.indexOf(route.name);
-  const panResponder = React.useMemo(
-    () =>
-      PanResponder.create({
-        onMoveShouldSetPanResponder: (_, gesture) =>
-          Math.abs(gesture.dx) > 18 &&
-          Math.abs(gesture.dx) > Math.abs(gesture.dy) * 1.8,
-        onPanResponderRelease: (_, gesture) => {
-          const isSwipe = Math.abs(gesture.dx) > 70 || Math.abs(gesture.vx) > 0.55;
-          if (!isSwipe) return;
-          if (gesture.dx < 0 && index < routes.length - 1) navigation.navigate(routes[index + 1]);
-          if (gesture.dx > 0 && index > 0) navigation.navigate(routes[index - 1]);
-        },
-      }),
-    [index, navigation]
-  );
-
-  return (
-    <View style={styles.swipeScreen} {...panResponder.panHandlers}>
-      {children}
-    </View>
-  );
-}
-
-const withSwipe = (Screen: React.ComponentType<any>) => (props: any) => (
-  <SwipeableScreen navigation={props.navigation} route={props.route}>
-    <Screen {...props} />
-  </SwipeableScreen>
-);
-
-const SwipeHomeScreen = withSwipe(HomeScreen);
-const SwipeEventsScreen = withSwipe(EventsScreen);
-const SwipeCaptureScreen = withSwipe(CaptureScreen);
-const SwipeEBoardScreen = withSwipe(EBoardScreen);
-const SwipeAboutScreen = withSwipe(AboutScreen);
-
 function Tabs() {
   return (
     <Tab.Navigator
       screenOptions={{ headerShown: false }}
       tabBar={(props) => <BottomNav {...props} />}
     >
-      <Tab.Screen name="Home" component={SwipeHomeScreen} />
-      <Tab.Screen name="Events" component={SwipeEventsScreen} />
-      <Tab.Screen name="Capture" component={SwipeCaptureScreen} />
-      <Tab.Screen name="EBoard" component={SwipeEBoardScreen} />
-      <Tab.Screen name="About" component={SwipeAboutScreen} />
+      <Tab.Screen name="Home" component={HomeScreen} />
+      <Tab.Screen name="Events" component={EventsScreen} />
+      <Tab.Screen name="Capture" component={CaptureScreen} />
+      <Tab.Screen name="EBoard" component={EBoardScreen} />
+      <Tab.Screen name="About" component={AboutScreen} />
     </Tab.Navigator>
   );
 }
