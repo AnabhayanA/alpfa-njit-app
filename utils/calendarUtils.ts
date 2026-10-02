@@ -50,13 +50,13 @@ function parseICalData(data: string): CalendarEvent[] {
       const end = extractDateField(block, 'DTEND');
 
       if (start) {
-        const parsed = parseICalDateTime(start.value, start.tzid);
+        const parsed = parseICalDateTime(start.value, start.tzid, start.valueType);
         event.startDate = parsed.date;
         event.isAllDay = parsed.isAllDay;
       }
 
       if (end) {
-        const parsed = parseICalDateTime(end.value, end.tzid);
+        const parsed = parseICalDateTime(end.value, end.tzid, end.valueType);
         event.endDate = parsed.date;
       }
 
@@ -83,13 +83,18 @@ function extractField(data: string, fieldName: string): string | null {
 // Same as extractField, but also captures the TZID parameter (if any) for
 // date/time fields, since DTSTART/DTEND can be given in a named timezone
 // instead of UTC (e.g. "DTSTART;TZID=America/New_York:20240115T130000").
-function extractDateField(data: string, fieldName: string): { value: string; tzid?: string } | null {
+function extractDateField(data: string, fieldName: string): { value: string; tzid?: string; valueType?: string } | null {
   const pattern = new RegExp(`(?:^|\\r?\\n)${fieldName}(;[^:\\r\\n]*)?:([^\\r\\n]+)`, 'i');
   const match = data.match(pattern);
   if (!match) return null;
   const params = match[1] || '';
   const tzidMatch = params.match(/TZID=([^;]+)/i);
-  return { value: match[2].trim(), tzid: tzidMatch ? tzidMatch[1] : undefined };
+  const valueMatch = params.match(/VALUE=([^;]+)/i);
+  return {
+    value: match[2].trim(),
+    tzid: tzidMatch ? tzidMatch[1] : undefined,
+    valueType: valueMatch ? valueMatch[1].toUpperCase() : undefined,
+  };
 }
 
 // Decode iCal text (handle escaped characters)
@@ -135,11 +140,12 @@ function zonedTimeToUtc(year: number, month: number, day: number, hour: number, 
 }
 
 // Parse iCal datetime format (YYYYMMDDTHHMMSSZ, YYYYMMDDTHHMMSS with TZID, or YYYYMMDD)
-function parseICalDateTime(dateStr: string, tzid?: string): { date: Date; isAllDay: boolean } {
-  const isUtc = dateStr.endsWith('Z');
-  const cleanStr = dateStr.replace('Z', '');
+function parseICalDateTime(dateStr: string, tzid?: string, valueType?: string): { date: Date; isAllDay: boolean } {
+  const normalized = dateStr.trim();
+  const isUtc = normalized.endsWith('Z');
+  const cleanStr = normalized.replace(/Z$/, '');
 
-  if (cleanStr.length === 8) {
+  if (valueType === 'DATE' || /^\d{8}$/.test(cleanStr)) {
     // All-day event: YYYYMMDD. Anchored at noon UTC so formatting the date
     // in any reasonable timezone (including America/New_York) still shows
     // the same calendar day.
@@ -150,7 +156,7 @@ function parseICalDateTime(dateStr: string, tzid?: string): { date: Date; isAllD
       date: new Date(Date.UTC(year, month, day, 12, 0, 0)),
       isAllDay: true,
     };
-  } else if (cleanStr.length >= 15) {
+  } else if (/^\d{8}T\d{6}$/.test(cleanStr)) {
     // DateTime: YYYYMMDDTHHMMSS
     const year = parseInt(cleanStr.substring(0, 4), 10);
     const month = parseInt(cleanStr.substring(4, 6), 10) - 1;

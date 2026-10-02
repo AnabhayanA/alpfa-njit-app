@@ -62,6 +62,14 @@
           "photosPermission": "Allow ALPFA NJIT to access your photos when you choose to save or select an image.",
           "savePhotosPermission": "Allow ALPFA NJIT to save finished photos to your photo library."
         }
+      ],
+      [
+        "expo-calendar",
+        {
+          "calendarPermission": "Allow ALPFA NJIT to access your calendar when you choose to add an event.",
+          "writeOnlyCalendarPermission": "Allow ALPFA NJIT to add events you choose to your calendar.",
+          "writeOnlyAccess": true
+        }
       ]
     ],
     "extra": {
