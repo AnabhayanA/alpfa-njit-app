@@ -1,7 +1,7 @@
 import shadow from '../utils/shadow';
 import { Platform } from 'react-native';
 import React, { useEffect, useRef, useState } from 'react';
-import { Animated, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Animated, Image, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import EBoardCard from '../components/EBoardCard';
@@ -249,9 +249,21 @@ export default function EBoardScreen() {
             <Text style={styles.creditsEyebrow}>APP CREDITS</Text>
             <Text style={styles.creditsTitle}>Built with the ALPFA NJIT community</Text>
             <Text style={styles.creditsText}>App development support</Text>
-            <View style={styles.creditPersonRow}>
-              <Text style={styles.creditPerson}>Diego Guevara</Text>
-              <Text style={styles.creditRole}>IT Committee</Text>
+            <View style={styles.creditProfile}>
+              <Image source={require('../assets/images/Diego-Guevara.jpg')} style={styles.creditPhoto} />
+              <View style={styles.creditProfileText}>
+                <View style={styles.creditPersonRow}>
+                  <Text style={styles.creditPerson}>Diego Guevara</Text>
+                  <Text style={styles.creditRole}>IT Committee</Text>
+                </View>
+                <Pressable
+                  onPress={() => Linking.openURL('https://www.linkedin.com/in/diegoguevara2093/')}
+                  accessibilityRole="link"
+                  accessibilityLabel="Open Diego Guevara's LinkedIn"
+                >
+                  <Text style={styles.creditLinkedIn}>View LinkedIn</Text>
+                </Pressable>
+              </View>
             </View>
             <Text style={styles.creditsNote}>Special thanks to the E-Board, committee members, and beta testers who contributed feedback and helped shape the app.</Text>
           </View>
@@ -414,6 +426,10 @@ const createStyles = (colors: ThemePalette) => StyleSheet.create({
   creditsEyebrow: { color: '#8D102B', fontSize: 9, fontWeight: '900', letterSpacing: 1.8 },
   creditsTitle: { color: colors.textPrimary, fontSize: 17, fontWeight: '900', marginTop: 6 },
   creditsText: { color: colors.textSecondary, fontSize: 11, fontWeight: '700', marginTop: 14 },
+  creditProfile: { flexDirection: 'row', alignItems: 'center', marginTop: 10 },
+  creditPhoto: { width: 58, height: 58, borderRadius: 18 },
+  creditProfileText: { flex: 1, marginLeft: 12 },
+  creditLinkedIn: { color: '#8D102B', fontSize: 11, fontWeight: '900', marginTop: 7 },
   creditPersonRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 7, gap: 12 },
   creditPerson: { color: colors.textPrimary, fontSize: 14, fontWeight: '900', flexShrink: 1 },
   creditRole: { color: '#8D102B', fontSize: 10, fontWeight: '800' },
