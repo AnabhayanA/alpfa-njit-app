@@ -54,7 +54,7 @@ const BOARD_MEMBERS = [
     name: 'Jose Trujillo',
     position: 'Director of Fundraising',
     major: 'Fintech',
-    classYear: 'Junior',
+    classYear: '2028',
     image: require('../assets/images/Jose-Trujillo.jpg'),
     linkedin: 'https://www.linkedin.com/in/jhtrujillo/',
     bio: 'I am a junior majoring in Fintech, Salvadoran, and enjoy working with others who have the same shared goals.',
