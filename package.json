@@ -17,6 +17,7 @@
     "@shopify/react-native-skia": "2.6.2",
     "expo": "~57.0.25",
     "expo-asset": "~57.0.18",
+    "expo-calendar": "~57.0.5",
     "expo-camera": "~57.0.5",
     "expo-constants": "~57.0.19",
     "expo-dev-client": "~57.0.19",
