@@ -225,7 +225,7 @@ export default function EBoardScreen() {
       >
         <Animated.View style={{ opacity: fade, transform: [{ translateY: slide }] }}>
           {/* Header */}
-            <View style={[styles.header, { marginBottom: responsive.isSmallPhone ? 18 : 24, paddingTop: responsive.isSmallPhone ? 44 : 64 }]}>
+            <View style={[styles.header, { marginBottom: responsive.isSmallPhone ? 18 : 24, marginTop: responsive.isSmallPhone ? 24 : 40 }]}>
             <Text style={[styles.title, { fontSize: responsive.isSmallPhone ? 25 : 28 }]}>Meet the E-Board</Text>
             <Text style={[styles.subtitle, { fontSize: responsive.isSmallPhone ? 11 : 12 }]}>The student leaders building community at NJIT.</Text>
           </View>
@@ -321,6 +321,14 @@ const createStyles = (colors: ThemePalette) => StyleSheet.create({
     fontStyle: 'italic',
   },
   header: {
+    backgroundColor: 'rgba(255,255,255,0.10)',
+    borderWidth: 1,
+    borderColor: colors.surfaceBorder,
+    borderRadius: 24,
+    marginHorizontal: 10,
+    paddingHorizontal: 21,
+    paddingTop: 24,
+    paddingBottom: 24,
   },
   featureCard: {
     marginTop: 22,
