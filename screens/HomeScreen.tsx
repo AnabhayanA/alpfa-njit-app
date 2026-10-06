@@ -146,7 +146,6 @@ export default function HomeScreen() {
 
           <Text style={[styles.quickHeading, { color: colors.textPrimary, marginTop: 18 * scale, marginBottom: 9 * scale }]}>QUICK LINKS</Text>
           <View style={[styles.quickGrid, { gap: Math.max(5, 7 * scale) }]}>
-            <QuickLink isDark={isDark} scale={scale} label="Events" icon="calendar" color="#C01C3B" background="#FCE5E9" onPress={() => navigation.navigate('Events')} />
             <QuickLink isDark={isDark} scale={scale} label="E-Board" icon="people" color="#0794C8" background="#DFF5FC" onPress={() => navigation.navigate('EBoard')} />
             <QuickLink isDark={isDark} scale={scale} label="About" icon="document-text" color="#C48518" background="#FFF0CB" onPress={() => navigation.navigate('About')} />
             <QuickLink isDark={isDark} scale={scale} label="Join" icon="person-add" color="#16845B" background="#DCF7EA" onPress={() => open(LINKS.highlander)} />

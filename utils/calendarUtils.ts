@@ -99,11 +99,27 @@ function extractDateField(data: string, fieldName: string): { value: string; tzi
 
 // Decode iCal text (handle escaped characters)
 function decodeICalText(text: string): string {
-  return text
+  const decoded = text
     .replace(/\\,/g, ',')
     .replace(/\\;/g, ';')
-    .replace(/\\n/g, '\n')
+    .replace(/\\n/gi, '\n')
     .replace(/\\\\/g, '\\');
+
+  // Google Calendar descriptions can contain HTML. Event cards render plain
+  // text, so remove markup and decode the common entities instead of exposing
+  // raw tags to users.
+  return decoded
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/p\s*>/gi, '\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;|&apos;/gi, "'")
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
 }
 
 // Converts wall-clock components in a named IANA timezone to the correct

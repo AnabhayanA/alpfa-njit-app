@@ -97,7 +97,7 @@ export default function BottomNav({ state, descriptors, navigation }: BottomTabB
           isDark && styles.navbarDark,
           {
             width: navWidth,
-            height: responsive.isSmallPhone ? 58 : 62,
+            height: responsive.isSmallPhone ? 64 : 68,
             paddingHorizontal: NAV_HORIZONTAL_PADDING,
             transform: [{ translateY: navTranslateY }, { scale: navScale }],
             opacity: navOpacity,
@@ -133,7 +133,7 @@ export default function BottomNav({ state, descriptors, navigation }: BottomTabB
               <View style={styles.iconContainer}>
                 <Ionicons
                   name={icon}
-                  size={isFocused ? 24 : 22}
+                  size={isFocused ? 26 : 24}
                   color={isFocused ? (isDark ? '#FFFFFF' : '#111827') : (isDark ? '#A9B2C8' : '#8C8E8D')}
                 />
               </View>
@@ -143,7 +143,7 @@ export default function BottomNav({ state, descriptors, navigation }: BottomTabB
                   isDark && styles.labelDark,
                   isFocused && styles.activeLabel,
                   isFocused && isDark && styles.activeLabelDark,
-                  { fontSize: Math.min(8.5, responsive.fontSizes.xs) },
+                  { fontSize: Math.min(9.5, responsive.fontSizes.xs + 0.5) },
                 ]}
               >
                 {labelText}
@@ -196,8 +196,8 @@ const styles = StyleSheet.create({
     zIndex: 2,
   },
   iconContainer: {
-    width: 36,
-    height: 27,
+    width: 38,
+    height: 30,
     alignItems: 'center',
     justifyContent: 'center',
   },
