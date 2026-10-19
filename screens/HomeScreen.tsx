@@ -89,7 +89,7 @@ export default function HomeScreen() {
             <Image source={require('../assets/images/ALPFANJITLOGO.png')} style={[styles.logo, { width: 54 * scale, height: 54 * scale, borderRadius: 10 * scale }]} resizeMode="cover" />
             <View style={styles.brandCopy}>
               <Text style={[styles.brandName, { color: colors.textPrimary }]}>ALPFA NJIT</Text>
-              <Text style={[styles.brandTag, { color: colors.textSecondary }]}>Latinos{`\n`}Leaders{`\n`}Stronger Together</Text>
+
             </View>
             <TouchableOpacity
               style={[styles.themeButton, { backgroundColor: isDark ? 'rgba(255,255,255,0.10)' : 'rgba(255,255,255,0.72)' }]}
@@ -98,22 +98,15 @@ export default function HomeScreen() {
             >
               <Ionicons name={isDark ? 'sunny' : 'moon'} size={18} color={isDark ? '#FFFFFF' : '#081C37'} />
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.profileButton, { backgroundColor: isDark ? 'rgba(255,255,255,0.10)' : 'rgba(255,255,255,0.72)' }]} onPress={() => navigation.navigate('About')} accessibilityLabel="Open About">
-              <Ionicons name="person-circle-outline" size={23} color={isDark ? '#FFFFFF' : '#081C37'} />
-            </TouchableOpacity>
+
           </View>
 
           <Text style={[styles.welcome, { color: colors.textPrimary, fontSize: 29 * scale, lineHeight: 31 * scale, marginTop: 12 * scale }]}>Welcome back,</Text>
           <Text style={[styles.familia, { fontSize: 29 * scale, lineHeight: 30 * scale }]}>Familia</Text>
-          <Text style={[styles.motto, { color: colors.textSecondary }]}>BUILD  •  CONNECT  •  BELONG</Text>
+
 
           <TouchableOpacity style={[styles.eventCard, isDark && styles.eventCardDark, { minHeight: 164 * scale, marginTop: 12 * scale, padding: 14 * scale, borderRadius: 18 * scale }]} activeOpacity={0.9} onPress={() => navigation.navigate('Events')}>
-            <View style={[styles.eventDecor, { pointerEvents: "none" }]}>
-              <View style={styles.eventLiquidBlue} />
-              <View style={styles.eventLiquidRed} />
-              <View style={styles.eventRedSlash} />
-              <View style={styles.eventBurgundySlash} />
-            </View>
+
 
             <View style={styles.eventContent}>
               <View style={styles.eventTop}>
@@ -126,7 +119,7 @@ export default function HomeScreen() {
                   <Text style={styles.nextLabel}>NEXT EVENT</Text>
                   <View style={styles.goldLine} />
                 </View>
-                <Text style={styles.cardWords}>PEOPLE{`\n`}PURPOSE{`\n`}PROGRESS</Text>
+
               </View>
 
               <Text style={[styles.eventTitle, { fontSize: 16 * scale, lineHeight: 19 * scale }]} numberOfLines={2}>{nextEvent?.title || 'More ALPFA NJIT events coming soon'}</Text>
@@ -154,10 +147,6 @@ export default function HomeScreen() {
             <QuickLink isDark={isDark} scale={scale} label="Contact" icon="mail" color="#8D102B" background="#F4E9E8" onPress={() => open(LINKS.email)} />
           </View>
 
-          <View style={[styles.bottomMessage, isDark && styles.bottomMessageDark]}>
-            <Text style={[styles.bottomHeadline, isDark && styles.bottomHeadlineDark]}>MORE LATINOS.{`\n`}BRIGHTER TOMORROWS.</Text>
-            <Text style={styles.bottomSub}>ALPFA NJIT</Text>
-          </View>
         </Animated.View>
       </ScrollView>
     </View>
