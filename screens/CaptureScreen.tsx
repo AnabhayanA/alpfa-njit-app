@@ -183,6 +183,7 @@ export default function CaptureScreen() {
   const completedPhotoUriRef = useRef<string | null>(null);
   const [permission, requestPermission, getPermission] = useCameraPermissions();
   const [cameraReady, setCameraReady] = useState(false);
+  const [photoHubMode, setPhotoHubMode] = useState<'gallery' | 'camera'>('gallery');
   const [facing, setFacing] = useState<CameraType>('back');
   const [captureMode, setCaptureMode] = useState<'photo' | 'dual'>('photo');
   const [dualPrimaryUri, setDualPrimaryUri] = useState<string | null>(null);
@@ -567,6 +568,40 @@ export default function CaptureScreen() {
     }
     else { setStatus('error'); setStatusMessage(result.message || 'Something went wrong. Try again.'); }
   };
+
+  // The public gallery intentionally starts empty until an approved image feed is configured.
+  // Never enumerate the private submissions Drive folder from a public client.
+  if (photoHubMode === 'gallery') {
+    return (
+      <View style={[styles.container, { backgroundColor: colors.background, paddingTop: insets.top + 20 }]}>
+        <ScrollView contentContainerStyle={{ paddingHorizontal: 22, paddingBottom: insets.bottom + 110 }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+            <View>
+              <Text style={{ color: colors.textPrimary, fontSize: 27, fontWeight: '900' }}>ALPFA Moments</Text>
+              <Text style={{ color: colors.textPrimary, opacity: 0.65, marginTop: 4 }}>Our community, through your lens.</Text>
+            </View>
+            <Ionicons name="images-outline" size={28} color="#B51C35" />
+          </View>
+          <View style={{ backgroundColor: '#8D102B', borderRadius: 18, padding: 20, marginTop: 25 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <Ionicons name="shuffle-outline" size={19} color="#FFFFFF" />
+              <Text style={{ color: '#FFFFFF', fontSize: 17, fontWeight: '900' }}>This Week's Spotlight</Text>
+            </View>
+            <Text style={{ color: '#FFFFFF', opacity: 0.85, marginTop: 7, lineHeight: 19 }}>A new mix of memories from past ALPFA events every Monday.</Text>
+          </View>
+          <View style={{ alignItems: 'center', paddingVertical: 54, paddingHorizontal: 24, marginTop: 20, borderWidth: 1, borderStyle: 'dashed', borderColor: colors.textPrimary, borderRadius: 20, opacity: 0.7 }}>
+            <Ionicons name="images-outline" size={48} color={colors.textPrimary} />
+            <Text style={{ color: colors.textPrimary, fontSize: 17, fontWeight: '800', marginTop: 14, textAlign: 'center' }}>Memories are coming soon</Text>
+            <Text style={{ color: colors.textPrimary, textAlign: 'center', marginTop: 9, lineHeight: 20 }}>Approved event photos will appear here once the Public Gallery is connected. Your private submissions are not shown automatically.</Text>
+          </View>
+          <TouchableOpacity onPress={() => setPhotoHubMode('camera')} accessibilityRole="button" style={{ backgroundColor: '#8D102B', paddingVertical: 16, borderRadius: 16, marginTop: 25, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 10 }}>
+            <Ionicons name="camera-outline" size={22} color="#FFFFFF" />
+            <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 16 }}>Share a Photo</Text>
+          </TouchableOpacity>
+        </ScrollView>
+      </View>
+    );
+  }
 
   if (!permission) return <View style={styles.container} />;
 
