@@ -139,6 +139,26 @@ export default function HomeScreen() {
             </View>
           </TouchableOpacity>
 
+          <View style={[styles.momentsCard, { backgroundColor: isDark ? 'rgba(20,28,54,0.58)' : 'rgba(255,255,255,0.46)', borderColor: isDark ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.86)', marginTop: 18 * scale }]}>
+            <View style={styles.momentsHeading}>
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.momentsTitle, { color: colors.textPrimary }]}>ALPFA Moments</Text>
+                <Text style={[styles.momentsSubtitle, { color: isDark ? '#B6C2D6' : '#53627B' }]}>A new mix of memories from past events every week</Text>
+              </View>
+              <Ionicons name="images-outline" size={22} color="#B51C35" />
+            </View>
+            <View style={styles.momentsCollage}>
+              <View style={[styles.momentsLargeTile, { backgroundColor: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(8,28,55,0.07)' }]}>
+                <Ionicons name="images-outline" size={28} color={isDark ? '#B6C2D6' : '#708099'} />
+              </View>
+              <View style={styles.momentsSmallColumn}>
+                <View style={[styles.momentsSmallTile, { backgroundColor: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(8,28,55,0.07)' }]}><Ionicons name="image-outline" size={18} color={isDark ? '#B6C2D6' : '#708099'} /></View>
+                <View style={[styles.momentsSmallTile, { backgroundColor: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(8,28,55,0.07)' }]}><Ionicons name="image-outline" size={18} color={isDark ? '#B6C2D6' : '#708099'} /></View>
+              </View>
+            </View>
+            <Text style={[styles.momentsFootnote, { color: isDark ? '#B6C2D6' : '#53627B' }]}>Community photos coming soon. Only approved photos will appear here.</Text>
+          </View>
+
           <Text style={[styles.quickHeading, { color: colors.textPrimary, marginTop: (18 + tallScreenSpacing * 0.7) * scale, marginBottom: (9 + tallScreenSpacing * 0.35) * scale }]}>QUICK LINKS</Text>
           <View style={[styles.quickGrid, { gap: Math.max(5, (7 + tallScreenSpacing * 0.25) * scale) }]}>
             <QuickLink isDark={isDark} scale={scale} tallScreenSpacing={tallScreenSpacing} label="E-Board" icon="people" color="#0794C8" background="#DFF5FC" onPress={() => navigation.navigate('EBoard')} />
@@ -212,6 +232,15 @@ const styles = StyleSheet.create({
   metaRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 5, maxWidth: '82%' },
   metaText: { color: 'rgba(255,255,255,0.86)', fontSize: 11, flexShrink: 1 },
   eventArrow: { position: 'absolute', right: 11, bottom: 11, width: 31, height: 31, borderRadius: 16, backgroundColor: '#B51C35', alignItems: 'center', justifyContent: 'center' },
+  momentsCard: { borderWidth: 1, borderRadius: 19, padding: 14, ...shadow('#081C37', 0.07, 6, 0, 3) },
+  momentsHeading: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  momentsTitle: { fontSize: 16, fontWeight: '900' },
+  momentsSubtitle: { fontSize: 10, lineHeight: 15, marginTop: 4 },
+  momentsCollage: { flexDirection: 'row', gap: 8, height: 118, marginTop: 12 },
+  momentsLargeTile: { flex: 1.5, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  momentsSmallColumn: { flex: 1, gap: 8 },
+  momentsSmallTile: { flex: 1, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
+  momentsFootnote: { fontSize: 10, marginTop: 10, lineHeight: 14, textAlign: 'center' },
   quickHeading: { color: '#081C37', fontSize: 10, fontWeight: '900', letterSpacing: 1.8, marginTop: 14, marginBottom: 6 },
   quickGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: 7 },
   quickCard: { width: '47%', minHeight: 42, borderRadius: 13, paddingHorizontal: 9, backgroundColor: 'rgba(255,255,255,0.78)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.88)', flexDirection: 'row', alignItems: 'center', gap: 7, ...shadow('#081C37', 0.06, 5, 0, 2),    },
