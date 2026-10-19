@@ -33,8 +33,8 @@ export default function HomeScreen() {
   const { width, height } = useWindowDimensions();
   const contentWidth = Math.min(width, 560);
   // Distribute the existing sections more evenly on tall iPhones without adding filler cards.
-  const tallScreenSpacing = Math.max(0, Math.min((height - 780) / 18, 16));
-  const scale = Math.max(1.06, Math.min(contentWidth / 350, 1.3));
+  const tallScreenSpacing = 0;
+  const scale = Math.max(1.0, Math.min(contentWidth / 390, 1.10));
   const [nextEvent, setNextEvent] = useState<CalendarEvent | null>(null);
   const fade = useRef(new Animated.Value(0)).current;
   const rise = useRef(new Animated.Value(16)).current;
@@ -81,7 +81,7 @@ export default function HomeScreen() {
             width: contentWidth,
             alignSelf: 'center',
             paddingHorizontal: Math.max(12, 14 * scale),
-            paddingTop: insets.top + Math.max(5, 8 * scale),
+            paddingTop: insets.top + Math.max(12, 12 * scale),
             paddingBottom: insets.bottom + 132,
           },
         ]}
@@ -214,7 +214,7 @@ const styles = StyleSheet.create({
   eventArrow: { position: 'absolute', right: 11, bottom: 11, width: 31, height: 31, borderRadius: 16, backgroundColor: '#B51C35', alignItems: 'center', justifyContent: 'center' },
   quickHeading: { color: '#081C37', fontSize: 10, fontWeight: '900', letterSpacing: 1.8, marginTop: 14, marginBottom: 6 },
   quickGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: 7 },
-  quickCard: { width: '48.8%', minHeight: 42, borderRadius: 13, paddingHorizontal: 9, backgroundColor: 'rgba(255,255,255,0.78)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.88)', flexDirection: 'row', alignItems: 'center', gap: 7, ...shadow('#081C37', 0.06, 5, 0, 2),    },
+  quickCard: { width: '47%', minHeight: 42, borderRadius: 13, paddingHorizontal: 9, backgroundColor: 'rgba(255,255,255,0.78)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.88)', flexDirection: 'row', alignItems: 'center', gap: 7, ...shadow('#081C37', 0.06, 5, 0, 2),    },
   quickCardDark: { backgroundColor: 'rgba(20,28,54,0.82)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.10)', ...shadow('#081C37', 0.18, 5, 0, 2), },
   quickIcon: { width: 28, height: 28, borderRadius: 9, alignItems: 'center', justifyContent: 'center' },
   quickLabel: { color: '#081C37', fontSize: 10, fontWeight: '700', flex: 1 },
