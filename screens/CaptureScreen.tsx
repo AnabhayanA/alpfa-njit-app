@@ -174,7 +174,7 @@ function FilteredPhotoPreview({ uri, filter, canvasRef, locationLabel, locationP
 export default function CaptureScreen() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
-  const { colors, isDark } = useTheme();
+  const { colors } = useTheme();
   const styles = React.useMemo(() => createStyles(colors), [colors]);
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
 
@@ -183,7 +183,6 @@ export default function CaptureScreen() {
   const completedPhotoUriRef = useRef<string | null>(null);
   const [permission, requestPermission, getPermission] = useCameraPermissions();
   const [cameraReady, setCameraReady] = useState(false);
-  const [photoHubMode, setPhotoHubMode] = useState<'gallery' | 'camera'>('gallery');
   const [facing, setFacing] = useState<CameraType>('back');
   const [captureMode, setCaptureMode] = useState<'photo' | 'dual'>('photo');
   const [dualPrimaryUri, setDualPrimaryUri] = useState<string | null>(null);
@@ -258,7 +257,7 @@ export default function CaptureScreen() {
     }
   };
 
-  const close = () => { resetAfterUpload(); setPhotoHubMode('gallery'); };
+  const close = () => navigation.navigate('Home' as never);
 
   const saveCompletedPhoto = async () => {
     if (Platform.OS === 'web') {
@@ -568,50 +567,6 @@ export default function CaptureScreen() {
     }
     else { setStatus('error'); setStatusMessage(result.message || 'Something went wrong. Try again.'); }
   };
-
-  // Keep submissions private. The gallery will use a separate approved public feed.
-  if (photoHubMode === 'gallery') {
-    const glass = isDark ? 'rgba(20,28,54,0.58)' : 'rgba(255,255,255,0.42)';
-    const border = isDark ? 'rgba(255,255,255,0.22)' : 'rgba(255,255,255,0.84)';
-    const secondary = isDark ? '#ADBBD0' : '#566782';
-    return (
-      <View style={{ flex: 1, backgroundColor: isDark ? '#070B18' : '#F8F7F4' }}>
-        <View pointerEvents="none" style={StyleSheet.absoluteFill}>
-          <View style={{ position: 'absolute', width: 270, height: 270, borderRadius: 140, top: 60, right: -140, backgroundColor: isDark ? 'rgba(255,39,82,0.23)' : 'rgba(225,32,68,0.21)' }} />
-          <View style={{ position: 'absolute', width: 300, height: 300, borderRadius: 150, top: 260, left: -170, backgroundColor: isDark ? 'rgba(25,108,255,0.20)' : 'rgba(31,117,255,0.18)' }} />
-          <View style={{ position: 'absolute', width: 260, height: 260, borderRadius: 130, bottom: 40, right: -140, backgroundColor: isDark ? 'rgba(142,77,255,0.18)' : 'rgba(126,73,255,0.15)' }} />
-        </View>
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingTop: insets.top + 12, paddingHorizontal: 20, paddingBottom: insets.bottom + 140, width: '100%', maxWidth: 560, alignSelf: 'center' }}>
-          <Text style={{ color: colors.textPrimary, fontSize: 28, fontWeight: '900' }}>ALPFA Moments</Text>
-          <Text style={{ color: secondary, fontSize: 13, marginTop: 5 }}>Our community, through your lens.</Text>
-          <View style={{ backgroundColor: glass, borderColor: border, borderWidth: 1, borderRadius: 22, padding: 16, marginTop: 18 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 9 }}>
-              <Ionicons name="sparkles-outline" size={19} color="#B51C35" />
-              <Text style={{ color: colors.textPrimary, fontWeight: '900', fontSize: 17 }}>This Week's Moments</Text>
-            </View>
-            <Text style={{ color: secondary, fontSize: 12, marginTop: 6 }}>A fresh mix from past ALPFA events every Monday.</Text>
-            <View style={{ flexDirection: 'row', gap: 8, marginTop: 13, height: 132 }}>
-              <View style={{ flex: 1.4, borderRadius: 15, backgroundColor: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(8,28,55,0.06)', justifyContent: 'center', alignItems: 'center' }}><Ionicons name="images-outline" size={30} color={secondary} /></View>
-              <View style={{ flex: 1, gap: 8 }}>
-                <View style={{ flex: 1, borderRadius: 13, backgroundColor: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(8,28,55,0.06)', justifyContent: 'center', alignItems: 'center' }}><Ionicons name="image-outline" size={21} color={secondary} /></View>
-                <View style={{ flex: 1, borderRadius: 13, backgroundColor: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(8,28,55,0.06)', justifyContent: 'center', alignItems: 'center' }}><Ionicons name="image-outline" size={21} color={secondary} /></View>
-              </View>
-            </View>
-            <Text style={{ color: secondary, fontSize: 12, textAlign: 'center', marginTop: 13 }}>Community photos will appear here once the approved gallery is connected.</Text>
-          </View>
-          <View style={{ backgroundColor: glass, borderColor: border, borderWidth: 1, borderRadius: 19, padding: 17, marginTop: 10, flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-            <View style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: isDark ? 'rgba(181,28,53,0.22)' : '#F4E9E8', justifyContent: 'center', alignItems: 'center' }}><Ionicons name="grid-outline" size={20} color="#B51C35" /></View>
-            <View style={{ flex: 1 }}><Text style={{ color: colors.textPrimary, fontSize: 15, fontWeight: '800' }}>Explore All Memories</Text><Text style={{ color: secondary, fontSize: 11, marginTop: 3 }}>Available when the gallery goes live</Text></View>
-            <Ionicons name="chevron-forward" size={18} color={secondary} />
-          </View>
-          <TouchableOpacity accessibilityRole="button" onPress={() => setPhotoHubMode('camera')} style={{ backgroundColor: glass, borderColor: border, borderWidth: 1, borderRadius: 19, paddingVertical: 16, marginTop: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 9 }}>
-            <Ionicons name="camera-outline" size={20} color="#B51C35" /><Text style={{ color: colors.textPrimary, fontWeight: '900', fontSize: 15 }}>Share a Photo</Text>
-          </TouchableOpacity>
-          <Text style={{ color: secondary, fontSize: 11, textAlign: 'center', marginTop: 12 }}>Uploads stay private until selected for the public gallery.</Text>
-        </ScrollView>
-      </View>
-    );
-  }
 
   if (!permission) return <View style={styles.container} />;
 
