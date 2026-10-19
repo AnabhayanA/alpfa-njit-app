@@ -30,8 +30,10 @@ export default function HomeScreen() {
   const navigation = useNavigation<HomeNavigation>();
   const { isDark, colors, toggleTheme } = useTheme();
   const insets = useSafeAreaInsets();
-  const { width } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
   const contentWidth = Math.min(width, 560);
+  // Distribute the existing sections more evenly on tall iPhones without adding filler cards.
+  const tallScreenSpacing = Math.max(0, Math.min((height - 780) / 18, 16));
   const scale = Math.max(1.06, Math.min(contentWidth / 350, 1.3));
   const [nextEvent, setNextEvent] = useState<CalendarEvent | null>(null);
   const fade = useRef(new Animated.Value(0)).current;
@@ -101,11 +103,11 @@ export default function HomeScreen() {
 
           </View>
 
-          <Text style={[styles.welcome, { color: colors.textPrimary, fontSize: 29 * scale, lineHeight: 31 * scale, marginTop: 12 * scale }]}>Welcome back,</Text>
+          <Text style={[styles.welcome, { color: colors.textPrimary, fontSize: 29 * scale, lineHeight: 31 * scale, marginTop: (12 + tallScreenSpacing * 0.55) * scale }]}>Welcome back,</Text>
           <Text style={[styles.familia, { fontSize: 29 * scale, lineHeight: 30 * scale }]}>Familia</Text>
 
 
-          <TouchableOpacity style={[styles.eventCard, isDark && styles.eventCardDark, { minHeight: 164 * scale, marginTop: 12 * scale, padding: 14 * scale, borderRadius: 18 * scale }]} activeOpacity={0.9} onPress={() => navigation.navigate('Events')}>
+          <TouchableOpacity style={[styles.eventCard, isDark && styles.eventCardDark, { minHeight: 164 * scale, marginTop: (12 + tallScreenSpacing * 0.65) * scale, padding: 14 * scale, borderRadius: 18 * scale }]} activeOpacity={0.9} onPress={() => navigation.navigate('Events')}>
 
 
             <View style={styles.eventContent}>
@@ -137,8 +139,8 @@ export default function HomeScreen() {
             </View>
           </TouchableOpacity>
 
-          <Text style={[styles.quickHeading, { color: colors.textPrimary, marginTop: 18 * scale, marginBottom: 9 * scale }]}>QUICK LINKS</Text>
-          <View style={[styles.quickGrid, { gap: Math.max(5, 7 * scale) }]}>
+          <Text style={[styles.quickHeading, { color: colors.textPrimary, marginTop: (18 + tallScreenSpacing * 0.7) * scale, marginBottom: (9 + tallScreenSpacing * 0.35) * scale }]}>QUICK LINKS</Text>
+          <View style={[styles.quickGrid, { gap: Math.max(5, (7 + tallScreenSpacing * 0.25) * scale) }]}>
             <QuickLink isDark={isDark} scale={scale} label="E-Board" icon="people" color="#0794C8" background="#DFF5FC" onPress={() => navigation.navigate('EBoard')} />
             <QuickLink isDark={isDark} scale={scale} label="About" icon="document-text" color="#C48518" background="#FFF0CB" onPress={() => navigation.navigate('About')} />
             <QuickLink isDark={isDark} scale={scale} label="Join" icon="person-add" color="#16845B" background="#DCF7EA" onPress={() => open(LINKS.highlander)} />
@@ -163,7 +165,7 @@ function QuickLink({ label, icon, color, background, onPress, scale, isDark }: {
   isDark: boolean;
 }) {
   return (
-    <TouchableOpacity style={[styles.quickCard, isDark && styles.quickCardDark, { minHeight: 42 * scale, borderRadius: 13 * scale, paddingHorizontal: 9 * scale }]} activeOpacity={0.76} onPress={onPress}>
+    <TouchableOpacity style={[styles.quickCard, isDark && styles.quickCardDark, { minHeight: (42 + tallScreenSpacing * 0.65) * scale, borderRadius: 13 * scale, paddingHorizontal: 9 * scale }]} activeOpacity={0.76} onPress={onPress}>
       <View style={[styles.quickIcon, { backgroundColor: background, width: 28 * scale, height: 28 * scale, borderRadius: 9 * scale }]}>
         <Ionicons name={icon} size={17 * scale} color={color} />
       </View>
