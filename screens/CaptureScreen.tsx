@@ -571,8 +571,8 @@ export default function CaptureScreen() {
 
   // Keep submissions private. The gallery will use a separate approved public feed.
   if (photoHubMode === 'gallery') {
-    const glass = isDark ? 'rgba(20,28,54,0.84)' : 'rgba(255,255,255,0.77)';
-    const border = isDark ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.92)';
+    const glass = isDark ? 'rgba(20,28,54,0.58)' : 'rgba(255,255,255,0.42)';
+    const border = isDark ? 'rgba(255,255,255,0.22)' : 'rgba(255,255,255,0.84)';
     const secondary = isDark ? '#ADBBD0' : '#566782';
     return (
       <View style={{ flex: 1, backgroundColor: isDark ? '#070B18' : '#F8F7F4' }}>
@@ -584,13 +584,13 @@ export default function CaptureScreen() {
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingTop: insets.top + 12, paddingHorizontal: 20, paddingBottom: insets.bottom + 140, width: '100%', maxWidth: 560, alignSelf: 'center' }}>
           <Text style={{ color: colors.textPrimary, fontSize: 28, fontWeight: '900' }}>ALPFA Moments</Text>
           <Text style={{ color: secondary, fontSize: 13, marginTop: 5 }}>Our community, through your lens.</Text>
-          <View style={{ backgroundColor: glass, borderColor: border, borderWidth: 1, borderRadius: 22, padding: 18, marginTop: 24 }}>
+          <View style={{ backgroundColor: glass, borderColor: border, borderWidth: 1, borderRadius: 22, padding: 16, marginTop: 18 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 9 }}>
               <Ionicons name="sparkles-outline" size={19} color="#B51C35" />
               <Text style={{ color: colors.textPrimary, fontWeight: '900', fontSize: 17 }}>This Week's Moments</Text>
             </View>
             <Text style={{ color: secondary, fontSize: 12, marginTop: 6 }}>A fresh mix from past ALPFA events every Monday.</Text>
-            <View style={{ flexDirection: 'row', gap: 8, marginTop: 16, height: 172 }}>
+            <View style={{ flexDirection: 'row', gap: 8, marginTop: 13, height: 132 }}>
               <View style={{ flex: 1.4, borderRadius: 15, backgroundColor: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(8,28,55,0.06)', justifyContent: 'center', alignItems: 'center' }}><Ionicons name="images-outline" size={30} color={secondary} /></View>
               <View style={{ flex: 1, gap: 8 }}>
                 <View style={{ flex: 1, borderRadius: 13, backgroundColor: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(8,28,55,0.06)', justifyContent: 'center', alignItems: 'center' }}><Ionicons name="image-outline" size={21} color={secondary} /></View>
@@ -599,13 +599,13 @@ export default function CaptureScreen() {
             </View>
             <Text style={{ color: secondary, fontSize: 12, textAlign: 'center', marginTop: 13 }}>Community photos will appear here once the approved gallery is connected.</Text>
           </View>
-          <View style={{ backgroundColor: glass, borderColor: border, borderWidth: 1, borderRadius: 19, padding: 17, marginTop: 14, flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+          <View style={{ backgroundColor: glass, borderColor: border, borderWidth: 1, borderRadius: 19, padding: 17, marginTop: 10, flexDirection: 'row', alignItems: 'center', gap: 12 }}>
             <View style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: isDark ? 'rgba(181,28,53,0.22)' : '#F4E9E8', justifyContent: 'center', alignItems: 'center' }}><Ionicons name="grid-outline" size={20} color="#B51C35" /></View>
             <View style={{ flex: 1 }}><Text style={{ color: colors.textPrimary, fontSize: 15, fontWeight: '800' }}>Explore All Memories</Text><Text style={{ color: secondary, fontSize: 11, marginTop: 3 }}>Available when the gallery goes live</Text></View>
             <Ionicons name="chevron-forward" size={18} color={secondary} />
           </View>
-          <TouchableOpacity accessibilityRole="button" onPress={() => setPhotoHubMode('camera')} style={{ backgroundColor: '#8D102B', borderRadius: 17, paddingVertical: 16, marginTop: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 9 }}>
-            <Ionicons name="camera-outline" size={20} color="#FFFFFF" /><Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 15 }}>Share a Photo</Text>
+          <TouchableOpacity accessibilityRole="button" onPress={() => setPhotoHubMode('camera')} style={{ backgroundColor: glass, borderColor: border, borderWidth: 1, borderRadius: 19, paddingVertical: 16, marginTop: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 9 }}>
+            <Ionicons name="camera-outline" size={20} color="#B51C35" /><Text style={{ color: colors.textPrimary, fontWeight: '900', fontSize: 15 }}>Share a Photo</Text>
           </TouchableOpacity>
           <Text style={{ color: secondary, fontSize: 11, textAlign: 'center', marginTop: 12 }}>Uploads stay private until selected for the public gallery.</Text>
         </ScrollView>
