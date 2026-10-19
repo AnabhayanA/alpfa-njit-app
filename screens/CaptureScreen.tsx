@@ -258,7 +258,7 @@ export default function CaptureScreen() {
     }
   };
 
-  const close = () => navigation.navigate('Home' as never);
+  const close = () => { resetAfterUpload(); setPhotoHubMode('gallery'); };
 
   const saveCompletedPhoto = async () => {
     if (Platform.OS === 'web') {
