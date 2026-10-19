@@ -166,7 +166,7 @@ function QuickLink({ label, icon, color, background, onPress, scale, isDark, tal
   tallScreenSpacing: number;
 }) {
   return (
-    <TouchableOpacity style={[styles.quickCard, isDark && styles.quickCardDark, { minHeight: (42 + tallScreenSpacing * 0.65) * scale, borderRadius: 13 * scale, paddingHorizontal: 9 * scale }]} activeOpacity={0.76} onPress={onPress}>
+    <TouchableOpacity style={[styles.quickCard, isDark && styles.quickCardDark, { minHeight: (42 * 1.45 + tallScreenSpacing * 0.65) * scale, borderRadius: 13 * scale, paddingHorizontal: 9 * scale }]} activeOpacity={0.76} onPress={onPress}>
       <View style={[styles.quickIcon, { backgroundColor: background, width: 28 * scale, height: 28 * scale, borderRadius: 9 * scale }]}>
         <Ionicons name={icon} size={17 * scale} color={color} />
       </View>
