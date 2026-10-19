@@ -174,7 +174,7 @@ function FilteredPhotoPreview({ uri, filter, canvasRef, locationLabel, locationP
 export default function CaptureScreen() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
   const styles = React.useMemo(() => createStyles(colors), [colors]);
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
 
@@ -569,35 +569,45 @@ export default function CaptureScreen() {
     else { setStatus('error'); setStatusMessage(result.message || 'Something went wrong. Try again.'); }
   };
 
-  // The public gallery intentionally starts empty until an approved image feed is configured.
-  // Never enumerate the private submissions Drive folder from a public client.
+  // Keep submissions private. The gallery will use a separate approved public feed.
   if (photoHubMode === 'gallery') {
+    const glass = isDark ? 'rgba(20,28,54,0.84)' : 'rgba(255,255,255,0.77)';
+    const border = isDark ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.92)';
+    const secondary = isDark ? '#ADBBD0' : '#566782';
     return (
-      <View style={[styles.container, { backgroundColor: colors.background, paddingTop: insets.top + 20 }]}>
-        <ScrollView contentContainerStyle={{ paddingHorizontal: 22, paddingBottom: insets.bottom + 110 }}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-            <View>
-              <Text style={{ color: colors.textPrimary, fontSize: 27, fontWeight: '900' }}>ALPFA Moments</Text>
-              <Text style={{ color: colors.textPrimary, opacity: 0.65, marginTop: 4 }}>Our community, through your lens.</Text>
+      <View style={{ flex: 1, backgroundColor: isDark ? '#070B18' : '#F8F7F4' }}>
+        <View pointerEvents="none" style={StyleSheet.absoluteFill}>
+          <View style={{ position: 'absolute', width: 270, height: 270, borderRadius: 140, top: 60, right: -140, backgroundColor: isDark ? 'rgba(255,39,82,0.23)' : 'rgba(225,32,68,0.21)' }} />
+          <View style={{ position: 'absolute', width: 300, height: 300, borderRadius: 150, top: 260, left: -170, backgroundColor: isDark ? 'rgba(25,108,255,0.20)' : 'rgba(31,117,255,0.18)' }} />
+          <View style={{ position: 'absolute', width: 260, height: 260, borderRadius: 130, bottom: 40, right: -140, backgroundColor: isDark ? 'rgba(142,77,255,0.18)' : 'rgba(126,73,255,0.15)' }} />
+        </View>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingTop: insets.top + 12, paddingHorizontal: 20, paddingBottom: insets.bottom + 140, width: '100%', maxWidth: 560, alignSelf: 'center' }}>
+          <Text style={{ color: colors.textPrimary, fontSize: 28, fontWeight: '900' }}>ALPFA Moments</Text>
+          <Text style={{ color: secondary, fontSize: 13, marginTop: 5 }}>Our community, through your lens.</Text>
+          <View style={{ backgroundColor: glass, borderColor: border, borderWidth: 1, borderRadius: 22, padding: 18, marginTop: 24 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 9 }}>
+              <Ionicons name="sparkles-outline" size={19} color="#B51C35" />
+              <Text style={{ color: colors.textPrimary, fontWeight: '900', fontSize: 17 }}>This Week's Moments</Text>
             </View>
-            <Ionicons name="images-outline" size={28} color="#B51C35" />
-          </View>
-          <View style={{ backgroundColor: '#8D102B', borderRadius: 18, padding: 20, marginTop: 25 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-              <Ionicons name="shuffle-outline" size={19} color="#FFFFFF" />
-              <Text style={{ color: '#FFFFFF', fontSize: 17, fontWeight: '900' }}>This Week's Spotlight</Text>
+            <Text style={{ color: secondary, fontSize: 12, marginTop: 6 }}>A fresh mix from past ALPFA events every Monday.</Text>
+            <View style={{ flexDirection: 'row', gap: 8, marginTop: 16, height: 172 }}>
+              <View style={{ flex: 1.4, borderRadius: 15, backgroundColor: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(8,28,55,0.06)', justifyContent: 'center', alignItems: 'center' }}><Ionicons name="images-outline" size={30} color={secondary} /></View>
+              <View style={{ flex: 1, gap: 8 }}>
+                <View style={{ flex: 1, borderRadius: 13, backgroundColor: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(8,28,55,0.06)', justifyContent: 'center', alignItems: 'center' }}><Ionicons name="image-outline" size={21} color={secondary} /></View>
+                <View style={{ flex: 1, borderRadius: 13, backgroundColor: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(8,28,55,0.06)', justifyContent: 'center', alignItems: 'center' }}><Ionicons name="image-outline" size={21} color={secondary} /></View>
+              </View>
             </View>
-            <Text style={{ color: '#FFFFFF', opacity: 0.85, marginTop: 7, lineHeight: 19 }}>A new mix of memories from past ALPFA events every Monday.</Text>
+            <Text style={{ color: secondary, fontSize: 12, textAlign: 'center', marginTop: 13 }}>Community photos will appear here once the approved gallery is connected.</Text>
           </View>
-          <View style={{ alignItems: 'center', paddingVertical: 54, paddingHorizontal: 24, marginTop: 20, borderWidth: 1, borderStyle: 'dashed', borderColor: colors.textPrimary, borderRadius: 20, opacity: 0.7 }}>
-            <Ionicons name="images-outline" size={48} color={colors.textPrimary} />
-            <Text style={{ color: colors.textPrimary, fontSize: 17, fontWeight: '800', marginTop: 14, textAlign: 'center' }}>Memories are coming soon</Text>
-            <Text style={{ color: colors.textPrimary, textAlign: 'center', marginTop: 9, lineHeight: 20 }}>Approved event photos will appear here once the Public Gallery is connected. Your private submissions are not shown automatically.</Text>
+          <View style={{ backgroundColor: glass, borderColor: border, borderWidth: 1, borderRadius: 19, padding: 17, marginTop: 14, flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+            <View style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: isDark ? 'rgba(181,28,53,0.22)' : '#F4E9E8', justifyContent: 'center', alignItems: 'center' }}><Ionicons name="grid-outline" size={20} color="#B51C35" /></View>
+            <View style={{ flex: 1 }}><Text style={{ color: colors.textPrimary, fontSize: 15, fontWeight: '800' }}>Explore All Memories</Text><Text style={{ color: secondary, fontSize: 11, marginTop: 3 }}>Available when the gallery goes live</Text></View>
+            <Ionicons name="chevron-forward" size={18} color={secondary} />
           </View>
-          <TouchableOpacity onPress={() => setPhotoHubMode('camera')} accessibilityRole="button" style={{ backgroundColor: '#8D102B', paddingVertical: 16, borderRadius: 16, marginTop: 25, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 10 }}>
-            <Ionicons name="camera-outline" size={22} color="#FFFFFF" />
-            <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 16 }}>Share a Photo</Text>
+          <TouchableOpacity accessibilityRole="button" onPress={() => setPhotoHubMode('camera')} style={{ backgroundColor: '#8D102B', borderRadius: 17, paddingVertical: 16, marginTop: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 9 }}>
+            <Ionicons name="camera-outline" size={20} color="#FFFFFF" /><Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 15 }}>Share a Photo</Text>
           </TouchableOpacity>
+          <Text style={{ color: secondary, fontSize: 11, textAlign: 'center', marginTop: 12 }}>Uploads stay private until selected for the public gallery.</Text>
         </ScrollView>
       </View>
     );
