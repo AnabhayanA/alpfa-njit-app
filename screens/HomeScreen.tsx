@@ -141,12 +141,12 @@ export default function HomeScreen() {
 
           <Text style={[styles.quickHeading, { color: colors.textPrimary, marginTop: (18 + tallScreenSpacing * 0.7) * scale, marginBottom: (9 + tallScreenSpacing * 0.35) * scale }]}>QUICK LINKS</Text>
           <View style={[styles.quickGrid, { gap: Math.max(5, (7 + tallScreenSpacing * 0.25) * scale) }]}>
-            <QuickLink isDark={isDark} scale={scale} label="E-Board" icon="people" color="#0794C8" background="#DFF5FC" onPress={() => navigation.navigate('EBoard')} />
-            <QuickLink isDark={isDark} scale={scale} label="About" icon="document-text" color="#C48518" background="#FFF0CB" onPress={() => navigation.navigate('About')} />
-            <QuickLink isDark={isDark} scale={scale} label="Join" icon="person-add" color="#16845B" background="#DCF7EA" onPress={() => open(LINKS.highlander)} />
-            <QuickLink isDark={isDark} scale={scale} label="Share a Photo" icon="camera" color="#7650B5" background="#ECE4FB" onPress={() => navigation.navigate('Capture')} />
-            <QuickLink isDark={isDark} scale={scale} label="Website" icon="open-outline" color="#F06C43" background="#FFE8DF" onPress={() => open(LINKS.website)} />
-            <QuickLink isDark={isDark} scale={scale} label="Contact" icon="mail" color="#8D102B" background="#F4E9E8" onPress={() => open(LINKS.email)} />
+            <QuickLink isDark={isDark} scale={scale} tallScreenSpacing={tallScreenSpacing} label="E-Board" icon="people" color="#0794C8" background="#DFF5FC" onPress={() => navigation.navigate('EBoard')} />
+            <QuickLink isDark={isDark} scale={scale} tallScreenSpacing={tallScreenSpacing} label="About" icon="document-text" color="#C48518" background="#FFF0CB" onPress={() => navigation.navigate('About')} />
+            <QuickLink isDark={isDark} scale={scale} tallScreenSpacing={tallScreenSpacing} label="Join" icon="person-add" color="#16845B" background="#DCF7EA" onPress={() => open(LINKS.highlander)} />
+            <QuickLink isDark={isDark} scale={scale} tallScreenSpacing={tallScreenSpacing} label="Share a Photo" icon="camera" color="#7650B5" background="#ECE4FB" onPress={() => navigation.navigate('Capture')} />
+            <QuickLink isDark={isDark} scale={scale} tallScreenSpacing={tallScreenSpacing} label="Website" icon="open-outline" color="#F06C43" background="#FFE8DF" onPress={() => open(LINKS.website)} />
+            <QuickLink isDark={isDark} scale={scale} tallScreenSpacing={tallScreenSpacing} label="Contact" icon="mail" color="#8D102B" background="#F4E9E8" onPress={() => open(LINKS.email)} />
           </View>
 
         </Animated.View>
@@ -155,7 +155,7 @@ export default function HomeScreen() {
   );
 }
 
-function QuickLink({ label, icon, color, background, onPress, scale, isDark }: {
+function QuickLink({ label, icon, color, background, onPress, scale, isDark, tallScreenSpacing }: {
   label: string;
   icon: keyof typeof Ionicons.glyphMap;
   color: string;
@@ -163,6 +163,7 @@ function QuickLink({ label, icon, color, background, onPress, scale, isDark }: {
   onPress: () => void;
   scale: number;
   isDark: boolean;
+  tallScreenSpacing: number;
 }) {
   return (
     <TouchableOpacity style={[styles.quickCard, isDark && styles.quickCardDark, { minHeight: (42 + tallScreenSpacing * 0.65) * scale, borderRadius: 13 * scale, paddingHorizontal: 9 * scale }]} activeOpacity={0.76} onPress={onPress}>
