@@ -30,6 +30,7 @@ const LINKS = {
   email: 'mailto:alpfanjit@gmail.com',
   privacy: 'https://nonnair.github.io/alpfa-njit/privacy/',
   support: 'https://nonnair.github.io/alpfa-njit/support/',
+  donate: 'https://give.njit.edu/campaigns/77006/donations/new',
 };
 
 async function openLink(url: string) {
@@ -123,6 +124,27 @@ export default function AboutScreen() {
             text="Follow our social channels and stay in touch through the official website, LinkedIn, and Highlander Hub."
             icon="people"
           />
+        </View>
+
+        <View style={[styles.card, { marginHorizontal: responsive.horizontalPadding, padding: responsive.isSmallPhone ? 18 : 22, borderRadius: responsive.isSmallPhone ? 18 : 24 }]}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+            <Ionicons name="heart-outline" size={22} color="#8D102B" />
+            <Text style={[styles.cardTitle, { marginLeft: 9, fontSize: responsive.isSmallPhone ? 17 : 19 }]}>Support ALPFA NJIT</Text>
+          </View>
+          <Text style={[styles.body, { fontSize: responsive.isSmallPhone ? 11 : 12, marginTop: 2 }]}>
+            Help support our chapter's student community, professional development, and leadership opportunities. Donations are securely handled through NJIT Giving.
+          </Text>
+          <TouchableOpacity
+            accessibilityRole="link"
+            accessibilityLabel="Donate to ALPFA NJIT through NJIT Giving"
+            activeOpacity={0.85}
+            onPress={() => openLink(LINKS.donate)}
+            style={{ marginTop: 15, borderRadius: 13, backgroundColor: '#8D102B', paddingVertical: 13, paddingHorizontal: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}
+          >
+            <Ionicons name="heart" size={17} color="#FFFFFF" />
+            <Text style={{ color: '#FFFFFF', fontWeight: '800', fontSize: 14, marginHorizontal: 9 }}>Donate Now</Text>
+            <Ionicons name="open-outline" size={16} color="#FFFFFF" />
+          </TouchableOpacity>
         </View>
 
         <Text style={[styles.sectionTitle, { marginHorizontal: responsive.horizontalPadding }]}>Connect With Us</Text>
