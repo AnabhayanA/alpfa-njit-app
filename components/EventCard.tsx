@@ -36,7 +36,10 @@ export default function EventCard({ event, animationDelay }: { event: CalendarEv
 
   const month = event.startDate.toLocaleDateString('en-US', { month: 'short', timeZone: 'America/New_York' }).toUpperCase();
   const day = event.startDate.toLocaleDateString('en-US', { day: 'numeric', timeZone: 'America/New_York' });
-  const time = formatEventTime(event.startDate, event.endDate, event.isAllDay);
+  const descriptionTime = event.isAllDay
+    ? event.description.match(/\b\d{1,2}(?::\d{2})?\s*(?:AM|PM)(?:\s*(?:-|–|—|to)\s*\d{1,2}(?::\d{2})?\s*(?:AM|PM))?/i)?.[0]
+    : undefined;
+  const time = descriptionTime || formatEventTime(event.startDate, event.endDate, event.isAllDay);
 
   const openDirections = async () => {
     const destination = event.location.trim();
@@ -198,7 +201,7 @@ function Info({ icon, text, styles }: { icon: keyof typeof Ionicons.glyphMap; te
 const createStyles = (colors: ReturnType<typeof useTheme>['colors'], isDark: boolean) => StyleSheet.create({
   card: { marginHorizontal: 18, marginBottom: 14, backgroundColor: colors.surface, borderRadius: 15, padding: 12, ...shadow('#4B392C', 0.09, 12, 0, 4),    elevation: 3 },
   top: { flexDirection: 'row', alignItems: 'center', gap: 11 },
-  date: { width: 55, height: 61, borderRadius: 10, backgroundColor: isDark ? '#161C31' : '#F2F2F0', overflow: 'hidden', alignItems: 'center', borderWidth: isDark ? 1 : 0, borderColor: isDark ? 'rgba(255,255,255,0.10)' : 'transparent' },
+  date: { width: 55, height: 61, borderRadius: 10, backgroundColor: isDark ? '#161C31' : '#F2F2F0', overflow: 'hidden', alignItems: 'center', borderWidth: 1, borderColor: isDark ? 'rgba(255,255,255,0.10)' : 'transparent' },
   monthBar: { width: '100%', backgroundColor: '#8D102B', paddingVertical: 4, alignItems: 'center' },
   month: { color: '#FFFFFF', fontSize: 9, fontWeight: '900' },
   day: { color: colors.textPrimary, fontSize: 25, lineHeight: 38, fontWeight: '900' },

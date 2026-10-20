@@ -30,9 +30,11 @@ export default function HomeScreen() {
   const navigation = useNavigation<HomeNavigation>();
   const { isDark, colors, toggleTheme } = useTheme();
   const insets = useSafeAreaInsets();
-  const { width } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
   const contentWidth = Math.min(width, 560);
-  const scale = Math.max(1.06, Math.min(contentWidth / 350, 1.3));
+  // Distribute the existing sections more evenly on tall iPhones without adding filler cards.
+  const tallScreenSpacing = 0;
+  const scale = Math.max(1.0, Math.min(contentWidth / 390, 1.10));
   const [nextEvent, setNextEvent] = useState<CalendarEvent | null>(null);
   const fade = useRef(new Animated.Value(0)).current;
   const rise = useRef(new Animated.Value(16)).current;
@@ -79,7 +81,7 @@ export default function HomeScreen() {
             width: contentWidth,
             alignSelf: 'center',
             paddingHorizontal: Math.max(12, 14 * scale),
-            paddingTop: insets.top + Math.max(5, 8 * scale),
+            paddingTop: insets.top + Math.max(12, 12 * scale),
             paddingBottom: insets.bottom + 132,
           },
         ]}
@@ -89,7 +91,7 @@ export default function HomeScreen() {
             <Image source={require('../assets/images/ALPFANJITLOGO.png')} style={[styles.logo, { width: 54 * scale, height: 54 * scale, borderRadius: 10 * scale }]} resizeMode="cover" />
             <View style={styles.brandCopy}>
               <Text style={[styles.brandName, { color: colors.textPrimary }]}>ALPFA NJIT</Text>
-              <Text style={[styles.brandTag, { color: colors.textSecondary }]}>Latinos{`\n`}Leaders{`\n`}Stronger Together</Text>
+
             </View>
             <TouchableOpacity
               style={[styles.themeButton, { backgroundColor: isDark ? 'rgba(255,255,255,0.10)' : 'rgba(255,255,255,0.72)' }]}
@@ -98,22 +100,15 @@ export default function HomeScreen() {
             >
               <Ionicons name={isDark ? 'sunny' : 'moon'} size={18} color={isDark ? '#FFFFFF' : '#081C37'} />
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.profileButton, { backgroundColor: isDark ? 'rgba(255,255,255,0.10)' : 'rgba(255,255,255,0.72)' }]} onPress={() => navigation.navigate('About')} accessibilityLabel="Open About">
-              <Ionicons name="person-circle-outline" size={23} color={isDark ? '#FFFFFF' : '#081C37'} />
-            </TouchableOpacity>
+
           </View>
 
-          <Text style={[styles.welcome, { color: colors.textPrimary, fontSize: 29 * scale, lineHeight: 31 * scale, marginTop: 12 * scale }]}>Welcome back,</Text>
+          <Text style={[styles.welcome, { color: colors.textPrimary, fontSize: 29 * scale, lineHeight: 31 * scale, marginTop: (12 + tallScreenSpacing * 0.55) * scale }]}>Welcome back,</Text>
           <Text style={[styles.familia, { fontSize: 29 * scale, lineHeight: 30 * scale }]}>Familia</Text>
-          <Text style={[styles.motto, { color: colors.textSecondary }]}>BUILD  •  CONNECT  •  BELONG</Text>
 
-          <TouchableOpacity style={[styles.eventCard, isDark && styles.eventCardDark, { minHeight: 164 * scale, marginTop: 12 * scale, padding: 14 * scale, borderRadius: 18 * scale }]} activeOpacity={0.9} onPress={() => navigation.navigate('Events')}>
-            <View style={[styles.eventDecor, { pointerEvents: "none" }]}>
-              <View style={styles.eventLiquidBlue} />
-              <View style={styles.eventLiquidRed} />
-              <View style={styles.eventRedSlash} />
-              <View style={styles.eventBurgundySlash} />
-            </View>
+
+          <TouchableOpacity style={[styles.eventCard, isDark && styles.eventCardDark, { minHeight: 164 * scale, marginTop: (12 + tallScreenSpacing * 0.65) * scale, padding: 14 * scale, borderRadius: 18 * scale }]} activeOpacity={0.9} onPress={() => navigation.navigate('Events')}>
+
 
             <View style={styles.eventContent}>
               <View style={styles.eventTop}>
@@ -126,7 +121,7 @@ export default function HomeScreen() {
                   <Text style={styles.nextLabel}>NEXT EVENT</Text>
                   <View style={styles.goldLine} />
                 </View>
-                <Text style={styles.cardWords}>PEOPLE{`\n`}PURPOSE{`\n`}PROGRESS</Text>
+
               </View>
 
               <Text style={[styles.eventTitle, { fontSize: 16 * scale, lineHeight: 19 * scale }]} numberOfLines={2}>{nextEvent?.title || 'More ALPFA NJIT events coming soon'}</Text>
@@ -144,28 +139,43 @@ export default function HomeScreen() {
             </View>
           </TouchableOpacity>
 
-          <Text style={[styles.quickHeading, { color: colors.textPrimary, marginTop: 18 * scale, marginBottom: 9 * scale }]}>QUICK LINKS</Text>
-          <View style={[styles.quickGrid, { gap: Math.max(5, 7 * scale) }]}>
-            <QuickLink isDark={isDark} scale={scale} label="Events" icon="calendar" color="#C01C3B" background="#FCE5E9" onPress={() => navigation.navigate('Events')} />
-            <QuickLink isDark={isDark} scale={scale} label="E-Board" icon="people" color="#0794C8" background="#DFF5FC" onPress={() => navigation.navigate('EBoard')} />
-            <QuickLink isDark={isDark} scale={scale} label="About" icon="document-text" color="#C48518" background="#FFF0CB" onPress={() => navigation.navigate('About')} />
-            <QuickLink isDark={isDark} scale={scale} label="Join" icon="person-add" color="#16845B" background="#DCF7EA" onPress={() => open(LINKS.highlander)} />
-            <QuickLink isDark={isDark} scale={scale} label="Share a Photo" icon="camera" color="#7650B5" background="#ECE4FB" onPress={() => navigation.navigate('Capture')} />
-            <QuickLink isDark={isDark} scale={scale} label="Website" icon="open-outline" color="#F06C43" background="#FFE8DF" onPress={() => open(LINKS.website)} />
-            <QuickLink isDark={isDark} scale={scale} label="Contact" icon="mail" color="#8D102B" background="#F4E9E8" onPress={() => open(LINKS.email)} />
+          <View style={[styles.momentsCard, { backgroundColor: isDark ? 'rgba(20,28,54,0.58)' : 'rgba(255,255,255,0.46)', borderColor: isDark ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.86)', marginTop: 18 * scale }]}>
+            <View style={styles.momentsHeading}>
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.momentsTitle, { color: colors.textPrimary }]}>ALPFA Moments</Text>
+                <Text style={[styles.momentsSubtitle, { color: isDark ? '#B6C2D6' : '#53627B' }]}>A new mix of memories from past events every week</Text>
+              </View>
+              <Ionicons name="images-outline" size={22} color="#B51C35" />
+            </View>
+            <View style={styles.momentsCollage}>
+              <View style={[styles.momentsLargeTile, { backgroundColor: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(8,28,55,0.07)' }]}>
+                <Ionicons name="images-outline" size={28} color={isDark ? '#B6C2D6' : '#708099'} />
+              </View>
+              <View style={styles.momentsSmallColumn}>
+                <View style={[styles.momentsSmallTile, { backgroundColor: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(8,28,55,0.07)' }]}><Ionicons name="image-outline" size={18} color={isDark ? '#B6C2D6' : '#708099'} /></View>
+                <View style={[styles.momentsSmallTile, { backgroundColor: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(8,28,55,0.07)' }]}><Ionicons name="image-outline" size={18} color={isDark ? '#B6C2D6' : '#708099'} /></View>
+              </View>
+            </View>
+            <Text style={[styles.momentsFootnote, { color: isDark ? '#B6C2D6' : '#53627B' }]}>Community photos coming soon. Only approved photos will appear here.</Text>
           </View>
 
-          <View style={[styles.bottomMessage, isDark && styles.bottomMessageDark]}>
-            <Text style={[styles.bottomHeadline, isDark && styles.bottomHeadlineDark]}>MORE LATINOS.{`\n`}BRIGHTER TOMORROWS.</Text>
-            <Text style={styles.bottomSub}>ALPFA NJIT</Text>
+          <Text style={[styles.quickHeading, { color: colors.textPrimary, marginTop: (18 + tallScreenSpacing * 0.7) * scale, marginBottom: (9 + tallScreenSpacing * 0.35) * scale }]}>QUICK LINKS</Text>
+          <View style={[styles.quickGrid, { gap: Math.max(5, (7 + tallScreenSpacing * 0.25) * scale) }]}>
+            <QuickLink isDark={isDark} scale={scale} tallScreenSpacing={tallScreenSpacing} label="E-Board" icon="people" color="#0794C8" background="#DFF5FC" onPress={() => navigation.navigate('EBoard')} />
+            <QuickLink isDark={isDark} scale={scale} tallScreenSpacing={tallScreenSpacing} label="About" icon="document-text" color="#C48518" background="#FFF0CB" onPress={() => navigation.navigate('About')} />
+            <QuickLink isDark={isDark} scale={scale} tallScreenSpacing={tallScreenSpacing} label="Join" icon="person-add" color="#16845B" background="#DCF7EA" onPress={() => open(LINKS.highlander)} />
+            <QuickLink isDark={isDark} scale={scale} tallScreenSpacing={tallScreenSpacing} label="Share a Photo" icon="camera" color="#7650B5" background="#ECE4FB" onPress={() => navigation.navigate('Capture')} />
+            <QuickLink isDark={isDark} scale={scale} tallScreenSpacing={tallScreenSpacing} label="Website" icon="open-outline" color="#F06C43" background="#FFE8DF" onPress={() => open(LINKS.website)} />
+            <QuickLink isDark={isDark} scale={scale} tallScreenSpacing={tallScreenSpacing} label="Contact" icon="mail" color="#8D102B" background="#F4E9E8" onPress={() => open(LINKS.email)} />
           </View>
+
         </Animated.View>
       </ScrollView>
     </View>
   );
 }
 
-function QuickLink({ label, icon, color, background, onPress, scale, isDark }: {
+function QuickLink({ label, icon, color, background, onPress, scale, isDark, tallScreenSpacing }: {
   label: string;
   icon: keyof typeof Ionicons.glyphMap;
   color: string;
@@ -173,9 +183,10 @@ function QuickLink({ label, icon, color, background, onPress, scale, isDark }: {
   onPress: () => void;
   scale: number;
   isDark: boolean;
+  tallScreenSpacing: number;
 }) {
   return (
-    <TouchableOpacity style={[styles.quickCard, isDark && styles.quickCardDark, { minHeight: 42 * scale, borderRadius: 13 * scale, paddingHorizontal: 9 * scale }]} activeOpacity={0.76} onPress={onPress}>
+    <TouchableOpacity style={[styles.quickCard, isDark && styles.quickCardDark, { minHeight: (42 * 1.45 + tallScreenSpacing * 0.65) * scale, borderRadius: 13 * scale, paddingHorizontal: 9 * scale }]} activeOpacity={0.76} onPress={onPress}>
       <View style={[styles.quickIcon, { backgroundColor: background, width: 28 * scale, height: 28 * scale, borderRadius: 9 * scale }]}>
         <Ionicons name={icon} size={17 * scale} color={color} />
       </View>
@@ -221,9 +232,18 @@ const styles = StyleSheet.create({
   metaRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 5, maxWidth: '82%' },
   metaText: { color: 'rgba(255,255,255,0.86)', fontSize: 11, flexShrink: 1 },
   eventArrow: { position: 'absolute', right: 11, bottom: 11, width: 31, height: 31, borderRadius: 16, backgroundColor: '#B51C35', alignItems: 'center', justifyContent: 'center' },
+  momentsCard: { borderWidth: 1, borderRadius: 19, padding: 14, ...shadow('#081C37', 0.07, 6, 0, 3) },
+  momentsHeading: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  momentsTitle: { fontSize: 16, fontWeight: '900' },
+  momentsSubtitle: { fontSize: 10, lineHeight: 15, marginTop: 4 },
+  momentsCollage: { flexDirection: 'row', gap: 8, height: 118, marginTop: 12 },
+  momentsLargeTile: { flex: 1.5, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  momentsSmallColumn: { flex: 1, gap: 8 },
+  momentsSmallTile: { flex: 1, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
+  momentsFootnote: { fontSize: 10, marginTop: 10, lineHeight: 14, textAlign: 'center' },
   quickHeading: { color: '#081C37', fontSize: 10, fontWeight: '900', letterSpacing: 1.8, marginTop: 14, marginBottom: 6 },
   quickGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: 7 },
-  quickCard: { width: '48.8%', minHeight: 42, borderRadius: 13, paddingHorizontal: 9, backgroundColor: 'rgba(255,255,255,0.78)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.88)', flexDirection: 'row', alignItems: 'center', gap: 7, ...shadow('#081C37', 0.06, 5, 0, 2),    },
+  quickCard: { width: '47%', minHeight: 42, borderRadius: 13, paddingHorizontal: 9, backgroundColor: 'rgba(255,255,255,0.78)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.88)', flexDirection: 'row', alignItems: 'center', gap: 7, ...shadow('#081C37', 0.06, 5, 0, 2),    },
   quickCardDark: { backgroundColor: 'rgba(20,28,54,0.82)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.10)', ...shadow('#081C37', 0.18, 5, 0, 2), },
   quickIcon: { width: 28, height: 28, borderRadius: 9, alignItems: 'center', justifyContent: 'center' },
   quickLabel: { color: '#081C37', fontSize: 10, fontWeight: '700', flex: 1 },
